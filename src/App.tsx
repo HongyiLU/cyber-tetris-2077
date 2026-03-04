@@ -15,7 +15,7 @@ const App: React.FC = () => {
 
     const dropInterval = setInterval(() => {
       gameEngine.movePiece(0, 1);
-      const cleared = gameEngine.lockPiece();
+      gameEngine.lockPiece();
       setGameState(gameEngine.getGameState());
     }, Math.max(100, 1000 - (gameState.level - 1) * 100));
 

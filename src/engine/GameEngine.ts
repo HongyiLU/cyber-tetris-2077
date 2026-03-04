@@ -181,7 +181,7 @@ export class GameEngine {
     this.nextPiece = this.createPiece();
 
     // 检查游戏结束
-    if (this.checkCollision(this.currentPiece.shape, this.currentPiece.position)) {
+    if (this.currentPiece && this.checkCollision(this.currentPiece.shape, this.currentPiece.position)) {
       this.gameOver = true;
     }
 
