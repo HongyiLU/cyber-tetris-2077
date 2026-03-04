@@ -14,8 +14,11 @@ const App: React.FC = () => {
     if (!gameStarted || !gameState || gameState.gameOver || gameState.paused) return;
 
     const dropInterval = setInterval(() => {
-      gameEngine.movePiece(0, 1);
-      gameEngine.lockPiece();
+      const moved = gameEngine.movePiece(0, 1);
+      if (!moved) {
+        // 方块无法继续下落，锁定
+        gameEngine.lockPiece();
+      }
       setGameState(gameEngine.getGameState());
     }, Math.max(100, 1000 - (gameState.level - 1) * 100));
 
@@ -24,33 +27,45 @@ const App: React.FC = () => {
 
   // 键盘控制
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!gameStarted || !gameState || gameState.gameOver) return;
+    if (!gameStarted || !gameState || gameState.gameOver || gameState.paused) return;
+
+    let needsUpdate = false;
 
     switch (e.key) {
       case 'ArrowLeft':
-        gameEngine.movePiece(-1, 0);
+        e.preventDefault();
+        needsUpdate = gameEngine.movePiece(-1, 0);
         break;
       case 'ArrowRight':
-        gameEngine.movePiece(1, 0);
+        e.preventDefault();
+        needsUpdate = gameEngine.movePiece(1, 0);
         break;
       case 'ArrowDown':
-        gameEngine.movePiece(0, 1);
+        e.preventDefault();
+        needsUpdate = gameEngine.movePiece(0, 1);
         break;
       case 'ArrowUp':
-        gameEngine.rotatePiece();
+        e.preventDefault();
+        needsUpdate = gameEngine.rotatePiece();
         break;
       case ' ':
+        e.preventDefault();
         gameEngine.hardDrop();
+        needsUpdate = true;
         break;
       case 'p':
       case 'P':
+        e.preventDefault();
         gameEngine.togglePause();
+        needsUpdate = true;
         break;
       default:
         return;
     }
 
-    setGameState(gameEngine.getGameState());
+    if (needsUpdate) {
+      setGameState(gameEngine.getGameState());
+    }
   }, [gameStarted, gameState, gameEngine]);
 
   useEffect(() => {
