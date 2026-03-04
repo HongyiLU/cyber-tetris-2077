@@ -1,77 +1,34 @@
-import React, { useState, useEffect, useCallback } from 'react';
+// ==================== 主应用组件 ====================
+
+import React, { useState } from 'react';
 import { GameEngine } from './engine/GameEngine';
-import GameCanvas from './components/GameCanvas';
-import GameInfo from './components/GameInfo';
-import type { GameState } from './engine/GameEngine';
+import { GameCanvas, GameInfo } from './components/game';
+import { useGameLoop, useKeyboardControl } from './hooks';
+import type { GameState } from './types';
 
 const App: React.FC = () => {
   const [gameEngine] = useState(() => new GameEngine());
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
 
-  // 游戏循环
-  useEffect(() => {
-    if (!gameStarted || !gameState || gameState.gameOver || gameState.paused) return;
-
-    const dropInterval = setInterval(() => {
-      const moved = gameEngine.movePiece(0, 1);
-      if (!moved) {
-        // 方块无法继续下落，锁定
-        gameEngine.lockPiece();
-      }
+  // 使用游戏循环 Hook - 修复内存泄漏
+  useGameLoop({
+    gameStarted,
+    gameState,
+    gameEngine,
+    paused: gameState?.paused ?? false,
+    onGameStateChange: () => {
       setGameState(gameEngine.getGameState());
-    }, Math.max(100, 1000 - (gameState.level - 1) * 100));
+    },
+  });
 
-    return () => clearInterval(dropInterval);
-  }, [gameStarted, gameState?.gameOver, gameState?.paused, gameState?.level]);
-
-  // 键盘控制
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!gameStarted || !gameState || gameState.gameOver || gameState.paused) return;
-
-    let needsUpdate = false;
-
-    switch (e.key) {
-      case 'ArrowLeft':
-        e.preventDefault();
-        needsUpdate = gameEngine.movePiece(-1, 0);
-        break;
-      case 'ArrowRight':
-        e.preventDefault();
-        needsUpdate = gameEngine.movePiece(1, 0);
-        break;
-      case 'ArrowDown':
-        e.preventDefault();
-        needsUpdate = gameEngine.movePiece(0, 1);
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        needsUpdate = gameEngine.rotatePiece();
-        break;
-      case ' ':
-        e.preventDefault();
-        gameEngine.hardDrop();
-        needsUpdate = true;
-        break;
-      case 'p':
-      case 'P':
-        e.preventDefault();
-        gameEngine.togglePause();
-        needsUpdate = true;
-        break;
-      default:
-        return;
-    }
-
-    if (needsUpdate) {
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameStarted, gameState, gameEngine]);
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  // 使用键盘控制 Hook
+  useKeyboardControl({
+    gameStarted,
+    gameState,
+    gameEngine,
+    onGameStateChange: setGameState,
+  });
 
   const startGame = () => {
     gameEngine.init();
@@ -147,7 +104,7 @@ const App: React.FC = () => {
         fontSize: '10px',
         color: '#666',
       }}>
-        v1.3.0 - React + Canvas
+        v2.0.0 - 重构版
       </div>
     </div>
   );

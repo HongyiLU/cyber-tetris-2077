@@ -1,6 +1,8 @@
+// ==================== 游戏画布组件 ====================
+
 import React, { useRef, useEffect } from 'react';
-import { GAME_CONFIG } from '../config/game-config';
-import type { GameState } from '../engine/GameEngine';
+import { GAME_CONFIG } from '../../config/game-config';
+import type { GameState } from '../../types';
 
 interface GameCanvasProps {
   gameState: GameState | null;

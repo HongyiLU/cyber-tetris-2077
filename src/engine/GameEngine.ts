@@ -1,27 +1,8 @@
+// ==================== 游戏引擎 ====================
+
 import { GAME_CONFIG, PIECE_SIZE_MULTIPLIER } from '../config/game-config';
-
-export interface Position {
-  x: number;
-  y: number;
-}
-
-export interface Piece {
-  type: string;
-  shape: number[][];
-  position: Position;
-  color: string;
-}
-
-export interface GameState {
-  board: number[][];
-  currentPiece: Piece | null;
-  nextPiece: Piece | null;
-  score: number;
-  lines: number;
-  level: number;
-  gameOver: boolean;
-  paused: boolean;
-}
+import type { Piece, Position, GameState } from '../types';
+import { createEmptyBoard, checkCollision, rotateShape, copyBoard, copyShape } from '../utils/game-utils';
 
 export class GameEngine {
   private cols: number;
@@ -38,11 +19,7 @@ export class GameEngine {
   constructor(cols: number = GAME_CONFIG.GAME.COLS, rows: number = GAME_CONFIG.GAME.ROWS) {
     this.cols = cols;
     this.rows = rows;
-    this.board = this.createEmptyBoard();
-  }
-
-  private createEmptyBoard(): number[][] {
-    return Array(this.rows).fill(null).map(() => Array(this.cols).fill(0));
+    this.board = createEmptyBoard(cols, rows);
   }
 
   private createPiece(type?: string): Piece {
@@ -63,7 +40,7 @@ export class GameEngine {
   }
 
   public init(): void {
-    this.board = this.createEmptyBoard();
+    this.board = createEmptyBoard(this.cols, this.rows);
     this.score = 0;
     this.lines = 0;
     this.level = 1;
@@ -76,41 +53,76 @@ export class GameEngine {
   public movePiece(dx: number, dy: number): boolean {
     if (!this.currentPiece || this.gameOver || this.paused) return false;
 
-    const newPosition = {
+    const newPosition: Position = {
       x: this.currentPiece.position.x + dx,
       y: this.currentPiece.position.y + dy,
     };
 
-    if (!this.checkCollision(this.currentPiece.shape, newPosition)) {
+    if (!checkCollision(this.currentPiece.shape, newPosition, this.board, this.cols, this.rows)) {
       this.currentPiece.position = newPosition;
       return true;
     }
     return false;
   }
 
+  /**
+   * 旋转方块
+   * 修复说明：实现基础墙踢机制，旋转时尝试多个位置
+   * 
+   * 墙踢顺序：
+   * 1. 原位置
+   * 2. 向右移动 1 格
+   * 3. 向左移动 1 格
+   * 4. 向右移动 2 格
+   * 5. 向左移动 2 格
+   */
   public rotatePiece(): boolean {
     if (!this.currentPiece || this.gameOver || this.paused) return false;
 
-    const rotated = this.rotateShape(this.currentPiece.shape);
-    if (!this.checkCollision(rotated, this.currentPiece.position)) {
+    const rotated = rotateShape(this.currentPiece.shape);
+    const originalPosition = { ...this.currentPiece.position };
+
+    // 基础墙踢机制：尝试多个位置
+    // 1. 原位置
+    if (!checkCollision(rotated, originalPosition, this.board, this.cols, this.rows)) {
       this.currentPiece.shape = rotated;
       return true;
     }
-    return false;
-  }
 
-  private rotateShape(shape: number[][]): number[][] {
-    const rows = shape.length;
-    const cols = shape[0].length;
-    const rotated: number[][] = [];
-
-    for (let col = 0; col < cols; col++) {
-      rotated[col] = [];
-      for (let row = rows - 1; row >= 0; row--) {
-        rotated[col].push(shape[row][col]);
-      }
+    // 2. 向右移动 1 格
+    const kickRight = { ...originalPosition, x: originalPosition.x + 1 };
+    if (!checkCollision(rotated, kickRight, this.board, this.cols, this.rows)) {
+      this.currentPiece.shape = rotated;
+      this.currentPiece.position = kickRight;
+      return true;
     }
-    return rotated;
+
+    // 3. 向左移动 1 格
+    const kickLeft = { ...originalPosition, x: originalPosition.x - 1 };
+    if (!checkCollision(rotated, kickLeft, this.board, this.cols, this.rows)) {
+      this.currentPiece.shape = rotated;
+      this.currentPiece.position = kickLeft;
+      return true;
+    }
+
+    // 4. 向右移动 2 格
+    const kickRight2 = { ...originalPosition, x: originalPosition.x + 2 };
+    if (!checkCollision(rotated, kickRight2, this.board, this.cols, this.rows)) {
+      this.currentPiece.shape = rotated;
+      this.currentPiece.position = kickRight2;
+      return true;
+    }
+
+    // 5. 向左移动 2 格
+    const kickLeft2 = { ...originalPosition, x: originalPosition.x - 2 };
+    if (!checkCollision(rotated, kickLeft2, this.board, this.cols, this.rows)) {
+      this.currentPiece.shape = rotated;
+      this.currentPiece.position = kickLeft2;
+      return true;
+    }
+
+    // 所有墙踢尝试都失败
+    return false;
   }
 
   public hardDrop(): number {
@@ -123,27 +135,10 @@ export class GameEngine {
     return dropDistance;
   }
 
-  private checkCollision(shape: number[][], position: Position): boolean {
-    for (let row = 0; row < shape.length; row++) {
-      for (let col = 0; col < shape[row].length; col++) {
-        if (shape[row][col]) {
-          const newX = position.x + col;
-          const newY = position.y + row;
-
-          if (
-            newX < 0 ||
-            newX >= this.cols ||
-            newY >= this.rows ||
-            (newY >= 0 && this.board[newY][newX])
-          ) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
-
+  /**
+   * 锁定方块到棋盘
+   * 修复说明：修复类型安全问题，显式检查 cell !== 0 和 cell !== undefined
+   */
   public lockPiece(): number {
     if (!this.currentPiece) return 0;
 
@@ -153,15 +148,22 @@ export class GameEngine {
     // 将方块固定到棋盘
     for (let row = 0; row < shape.length; row++) {
       for (let col = 0; col < shape[row].length; col++) {
-        if (shape[row][col] && position.y + row >= 0) {
-          this.board[position.y + row][position.x + col] = typeId;
+        // 类型安全修复：显式检查 cell 是否为非零值，并处理边界情况
+        const cell = shape[row][col];
+        const boardY = position.y + row;
+        const boardX = position.x + col;
+        
+        // 确保方块在棋盘范围内且 cell 有效
+        if (cell !== 0 && cell !== undefined && boardY >= 0 && boardY < this.rows && boardX >= 0 && boardX < this.cols) {
+          this.board[boardY][boardX] = typeId;
         }
       }
     }
 
     // 计算消除行数和分数
     const clearedLines = this.clearLines();
-    const pieceSize = shape.flat().filter(cell => cell === 1).length;
+    // 类型安全修复：使用更可靠的过滤方式
+    const pieceSize = shape.flat().filter(cell => cell !== 0 && cell !== undefined).length;
     const sizeMultiplier = PIECE_SIZE_MULTIPLIER[pieceSize] || 1.0;
     
     if (clearedLines > 0) {
@@ -181,7 +183,7 @@ export class GameEngine {
     this.nextPiece = this.createPiece();
 
     // 检查游戏结束
-    if (this.currentPiece && this.checkCollision(this.currentPiece.shape, this.currentPiece.position)) {
+    if (this.currentPiece && checkCollision(this.currentPiece.shape, this.currentPiece.position, this.board, this.cols, this.rows)) {
       this.gameOver = true;
     }
 
@@ -205,9 +207,9 @@ export class GameEngine {
 
   public getGameState(): GameState {
     return {
-      board: this.board.map(row => [...row]),
-      currentPiece: this.currentPiece ? { ...this.currentPiece, shape: this.currentPiece.shape.map(r => [...r]) } : null,
-      nextPiece: this.nextPiece ? { ...this.nextPiece, shape: this.nextPiece.shape.map(r => [...r]) } : null,
+      board: copyBoard(this.board),
+      currentPiece: this.currentPiece ? { ...this.currentPiece, shape: copyShape(this.currentPiece.shape) } : null,
+      nextPiece: this.nextPiece ? { ...this.nextPiece, shape: copyShape(this.nextPiece.shape) } : null,
       score: this.score,
       lines: this.lines,
       level: this.level,

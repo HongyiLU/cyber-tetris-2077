@@ -1,5 +1,7 @@
+// ==================== 游戏信息面板组件 ====================
+
 import React from 'react';
-import type { GameState } from '../engine/GameEngine';
+import type { GameState } from '../../types';
 
 interface GameInfoProps {
   gameState: GameState | null;
