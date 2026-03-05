@@ -62,10 +62,14 @@ const App: React.FC = () => {
   }, [gameEngine]);
 
   const handleHardDrop = useCallback(() => {
-    gameEngine.hardDrop();
-    gameEngine.lockPiece();
+    // 硬降：直接到底部并锁定
+    const dropDistance = gameEngine.hardDrop();
+    // 只有成功下落且能锁定方块时才锁定
+    if (dropDistance > 0 || gameState?.currentPiece) {
+      gameEngine.lockPiece();
+    }
     setGameState(gameEngine.getGameState());
-  }, [gameEngine]);
+  }, [gameEngine, gameState]);
 
   const handlePause = useCallback(() => {
     gameEngine.togglePause();

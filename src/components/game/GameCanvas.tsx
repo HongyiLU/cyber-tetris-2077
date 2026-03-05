@@ -56,18 +56,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         });
       }
 
-      // 绘制当前方块
+      // 绘制当前方块和虚影
       if (currentState?.currentPiece) {
         const { shape, position, color } = currentState.currentPiece;
-        shape.forEach((row, dy) => {
-          row.forEach((cell, dx) => {
-            if (cell) {
-              drawBlock(ctx, position.x + dx, position.y + dy, blockSize, color);
-            }
-          });
-        });
-
-        // 绘制下落虚影（ghost piece）
+        
+        // 先绘制下落虚影（在方块下面）
         let ghostY = position.y;
         while (!checkCollisionGhost(shape, { x: position.x, y: ghostY + 1 }, currentState.board, GAME_CONFIG.GAME.COLS, GAME_CONFIG.GAME.ROWS)) {
           ghostY++;
@@ -83,6 +76,15 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
             });
           });
         }
+        
+        // 再绘制当前方块（实心，覆盖虚影）
+        shape.forEach((row, dy) => {
+          row.forEach((cell, dx) => {
+            if (cell) {
+              drawBlock(ctx, position.x + dx, position.y + dy, blockSize, color);
+            }
+          });
+        });
       }
 
       // 继续渲染循环
