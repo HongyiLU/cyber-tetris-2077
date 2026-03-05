@@ -40,49 +40,37 @@ const App: React.FC = () => {
     setGameStarted(true);
   }, [gameEngine]);
 
-  // 移动端控制回调
+  // 移动端控制回调 - 不依赖 gameState，直接操作引擎
   const handleMoveLeft = useCallback(() => {
-    if (gameState && !gameState.gameOver && !gameState.paused) {
-      gameEngine.movePiece(-1, 0);
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameEngine, gameState]);
+    gameEngine.movePiece(-1, 0);
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   const handleMoveRight = useCallback(() => {
-    if (gameState && !gameState.gameOver && !gameState.paused) {
-      gameEngine.movePiece(1, 0);
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameEngine, gameState]);
+    gameEngine.movePiece(1, 0);
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   const handleRotate = useCallback(() => {
-    if (gameState && !gameState.gameOver && !gameState.paused) {
-      gameEngine.rotatePiece();
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameEngine, gameState]);
+    gameEngine.rotatePiece();
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   const handleSoftDrop = useCallback(() => {
-    if (gameState && !gameState.gameOver && !gameState.paused) {
-      gameEngine.movePiece(0, 1);
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameEngine, gameState]);
+    gameEngine.movePiece(0, 1);
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   const handleHardDrop = useCallback(() => {
-    if (gameState && !gameState.gameOver && !gameState.paused) {
-      gameEngine.hardDrop();
-      gameEngine.lockPiece();
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameEngine, gameState]);
+    gameEngine.hardDrop();
+    gameEngine.lockPiece();
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   const handlePause = useCallback(() => {
-    if (gameState && !gameState.gameOver) {
-      gameEngine.togglePause();
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameEngine, gameState]);
+    gameEngine.togglePause();
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   return (
     <ResponsiveLayout
