@@ -3,6 +3,12 @@ node_modules/
 vendor/
 bower_components/
 
+# Build outputs
+dist/
+build/
+out/
+coverage/
+
 # Logs
 logs/
 *.log
