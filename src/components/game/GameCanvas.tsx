@@ -2,7 +2,8 @@
 
 import React, { useRef, useEffect } from 'react';
 import { GAME_CONFIG } from '../../config/game-config';
-import { clearCanvas, drawGrid, drawBlock } from '../../utils/render-utils';
+import { clearCanvas, drawGrid, drawBlock, drawGhostBlock } from '../../utils/render-utils';
+import { checkCollisionGhost } from '../../utils/game-utils';
 import type { GameState } from '../../types';
 
 interface GameCanvasProps {
@@ -65,6 +66,23 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
             }
           });
         });
+
+        // 绘制下落虚影（ghost piece）
+        let ghostY = position.y;
+        while (!checkCollisionGhost(shape, { x: position.x, y: ghostY + 1 }, currentState.board, GAME_CONFIG.GAME.COLS, GAME_CONFIG.GAME.ROWS)) {
+          ghostY++;
+        }
+        
+        // 只有在虚影位置与当前位置不同时才绘制
+        if (ghostY !== position.y) {
+          shape.forEach((row, dy) => {
+            row.forEach((cell, dx) => {
+              if (cell) {
+                drawGhostBlock(ctx, position.x + dx, ghostY + dy, blockSize, color);
+              }
+            });
+          });
+        }
       }
 
       // 继续渲染循环

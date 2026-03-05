@@ -115,3 +115,46 @@ export const copyBoard = (board: number[][]): number[][] => {
 export const copyShape = (shape: PieceShape): PieceShape => {
   return shape.map(row => [...row]);
 };
+
+/**
+ * 检查虚影方块碰撞（简化版，只检测底部和已固定方块）
+ * @param shape - 方块形状
+ * @param position - 位置
+ * @param board - 棋盘
+ * @param cols - 列数
+ * @param rows - 行数
+ * @returns 是否碰撞
+ */
+export const checkCollisionGhost = (
+  shape: PieceShape,
+  position: Position,
+  board: number[][],
+  cols: number,
+  rows: number
+): boolean => {
+  for (let row = 0; row < shape.length; row++) {
+    for (let col = 0; col < shape[row].length; col++) {
+      const cell = shape[row][col];
+      if (cell !== 0 && cell !== undefined) {
+        const newX = position.x + col;
+        const newY = position.y + row;
+
+        // 检查左右边界
+        if (newX < 0 || newX >= cols) {
+          return true;
+        }
+        
+        // 检查底部边界
+        if (newY >= rows) {
+          return true;
+        }
+        
+        // 检查是否与已固定的方块碰撞
+        if (board[newY] && board[newY][newX] !== 0) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+};

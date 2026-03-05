@@ -89,3 +89,44 @@ export function clearCanvas(
   ctx.fillStyle = color;
   ctx.fillRect(0, 0, width, height);
 }
+
+/**
+ * 绘制虚影方块（用于显示下落位置预测）
+ * @param ctx - Canvas 上下文
+ * @param x - X 坐标（网格单位）
+ * @param y - Y 坐标（网格单位）
+ * @param size - 方块大小（像素）
+ * @param color - 方块颜色
+ */
+export function drawGhostBlock(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  color: string
+): void {
+  // 虚影填充（半透明）
+  ctx.fillStyle = hexToRgba(color, 0.2);
+  ctx.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
+
+  // 虚影边框
+  ctx.strokeStyle = hexToRgba(color, 0.5);
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x * size + 2, y * size + 2, size - 4, size - 4);
+
+  // 虚影网格效果
+  ctx.fillStyle = hexToRgba(color, 0.1);
+  ctx.fillRect(x * size + 5, y * size + 5, size - 10, size - 10);
+}
+
+/**
+ * 十六进制颜色转 RGBA
+ * @param hex - 十六进制颜色
+ * @param alpha - 透明度
+ */
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
