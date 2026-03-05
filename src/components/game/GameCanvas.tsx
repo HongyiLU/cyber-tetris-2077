@@ -49,7 +49,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         currentState.board.forEach((row, y) => {
           row.forEach((cell, x) => {
             if (cell !== 0) {
-              const color = Object.values(GAME_CONFIG.COLORS)[cell - 1] || '#ffffff';
+              // 使用 PIECE_TYPE_MAP 反向查找方块类型，然后获取颜色
+              const pieceType = Object.keys(GAME_CONFIG.PIECE_TYPE_MAP).find(
+                key => GAME_CONFIG.PIECE_TYPE_MAP[key as keyof typeof GAME_CONFIG.PIECE_TYPE_MAP] === cell
+              );
+              const color = pieceType ? GAME_CONFIG.COLORS[pieceType as keyof typeof GAME_CONFIG.COLORS] : '#ffffff';
               drawBlock(ctx, x, y, blockSize, color);
             }
           });

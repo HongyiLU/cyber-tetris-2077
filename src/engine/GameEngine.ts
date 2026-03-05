@@ -133,7 +133,7 @@ export class GameEngine {
   }
 
   public hardDrop(): number {
-    if (!this.currentPiece || this.gameOver || this.paused) return 0;
+    if (!this.currentPiece || this.gameOver || this.paused || this.pieceLocked) return 0;
 
     let dropDistance = 0;
     while (this.movePiece(0, 1)) {
