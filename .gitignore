@@ -9,6 +9,18 @@ build/
 out/
 coverage/
 
+# 报告文件（不上传到 Git）
+*.md
+!README.md
+TEST_REPORT.md
+CODE_REVIEW.md
+FEATURE_CHECK.md
+DECK_FEATURE_STATUS.md
+LEVEL_SYSTEM_CHECK.md
+*_REPORT.md
+*_CHECK.md
+*_STATUS.md
+
 # Logs
 logs/
 *.log
