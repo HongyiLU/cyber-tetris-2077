@@ -29,6 +29,12 @@ LEVEL_SYSTEM_CHECK.md
 *_CHECK.md
 *_STATUS.md
 
+# ==================== 非必要文档 ====================
+# 所有嵌套目录中的 README 和其他说明文件
+**/README.md
+!README.md
+*.md
+
 # ==================== OpenClaw 配置（本地使用） ====================
 .openclaw/
 AGENTS.md
