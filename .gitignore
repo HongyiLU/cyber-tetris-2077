@@ -10,8 +10,7 @@ out/
 coverage/
 
 # 报告文件（不上传到 Git）
-*.md
-!README.md
+# 本地生成的检查报告、测试报告等
 TEST_REPORT.md
 CODE_REVIEW.md
 FEATURE_CHECK.md
