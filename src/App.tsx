@@ -2,14 +2,18 @@
 
 import React, { useState } from 'react';
 import { GameEngine } from './engine/GameEngine';
+import { DeckManager } from './engine/DeckManager';
 import { GameCanvas, GameInfo } from './components/game';
+import { CardDeck } from './components/ui';
 import { useGameLoop, useKeyboardControl } from './hooks';
 import type { GameState } from './types';
 
 const App: React.FC = () => {
   const [gameEngine] = useState(() => new GameEngine());
+  const [deckManager] = useState(() => new DeckManager());
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
+  const [showDeck, setShowDeck] = useState(false);
 
   // 使用游戏循环 Hook - 修复内存泄漏
   useGameLoop({
@@ -57,31 +61,59 @@ const App: React.FC = () => {
       </h1>
 
       {!gameStarted ? (
-        <button
-          onClick={startGame}
-          style={{
-            padding: '15px 40px',
-            fontSize: '24px',
-            background: 'rgba(0, 255, 255, 0.1)',
-            border: '2px solid var(--neon-cyan)',
-            borderRadius: '8px',
-            color: 'var(--neon-cyan)',
-            cursor: 'pointer',
-            fontFamily: 'Orbitron, monospace',
-            boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)',
-            transition: 'all 0.3s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(0, 255, 255, 0.2)';
-            e.currentTarget.style.boxShadow = '0 0 40px rgba(0, 255, 255, 0.6)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(0, 255, 255, 0.1)';
-            e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.3)';
-          }}
-        >
-          开始游戏
-        </button>
+        <div style={{ display: 'flex', gap: '20px', flexDirection: 'column', alignItems: 'center' }}>
+          <button
+            onClick={startGame}
+            style={{
+              padding: '15px 40px',
+              fontSize: '24px',
+              background: 'rgba(0, 255, 255, 0.1)',
+              border: '2px solid var(--neon-cyan)',
+              borderRadius: '8px',
+              color: 'var(--neon-cyan)',
+              cursor: 'pointer',
+              fontFamily: 'Orbitron, monospace',
+              boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(0, 255, 255, 0.2)';
+              e.currentTarget.style.boxShadow = '0 0 40px rgba(0, 255, 255, 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(0, 255, 255, 0.1)';
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.3)';
+            }}
+          >
+            开始游戏
+          </button>
+          
+          <button
+            onClick={() => setShowDeck(true)}
+            style={{
+              padding: '12px 30px',
+              fontSize: '18px',
+              background: 'rgba(255, 0, 255, 0.1)',
+              border: '2px solid #ff00ff',
+              borderRadius: '8px',
+              color: '#ff00ff',
+              cursor: 'pointer',
+              fontFamily: 'Orbitron, monospace',
+              boxShadow: '0 0 15px rgba(255, 0, 255, 0.3)',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 0, 255, 0.2)';
+              e.currentTarget.style.boxShadow = '0 0 30px rgba(255, 0, 255, 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 0, 255, 0.1)';
+              e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 0, 255, 0.3)';
+            }}
+          >
+            🎴 卡组管理
+          </button>
+        </div>
       ) : (
         <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
           <GameCanvas gameState={gameState} />
@@ -104,8 +136,16 @@ const App: React.FC = () => {
         fontSize: '10px',
         color: '#666',
       }}>
-        v2.0.0 - 重构版
+        v2.1.0 - 卡组系统版
       </div>
+
+      {/* 卡组管理界面 */}
+      {showDeck && (
+        <CardDeck 
+          deckManager={deckManager}
+          onClose={() => setShowDeck(false)}
+        />
+      )}
     </div>
   );
 };

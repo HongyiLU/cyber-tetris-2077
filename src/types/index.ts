@@ -129,3 +129,6 @@ export interface CardData {
  * 分数倍率类型
  */
 export type PieceSizeMultiplier = Record<number, number>;
+
+// 前向声明 DeckManager 类
+export { DeckManager } from '../engine/DeckManager';
