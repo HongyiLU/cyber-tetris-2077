@@ -1,6 +1,7 @@
 // ==================== 游戏引擎 ====================
 
 import { GAME_CONFIG, PIECE_SIZE_MULTIPLIER } from '../config/game-config';
+import { DeckSystem } from './DeckSystem';
 import type { Piece, Position, GameState } from '../types';
 import { createEmptyBoard, checkCollision, rotateShape, copyBoard, copyShape } from '../utils/game-utils';
 
@@ -15,16 +16,20 @@ export class GameEngine {
   private level: number = 1;
   private gameOver: boolean = false;
   private paused: boolean = false;
+  private deckSystem: DeckSystem;
+  private pieceLocked: boolean = false; // 标记方块是否已锁定
 
   constructor(cols: number = GAME_CONFIG.GAME.COLS, rows: number = GAME_CONFIG.GAME.ROWS) {
     this.cols = cols;
     this.rows = rows;
     this.board = createEmptyBoard(cols, rows);
+    this.deckSystem = new DeckSystem();
+    this.pieceLocked = false;
   }
 
   private createPiece(type?: string): Piece {
-    const types = Object.keys(GAME_CONFIG.SHAPES);
-    const pieceType = type || types[Math.floor(Math.random() * types.length)];
+    // 从卡组系统抽取方块类型
+    const pieceType = type || this.deckSystem.drawPiece();
     const shape = GAME_CONFIG.SHAPES[pieceType as keyof typeof GAME_CONFIG.SHAPES];
     const color = GAME_CONFIG.COLORS[pieceType as keyof typeof GAME_CONFIG.COLORS];
 
@@ -46,12 +51,14 @@ export class GameEngine {
     this.level = 1;
     this.gameOver = false;
     this.paused = false;
+    this.pieceLocked = false;
+    this.deckSystem.initializeDeck();
     this.currentPiece = this.createPiece();
     this.nextPiece = this.createPiece();
   }
 
   public movePiece(dx: number, dy: number): boolean {
-    if (!this.currentPiece || this.gameOver || this.paused) return false;
+    if (!this.currentPiece || this.gameOver || this.paused || this.pieceLocked) return false;
 
     const newPosition: Position = {
       x: this.currentPiece.position.x + dx,
@@ -77,7 +84,7 @@ export class GameEngine {
    * 5. 向左移动 2 格
    */
   public rotatePiece(): boolean {
-    if (!this.currentPiece || this.gameOver || this.paused) return false;
+    if (!this.currentPiece || this.gameOver || this.paused || this.pieceLocked) return false;
 
     const rotated = rotateShape(this.currentPiece.shape);
     const originalPosition = { ...this.currentPiece.position };
@@ -140,7 +147,7 @@ export class GameEngine {
    * 修复说明：修复类型安全问题，显式检查 cell !== 0 和 cell !== undefined
    */
   public lockPiece(): number {
-    if (!this.currentPiece) return 0;
+    if (!this.currentPiece || this.pieceLocked) return 0;
 
     const { shape, position, type } = this.currentPiece;
     const typeId = GAME_CONFIG.PIECE_TYPE_MAP[type as keyof typeof GAME_CONFIG.PIECE_TYPE_MAP];
@@ -159,6 +166,12 @@ export class GameEngine {
         }
       }
     }
+
+    // 标记方块已锁定
+    this.pieceLocked = true;
+
+    // 将方块类型放回弃牌堆
+    this.deckSystem.discardPiece(type);
 
     // 计算消除行数和分数
     const clearedLines = this.clearLines();
@@ -181,6 +194,9 @@ export class GameEngine {
     // 生成新方块
     this.currentPiece = this.nextPiece;
     this.nextPiece = this.createPiece();
+    
+    // 重置锁定标记
+    this.pieceLocked = false;
 
     // 检查游戏结束
     if (this.currentPiece && checkCollision(this.currentPiece.shape, this.currentPiece.position, this.board, this.cols, this.rows)) {
