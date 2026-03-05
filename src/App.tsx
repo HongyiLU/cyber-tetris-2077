@@ -85,7 +85,7 @@ const App: React.FC = () => {
           onSoftDrop={handleSoftDrop}
           onHardDrop={handleHardDrop}
           onPause={handlePause}
-          disabled={!gameStarted || gameState?.gameOver === true}
+          disabled={!gameStarted || gameState?.gameOver === true || gameState?.paused === true}
         />
       ) : null}
     >
