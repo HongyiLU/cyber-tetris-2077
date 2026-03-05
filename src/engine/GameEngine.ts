@@ -135,6 +135,9 @@ export class GameEngine {
   public hardDrop(): number {
     if (!this.currentPiece || this.gameOver || this.paused || this.pieceLocked) return 0;
 
+    // 硬降时立即锁定，防止在硬降过程中被移动
+    this.pieceLocked = true;
+
     let dropDistance = 0;
     while (this.movePiece(0, 1)) {
       dropDistance++;
@@ -147,7 +150,7 @@ export class GameEngine {
    * 修复说明：修复类型安全问题，显式检查 cell !== 0 和 cell !== undefined
    */
   public lockPiece(): number {
-    if (!this.currentPiece || this.pieceLocked) return 0;
+    if (!this.currentPiece) return 0;
 
     const { shape, position, type } = this.currentPiece;
     const typeId = GAME_CONFIG.PIECE_TYPE_MAP[type as keyof typeof GAME_CONFIG.PIECE_TYPE_MAP];
@@ -166,9 +169,6 @@ export class GameEngine {
         }
       }
     }
-
-    // 标记方块已锁定
-    this.pieceLocked = true;
 
     // 将方块类型放回弃牌堆
     this.deckSystem.discardPiece(type);
@@ -195,7 +195,7 @@ export class GameEngine {
     this.currentPiece = this.nextPiece;
     this.nextPiece = this.createPiece();
     
-    // 重置锁定标记
+    // 重置锁定标记（在生成新方块后）
     this.pieceLocked = false;
 
     // 检查游戏结束
