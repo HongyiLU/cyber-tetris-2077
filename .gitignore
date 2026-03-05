@@ -1,3 +1,5 @@
+# ==================== 依赖和构建 ====================
+
 # Dependencies
 node_modules/
 vendor/
@@ -9,7 +11,14 @@ build/
 out/
 coverage/
 
-# 报告文件（不上传到 Git）
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==================== 本地报告文件 ====================
 # 本地生成的检查报告、测试报告等
 TEST_REPORT.md
 CODE_REVIEW.md
@@ -20,13 +29,35 @@ LEVEL_SYSTEM_CHECK.md
 *_CHECK.md
 *_STATUS.md
 
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# ==================== OpenClaw 配置（本地使用） ====================
+.openclaw/
+AGENTS.md
+SOUL.md
+USER.md
+TOOLS.md
+IDENTITY.md
+HEARTBEAT.md
+AGENT_*.md
+MULTI_*.md
+TEAM_*.md
+GATEWAY_*.md
+SCHEDULED_*.md
+QUICK_INSTALL.md
+configure-wake-option.ps1
+heartbeat-check.ps1
+install-heartbeat-task.bat
+gateway-*.bat
+gateway-tray/
+memory/
 
+# ==================== 旧游戏项目（已废弃） ====================
+cyber-shopkeeper/
+fishing-game/
+garden-world/
+multi-agent-chatroom/
+openclaw-plugin-agent-mention/
+
+# ==================== 系统文件 ====================
 # OS files
 .DS_Store
 .DS_Store?
@@ -43,21 +74,13 @@ Thumbs.db
 *.swo
 *~
 
-# Build outputs
-dist/
-build/
-out/
-
 # Environment
 .env
 .env.local
 .env.*.local
 
-# Package locks (keep root, ignore nested)
-# package-lock.json
-# yarn.lock
-
 # Temporary files
 *.tmp
 *.temp
 *.bak
+
