@@ -40,43 +40,33 @@ const App: React.FC = () => {
     setGameStarted(true);
   }, [gameEngine]);
 
-  // 移动端控制回调 - 检查游戏状态后再操作
+  // 移动端控制回调 - 让 GameEngine 自己检查状态
   const handleMoveLeft = useCallback(() => {
-    if (!gameState?.gameOver && !gameState?.paused && gameState?.currentPiece) {
-      gameEngine.movePiece(-1, 0);
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameEngine, gameState]);
+    gameEngine.movePiece(-1, 0);
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   const handleMoveRight = useCallback(() => {
-    if (!gameState?.gameOver && !gameState?.paused && gameState?.currentPiece) {
-      gameEngine.movePiece(1, 0);
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameEngine, gameState]);
+    gameEngine.movePiece(1, 0);
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   const handleRotate = useCallback(() => {
-    if (!gameState?.gameOver && !gameState?.paused && gameState?.currentPiece) {
-      gameEngine.rotatePiece();
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameEngine, gameState]);
+    gameEngine.rotatePiece();
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   const handleSoftDrop = useCallback(() => {
-    if (!gameState?.gameOver && !gameState?.paused && gameState?.currentPiece) {
-      gameEngine.movePiece(0, 1);
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameEngine, gameState]);
+    gameEngine.movePiece(0, 1);
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   const handleHardDrop = useCallback(() => {
     // 硬降：直接到底部并锁定
-    if (!gameState?.gameOver && !gameState?.paused && gameState?.currentPiece) {
-      gameEngine.hardDrop();
-      gameEngine.lockPiece();
-      setGameState(gameEngine.getGameState());
-    }
-  }, [gameEngine, gameState]);
+    gameEngine.hardDrop();
+    gameEngine.lockPiece();
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   const handlePause = useCallback(() => {
     gameEngine.togglePause();
