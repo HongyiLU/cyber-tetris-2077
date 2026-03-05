@@ -1,0 +1,22 @@
+{
+  "name": "openclaw-plugin-agent-mention",
+  "version": "1.0.0",
+  "description": "OpenClaw Agent Mention Plugin - @artist, @coder, @manager",
+  "type": "module",
+  "private": true,
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "devDependencies": {
+    "@sinclair/typebox": "^0.32.35"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

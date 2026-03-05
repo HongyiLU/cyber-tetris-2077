@@ -1,0 +1,24 @@
+{
+  "name": "openclaw-gateway-tray",
+  "version": "1.0.0",
+  "description": "OpenClaw Gateway System Tray App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.openclaw.gateway-tray",
+    "productName": "OpenClaw Gateway Tray",
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多助手聊天室</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- 顶部标题栏 -->
+        <header class="header">
+            <div class="header-title">
+                <span class="header-icon">🏠</span>
+                <span class="header-text">多助手聊天室</span>
+            </div>
+            <button class="header-settings" id="settingsBtn" title="设置">⚙️</button>
+        </header>
+
+        <!-- 聊天室主体 -->
+        <main class="chat-container">
+            <div class="messages" id="messages">
+                <!-- 消息会在这里动态添加 -->
+            </div>
+        </main>
+
+        <!-- 底部输入区域 -->
+        <footer class="input-area">
+            <div class="input-wrapper">
+                <select class="mention-select" id="mentionSelect">
+                    <option value="">@ 选择助手</option>
+                    <option value="main">🎮 千束</option>
+                    <option value="artist">🎨 彩虹</option>
+                    <option value="coder">💻 代码</option>
+                    <option value="manager">📊 管家</option>
+                </select>
+                <input type="text" class="message-input" id="messageInput" placeholder="输入消息..." autocomplete="off">
+                <button class="send-btn" id="sendBtn" title="发送">📤</button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/agents.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
