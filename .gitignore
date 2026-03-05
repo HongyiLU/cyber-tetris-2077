@@ -1,18 +1,46 @@
 # Dependencies
 node_modules/
+vendor/
+bower_components/
 
 # Logs
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # OS files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+dist/
+build/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Package locks (keep root, ignore nested)
+# package-lock.json
+# yarn.lock
 
 # Temporary files
 *.tmp
 *.temp
+*.bak
