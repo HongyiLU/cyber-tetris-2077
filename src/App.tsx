@@ -40,35 +40,42 @@ const App: React.FC = () => {
     setGameStarted(true);
   }, [gameEngine]);
 
-  // 移动端控制回调 - 不依赖 gameState，直接操作引擎
+  // 移动端控制回调 - 检查游戏状态后再操作
   const handleMoveLeft = useCallback(() => {
-    gameEngine.movePiece(-1, 0);
-    setGameState(gameEngine.getGameState());
-  }, [gameEngine]);
+    if (!gameState?.gameOver && !gameState?.paused && gameState?.currentPiece) {
+      gameEngine.movePiece(-1, 0);
+      setGameState(gameEngine.getGameState());
+    }
+  }, [gameEngine, gameState]);
 
   const handleMoveRight = useCallback(() => {
-    gameEngine.movePiece(1, 0);
-    setGameState(gameEngine.getGameState());
-  }, [gameEngine]);
+    if (!gameState?.gameOver && !gameState?.paused && gameState?.currentPiece) {
+      gameEngine.movePiece(1, 0);
+      setGameState(gameEngine.getGameState());
+    }
+  }, [gameEngine, gameState]);
 
   const handleRotate = useCallback(() => {
-    gameEngine.rotatePiece();
-    setGameState(gameEngine.getGameState());
-  }, [gameEngine]);
+    if (!gameState?.gameOver && !gameState?.paused && gameState?.currentPiece) {
+      gameEngine.rotatePiece();
+      setGameState(gameEngine.getGameState());
+    }
+  }, [gameEngine, gameState]);
 
   const handleSoftDrop = useCallback(() => {
-    gameEngine.movePiece(0, 1);
-    setGameState(gameEngine.getGameState());
-  }, [gameEngine]);
+    if (!gameState?.gameOver && !gameState?.paused && gameState?.currentPiece) {
+      gameEngine.movePiece(0, 1);
+      setGameState(gameEngine.getGameState());
+    }
+  }, [gameEngine, gameState]);
 
   const handleHardDrop = useCallback(() => {
     // 硬降：直接到底部并锁定
-    const dropDistance = gameEngine.hardDrop();
-    // 只有成功下落且能锁定方块时才锁定
-    if (dropDistance > 0 || gameState?.currentPiece) {
+    if (!gameState?.gameOver && !gameState?.paused && gameState?.currentPiece) {
+      gameEngine.hardDrop();
       gameEngine.lockPiece();
+      setGameState(gameEngine.getGameState());
     }
-    setGameState(gameEngine.getGameState());
   }, [gameEngine, gameState]);
 
   const handlePause = useCallback(() => {

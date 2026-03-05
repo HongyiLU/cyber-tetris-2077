@@ -1,6 +1,7 @@
 // ==================== 卡牌显示组件 ====================
 
 import React from 'react';
+import { GAME_CONFIG } from '../../config/game-config';
 import type { CardData } from '../../types';
 
 interface CardProps {
@@ -29,15 +30,29 @@ const Card: React.FC<CardProps> = ({
     return colors[rarity] || '#888888';
   };
 
-  const getRarityBorder = (rarity: string): string => {
-    const borders: Record<string, string> = {
-      common: '1px solid #666',
-      uncommon: '2px solid #00cc66',
-      rare: '2px solid #0099ff',
-      epic: '3px solid #bf00ff',
-      legendary: '3px solid #ffd700',
-    };
-    return borders[rarity] || '1px solid #666';
+  const getBlockColor = (pieceId: string): string => {
+    const colors = GAME_CONFIG.COLORS as Record<string, string>;
+    return colors[pieceId] || '#ffffff';
+  };
+
+  const getShapeSize = (pieceId: string): number => {
+    const shapes = GAME_CONFIG.SHAPES as Record<string, number[][]>;
+    const shape = shapes[pieceId];
+    return shape ? shape[0].length : 2;
+  };
+
+  const getShapeBlocks = (pieceId: string, color: string): string[] => {
+    const shapes = GAME_CONFIG.SHAPES as Record<string, number[][]>;
+    const shape = shapes[pieceId];
+    if (!shape) return [];
+    
+    const blocks: string[] = [];
+    shape.forEach(row => {
+      row.forEach(cell => {
+        blocks.push(cell ? color : 'transparent');
+      });
+    });
+    return blocks;
   };
 
   const size = small ? {
@@ -61,7 +76,7 @@ const Card: React.FC<CardProps> = ({
           : 'linear-gradient(135deg, rgba(40, 40, 40, 0.5), rgba(60, 60, 60, 0.5))',
         border: selected 
           ? '3px solid #00ffff' 
-          : getRarityBorder(card.rarity),
+          : `${card.rarity === 'legendary' ? '3px' : card.rarity === 'epic' ? '3px' : '2px'} solid ${getRarityColor(card.rarity)}`,
         borderRadius: '8px',
         padding: '10px',
         cursor: onClick ? 'pointer' : 'default',
@@ -123,24 +138,26 @@ const Card: React.FC<CardProps> = ({
         {card.name}
       </div>
 
-      {/* 卡牌图标/类型 */}
+      {/* 卡牌图标/类型 - 使用方块形状 */}
       <div style={{
-        fontSize: small ? '24px' : '40px',
+        display: 'grid',
+        gridTemplateColumns: `repeat(${getShapeSize(card.id)}, ${small ? '8px' : '12px'})`,
+        gap: '2px',
         margin: '10px 0',
         filter: collected ? 'none' : 'grayscale(100%)',
       }}>
-        {card.id === 'I' ? '📏' :
-         card.id === 'O' ? '⬜' :
-         card.id === 'T' ? '⏲️' :
-         card.id === 'S' ? '🐍' :
-         card.id === 'Z' ? '⚡' :
-         card.id === 'L' ? '🔫' :
-         card.id === 'J' ? '🎣' :
-         card.id === 'BOMB' ? '💣' :
-         card.id === 'STAR' ? '⭐' :
-         card.id === 'RAINBOW' ? '🌈' :
-         card.id === 'VORTEX' ? '🌀' :
-         '🎴'}
+        {getShapeBlocks(card.id, card.type === 'special' ? getRarityColor(card.rarity) : getBlockColor(card.id)).map((color, index) => (
+          <div
+            key={index}
+            style={{
+              width: small ? '8px' : '12px',
+              height: small ? '8px' : '12px',
+              background: color,
+              borderRadius: '1px',
+              boxShadow: `inset 1px 1px 2px rgba(255,255,255,0.3), inset -1px -1px 2px rgba(0,0,0,0.3)`,
+            }}
+          />
+        ))}
       </div>
 
       {/* 卡牌描述 */}
