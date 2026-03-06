@@ -117,7 +117,6 @@ export class DeckManager {
     if (storedVersion && storedVersion !== currentVersion) {
       const hasOldData = localStorage.getItem('cyber-blocks-decks');
       if (hasOldData) {
-        console.log(`检测到旧版本数据 (${storedVersion} → ${currentVersion})，清除旧数据...`);
         localStorage.removeItem('cyber-blocks-decks');
         localStorage.removeItem('tetris_decks');
       }
@@ -154,13 +153,14 @@ export class DeckManager {
 
   /**
    * 处理存储错误
+   * @param error 错误对象
+   * @param operation 操作类型（save 或 load）
    */
   private handleStorageError(error: unknown, operation: 'save' | 'load'): void {
     const err = error instanceof Error ? error : new Error(String(error));
     this.lastStorageError = err;
     
-    console.error(`卡组${operation}失败:`, err);
-    
+    // 通过回调通知错误（如果有注册）
     if (this.onErrorCallback) {
       this.onErrorCallback(err, operation);
     }
@@ -345,10 +345,9 @@ export class DeckManager {
       if (!data) {
         // 首次使用，加载预设卡组
         this.loadPresetDecks();
-        // 方案 2: 默认激活经典卡组
+        // 默认激活经典卡组
         if (this.decks.has('preset-classic')) {
           this.activeDeckId = 'preset-classic';
-          console.log('首次使用，默认激活经典卡组');
           this.saveDecks();
         }
         return { success: true };
@@ -371,7 +370,6 @@ export class DeckManager {
             const isValid = validCardIds.has(cardId);
             if (!isValid) {
               hasInvalidCards = true;
-              console.warn(`卡组 "${deck.name}" 包含已删除的方块：${cardId}，已自动移除`);
             }
             return isValid;
           });
@@ -379,16 +377,14 @@ export class DeckManager {
           // 如果过滤后卡组仍然有效，保留该卡组
           if (filteredCards.length >= this.config.minDeckSize) {
             cleanedDecks.push([deckId, { ...deck, cards: filteredCards }]);
-          } else if (originalCards.length > 0) {
-            // 过滤后卡组太小，记录警告
-            console.warn(`卡组 "${deck.name}" 过滤无效卡牌后大小不足，已移除`);
           }
+          // 过滤后卡组太小的卡组将被自动移除
         }
         
         this.decks = new Map(cleanedDecks);
         
+        // 如果有无效卡牌被清理，保存更新后的卡组
         if (hasInvalidCards) {
-          console.log('已自动清理卡组中的无效方块，保存到 localStorage');
           this.saveDecks();
         }
       }
@@ -399,15 +395,13 @@ export class DeckManager {
         if (this.decks.has(parsed.activeDeckId)) {
           this.activeDeckId = parsed.activeDeckId;
         } else {
-          console.warn(`激活的卡组 ${parsed.activeDeckId} 不存在，已清空激活状态`);
           this.activeDeckId = null;
         }
       }
 
-      // 方案 2: 默认激活经典卡组
+      // 默认激活经典卡组
       if (!this.activeDeckId && this.decks.has('preset-classic')) {
         this.activeDeckId = 'preset-classic';
-        console.log('未检测到激活卡组，默认激活经典卡组');
         this.saveDecks();
       }
 
@@ -733,17 +727,14 @@ export class DeckManager {
    */
   public addToDeck(cardId: string): boolean {
     if (!this.collectedCards.has(cardId)) {
-      console.warn(`卡牌 ${cardId} 未收集，无法添加到卡组`);
       return false;
     }
 
     if (this.currentDeck.includes(cardId)) {
-      console.warn(`卡牌 ${cardId} 已在卡组中`);
       return false;
     }
 
     if (this.currentDeck.length >= this.maxDeckSize) {
-      console.warn(`卡组已达上限 (${this.maxDeckSize})`);
       return false;
     }
 
@@ -879,7 +870,7 @@ export class DeckManager {
       
       return true;
     } catch (error) {
-      console.error('导入卡组失败:', error);
+      // 导入失败时返回 false，错误通过返回值通知
       return false;
     }
   }

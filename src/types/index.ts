@@ -19,6 +19,16 @@ export interface Piece {
 }
 
 /**
+ * 战斗状态枚举
+ */
+export enum BattleState {
+  IDLE = 'idle',
+  FIGHTING = 'fighting',
+  WON = 'won',
+  LOST = 'lost',
+}
+
+/**
  * 游戏状态接口
  */
 export interface GameState {
@@ -30,6 +40,12 @@ export interface GameState {
   level: number;
   gameOver: boolean;
   paused: boolean;
+  // 战斗系统血量
+  playerHp: number;
+  playerMaxHp: number;
+  enemyHp: number;
+  enemyMaxHp: number;
+  battleState: BattleState;
 }
 
 /**

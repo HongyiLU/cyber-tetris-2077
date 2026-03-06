@@ -3,6 +3,7 @@
 import { GAME_CONFIG, PIECE_SIZE_MULTIPLIER } from '../config/game-config';
 import { DeckManager } from './DeckManager';
 import type { Piece, Position, GameState } from '../types';
+import { BattleState } from '../types';
 import type { Deck, DrawResult } from '../types/deck';
 import { createEmptyBoard, checkCollision, rotateShape, copyBoard, copyShape } from '../utils/game-utils';
 
@@ -30,6 +31,16 @@ export class GameEngine {
   private activeDeck: Deck | null = null; // 当前激活的卡组
   private pieceLocked: boolean = false; // 标记方块是否已锁定
   private lastDrawnCard: { id: string } | null = null; // 记录上次抽取的卡牌
+  // 战斗系统血量属性
+  private playerHp: number = 100;
+  private playerMaxHp: number = 100;
+  private enemyHp: number = 200;
+  private enemyMaxHp: number = 200;
+  private battleState: BattleState = BattleState.IDLE;
+  
+  // 敌人 AI 计时器属性
+  private enemyAttackInterval: number = 10000; // 10 秒（毫秒）
+  private lastEnemyAttackTime: number = 0;
 
   constructor(
     cols: number = GAME_CONFIG.GAME.COLS,
@@ -127,16 +138,18 @@ export class GameEngine {
   /**
    * 添加垃圾行（带随机缺口）
    * 垃圾行从底部生成，将现有行向上顶，顶部行被移除
+   * @param rows 垃圾行数量（默认 1）
    */
-  private addGarbageRow(): void {
-    // 生成带随机缺口的垃圾行
-    const gap = Math.floor(Math.random() * this.cols);
-    const garbageRow = Array(this.cols).fill(1);
-    garbageRow[gap] = 0; // 留一个缺口
-    
-    // 从底部插入垃圾行，移除最顶部一行以保持棋盘大小
-    this.board.shift();      // 移除顶部行（索引 0）
-    this.board.push(garbageRow); // 从底部插入新行（索引 rows-1）
+  private addGarbageRow(rows: number = 1): void {
+    for (let i = 0; i < rows; i++) {
+      const gap = Math.floor(Math.random() * this.cols);
+      const garbageRow = Array(this.cols).fill(1);
+      garbageRow[gap] = 0; // 留一个缺口
+      
+      // 从底部插入垃圾行，移除最顶部一行以保持棋盘大小
+      this.board.shift();      // 移除顶部行（索引 0）
+      this.board.push(garbageRow); // 从底部插入新行（索引 rows-1）
+    }
   }
 
   /**
@@ -287,6 +300,17 @@ export class GameEngine {
       }
     }
 
+    // 战斗系统：消行时触发伤害
+    if (clearedLines > 0 && this.battleState === BattleState.FIGHTING) {
+      const damage = this.calculateDamage(clearedLines);
+      this.enemyTakeDamage(damage);
+      
+      // 检查胜利
+      if (this.isEnemyDead()) {
+        this.battleState = BattleState.WON;
+      }
+    }
+
     // 生成新方块
     this.currentPiece = this.nextPiece;
     this.nextPiece = this.createPiece();
@@ -333,6 +357,12 @@ export class GameEngine {
       level: this.level,
       gameOver: this.gameOver,
       paused: this.paused,
+      // 战斗系统血量
+      playerHp: this.playerHp,
+      playerMaxHp: this.playerMaxHp,
+      enemyHp: this.enemyHp,
+      enemyMaxHp: this.enemyMaxHp,
+      battleState: this.battleState,
     };
   }
 
@@ -348,5 +378,100 @@ export class GameEngine {
    */
   public isGameOver(): boolean {
     return this.gameOver;
+  }
+
+  // ==================== 战斗系统 - 血量管理 ====================
+
+  /**
+   * 初始化战斗
+   * @param enemyHp 敌人初始血量（默认 200）
+   */
+  public initBattle(enemyHp: number = 200): void {
+    this.playerHp = 100;
+    this.playerMaxHp = 100;
+    this.enemyHp = enemyHp;
+    this.enemyMaxHp = enemyHp;
+    this.battleState = BattleState.FIGHTING;
+  }
+
+  /**
+   * 玩家受伤
+   * @param amount 伤害值
+   */
+  public takeDamage(amount: number): void {
+    if (amount < 0) return; // 添加防护
+    this.playerHp = Math.max(0, this.playerHp - amount);
+    if (this.playerHp === 0) {
+      this.battleState = BattleState.LOST;
+    }
+  }
+
+  /**
+   * 敌人受伤
+   * @param amount 伤害值
+   */
+  public enemyTakeDamage(amount: number): void {
+    if (amount < 0) return; // 添加防护
+    this.enemyHp = Math.max(0, this.enemyHp - amount);
+    if (this.enemyHp === 0) {
+      this.battleState = BattleState.WON;
+    }
+  }
+
+  /**
+   * 检查玩家是否死亡
+   * @returns 玩家是否死亡
+   */
+  public isPlayerDead(): boolean {
+    return this.playerHp <= 0;
+  }
+
+  /**
+   * 检查敌人是否死亡
+   * @returns 敌人是否死亡
+   */
+  public isEnemyDead(): boolean {
+    return this.enemyHp <= 0;
+  }
+
+  /**
+   * 计算消行造成的伤害
+   * @param lines 消除的行数
+   * @returns 伤害值
+   */
+  private calculateDamage(lines: number): number {
+    const damageTable = [0, 10, 25, 45, 80];
+    return damageTable[lines] || 0;
+  }
+
+  // ==================== 敌人 AI 系统 ====================
+
+  /**
+   * 更新敌人 AI（需要在游戏循环中调用）
+   * @param currentTime 当前时间戳（毫秒）
+   */
+  public updateEnemyAI(currentTime: number): void {
+    if (this.battleState !== BattleState.FIGHTING) return;
+    
+    if (currentTime - this.lastEnemyAttackTime >= this.enemyAttackInterval) {
+      this.executeEnemyAttack();
+      this.lastEnemyAttackTime = currentTime;
+    }
+  }
+
+  /**
+   * 执行敌人攻击（史莱姆：生成 1 行垃圾 + 10 伤害）
+   */
+  private executeEnemyAttack(): void {
+    // 生成 1 行垃圾行
+    this.addGarbageRow(1);
+    
+    // 玩家受到 10 点伤害
+    this.takeDamage(10);
+    
+    // 检查失败
+    if (this.isPlayerDead()) {
+      this.battleState = BattleState.LOST;
+    }
   }
 }

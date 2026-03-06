@@ -2,6 +2,7 @@
 
 import { GameEngine } from '../engine/GameEngine';
 import { GAME_CONFIG } from '../config/game-config';
+import { BattleState } from '../types';
 
 describe('GameEngine', () => {
   let engine: GameEngine;
@@ -312,6 +313,118 @@ describe('GameEngine', () => {
       // 验证方块类型在卡组中
       const validTypes = ['I', 'O', 'T'];
       expect(validTypes).toContain(state.currentPiece!.type);
+    });
+  });
+
+  describe('战斗系统 - 血量管理', () => {
+    test('初始化战斗时血量正确', () => {
+      engine.initBattle(200);
+      const state = engine.getGameState();
+      expect(state.playerHp).toBe(100);
+      expect(state.enemyHp).toBe(200);
+    });
+
+    test('玩家受伤后血量减少', () => {
+      engine.initBattle(200);
+      engine.takeDamage(50);
+      expect(engine.getGameState().playerHp).toBe(50);
+    });
+
+    test('血量不会低于 0', () => {
+      engine.initBattle(200);
+      engine.takeDamage(150);
+      expect(engine.getGameState().playerHp).toBe(0);
+    });
+
+    test('敌人受伤后血量减少', () => {
+      engine.initBattle(200);
+      engine.enemyTakeDamage(100);
+      expect(engine.getGameState().enemyHp).toBe(100);
+    });
+
+    test('玩家血量归零触发失败', () => {
+      engine.initBattle(200);
+      engine.takeDamage(100);
+      expect(engine.isPlayerDead()).toBe(true);
+    });
+
+    test('敌人血量归零触发胜利', () => {
+      engine.initBattle(200);
+      engine.enemyTakeDamage(200);
+      expect(engine.isEnemyDead()).toBe(true);
+    });
+  });
+
+  describe('战斗系统 - 伤害计算', () => {
+    test('消 1 行造成 10 点伤害', () => {
+      engine.initBattle(200);
+      // 模拟消 1 行
+      engine.enemyTakeDamage(10);
+      expect(engine.getGameState().enemyHp).toBe(190);
+    });
+
+    test('消 2 行造成 25 点伤害', () => {
+      engine.initBattle(200);
+      engine.enemyTakeDamage(25);
+      expect(engine.getGameState().enemyHp).toBe(175);
+    });
+
+    test('消 3 行造成 45 点伤害', () => {
+      engine.initBattle(200);
+      engine.enemyTakeDamage(45);
+      expect(engine.getGameState().enemyHp).toBe(155);
+    });
+
+    test('消 4 行造成 80 点伤害', () => {
+      engine.initBattle(200);
+      engine.enemyTakeDamage(80);
+      expect(engine.getGameState().enemyHp).toBe(120);
+    });
+
+    test('消行后检查胜利条件', () => {
+      engine.initBattle(200);
+      engine.enemyTakeDamage(200); // 模拟消行造成 200 伤害
+      expect(engine.isEnemyDead()).toBe(true);
+      expect(engine.getGameState().battleState).toBe('won');
+    });
+  });
+
+  describe('战斗系统 - 敌人 AI', () => {
+    test('每 10 秒触发攻击', () => {
+      engine.initBattle(200);
+      const startTime = Date.now();
+      
+      // 第一次攻击（10 秒后）
+      engine.updateEnemyAI(startTime + 10000);
+      expect(engine.getGameState().playerHp).toBe(90); // 受到 10 伤害
+      
+      // 未到时间不触发（15 秒）
+      engine.updateEnemyAI(startTime + 15000);
+      expect(engine.getGameState().playerHp).toBe(90); // 不变
+      
+      // 第二次攻击（20 秒后）
+      engine.updateEnemyAI(startTime + 20000);
+      expect(engine.getGameState().playerHp).toBe(80); // 再次受到 10 伤害
+    });
+
+    test('垃圾行从底部生成', () => {
+      engine.initBattle(200);
+      const initialBoard = JSON.parse(JSON.stringify(engine.getGameState().board));
+      
+      engine['addGarbageRow'](1); // 调用私有方法
+      
+      const newBoard = engine.getGameState().board;
+      // 底部行应该是新垃圾行（大部分是 1，有一个 0）
+      const bottomRow = newBoard[newBoard.length - 1];
+      const ones = bottomRow.filter(cell => cell === 1).length;
+      expect(ones).toBe(9); // 10 列中有 9 个 1
+    });
+
+    test('玩家血量归零触发失败', () => {
+      engine.initBattle(200);
+      engine.takeDamage(100); // 直接击败玩家
+      expect(engine.isPlayerDead()).toBe(true);
+      expect(engine.getGameState().battleState).toBe(BattleState.LOST);
     });
   });
 });

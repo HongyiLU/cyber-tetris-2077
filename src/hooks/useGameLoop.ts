@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import type { GameEngine } from '../engine/GameEngine';
 import type { GameState } from '../types';
+import { BattleState } from '../types';
 
 interface UseGameLoopOptions {
   gameStarted: boolean;
@@ -37,6 +38,13 @@ export const useGameLoop = ({
     if (!moved) {
       gameEngine.lockPiece();
     }
+    
+    // 更新敌人 AI（战斗状态）
+    const state = gameEngine.getGameState();
+    if (state.battleState === BattleState.FIGHTING) {
+      gameEngine.updateEnemyAI(Date.now());
+    }
+    
     // 通知状态变化
     if (onGameStateChange) {
       onGameStateChange();

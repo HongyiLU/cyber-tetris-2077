@@ -1,13 +1,14 @@
 // ==================== 主应用组件 ====================
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { GameEngine } from './engine/GameEngine';
 import { DeckManager } from './engine/DeckManager';
 import { GameCanvas, GameInfo } from './components/game';
-import { CardDeck, MobileControls, ResponsiveLayout } from './components/ui';
+import { CardDeck, MobileControls, ResponsiveLayout, BattleUI } from './components/ui';
 import { useGameLoop, useKeyboardControl } from './hooks';
 import { GAME_CONFIG } from './config/game-config';
 import type { GameState } from './types';
+import { BattleState } from './types';
 
 const App: React.FC = () => {
   const [deckManager] = useState(() => new DeckManager());
@@ -23,7 +24,9 @@ const App: React.FC = () => {
     gameEngine,
     paused: gameState?.paused ?? false,
     onGameStateChange: () => {
-      setGameState(gameEngine.getGameState());
+      const state = gameEngine.getGameState();
+      setGameState(state);
+      // battleState 直接从 state.battleState 读取，无需单独状态
     },
   });
 
@@ -171,6 +174,49 @@ const App: React.FC = () => {
             <GameCanvas gameState={gameState} />
             <GameInfo gameState={gameState} />
           </div>
+          
+          {/* 战斗 UI */}
+          {gameState && gameState.battleState !== BattleState.IDLE && (
+            <BattleUI
+              playerHp={gameState.playerHp}
+              playerMaxHp={gameState.playerMaxHp}
+              enemyHp={gameState.enemyHp}
+              enemyMaxHp={gameState.enemyMaxHp}
+              battleState={gameState.battleState}
+            />
+          )}
+          
+          {/* 开始战斗按钮 */}
+          <button
+            className="start-battle-btn"
+            onClick={() => {
+              gameEngine.initBattle(200);
+              setGameState(gameEngine.getGameState());
+            }}
+            style={{
+              marginTop: '15px',
+              padding: 'clamp(10px, 3vw, 12px) clamp(25px, 6vw, 30px)',
+              fontSize: 'clamp(14px, 4vw, 18px)',
+              background: 'rgba(255, 68, 68, 0.1)',
+              border: '2px solid #ff4444',
+              borderRadius: '8px',
+              color: '#ff4444',
+              cursor: 'pointer',
+              fontFamily: 'Orbitron, monospace',
+              boxShadow: '0 0 15px rgba(255, 68, 68, 0.3)',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 68, 68, 0.2)';
+              e.currentTarget.style.boxShadow = '0 0 30px rgba(255, 68, 68, 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 68, 68, 0.1)';
+              e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 68, 68, 0.3)';
+            }}
+          >
+            ⚔️ 开始战斗
+          </button>
           
           <div style={{
             marginTop: '15px',
