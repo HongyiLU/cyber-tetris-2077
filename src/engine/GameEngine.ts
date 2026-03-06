@@ -126,6 +126,7 @@ export class GameEngine {
 
   /**
    * 添加垃圾行（带随机缺口）
+   * 垃圾行从底部生成，将现有行向上顶，顶部行被移除
    */
   private addGarbageRow(): void {
     // 生成带随机缺口的垃圾行
@@ -133,9 +134,9 @@ export class GameEngine {
     const garbageRow = Array(this.cols).fill(1);
     garbageRow[gap] = 0; // 留一个缺口
     
-    // 从顶部插入垃圾行，移除最底部一行以保持棋盘大小
-    this.board.splice(this.rows - 1, 1);
-    this.board.unshift(garbageRow);
+    // 从底部插入垃圾行，移除最顶部一行以保持棋盘大小
+    this.board.shift();      // 移除顶部行（索引 0）
+    this.board.push(garbageRow); // 从底部插入新行（索引 rows-1）
   }
 
   /**

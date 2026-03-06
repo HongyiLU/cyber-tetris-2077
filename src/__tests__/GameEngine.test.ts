@@ -244,11 +244,11 @@ describe('GameEngine', () => {
       // 棋盘行数应该不变（仍然是 ROWS）
       expect(stateAfter.board.length).toBe(GAME_CONFIG.GAME.ROWS);
       
-      // 顶部应该有垃圾行（因为 unshift 是从顶部插入）
-      // 检查最上面的几行（垃圾行从顶部插入）
-      const topRow = stateAfter.board[0];
-      const ones = topRow.filter(cell => cell === 1).length;
-      const zeros = topRow.filter(cell => cell === 0).length;
+      // 底部应该有垃圾行（因为 push 是从底部插入）
+      // 检查最下面的几行（垃圾行从底部生成）
+      const bottomRow = stateAfter.board[stateAfter.board.length - 1];
+      const ones = bottomRow.filter(cell => cell === 1).length;
+      const zeros = bottomRow.filter(cell => cell === 0).length;
       
       expect(ones).toBe(GAME_CONFIG.GAME.COLS - 1); // 只有一个缺口
       expect(zeros).toBe(1);
@@ -263,8 +263,8 @@ describe('GameEngine', () => {
       for (let i = 0; i < 10; i++) {
         (engine as any).addGarbageRow();
         const board = (engine as any).board;
-        const topRow = board[0]; // 从顶部插入
-        const gapIndex = topRow.findIndex((cell: number) => cell === 0);
+        const bottomRow = board[board.length - 1]; // 从底部插入
+        const gapIndex = bottomRow.findIndex((cell: number) => cell === 0);
         gapPositions.push(gapIndex);
       }
       

@@ -86,9 +86,9 @@ describe('牌堆模式 + 抽空惩罚集成测试', () => {
     // 棋盘总行数应该不变（固定 ROWS）
     expect(stateAfter.board.length).toBe(rowsBefore);
     
-    // 但应该有垃圾行被添加
-    const topRows = stateAfter.board.slice(0, 2);
-    const hasGarbageRows = topRows.some(row => {
+    // 但应该有垃圾行被添加（从底部生成）
+    const bottomRows = stateAfter.board.slice(-2);
+    const hasGarbageRows = bottomRows.some(row => {
       const ones = row.filter(cell => cell === 1).length;
       const zeros = row.filter(cell => cell === 0).length;
       return ones === GAME_CONFIG.GAME.COLS - 1 && zeros === 1;
@@ -107,9 +107,9 @@ describe('牌堆模式 + 抽空惩罚集成测试', () => {
     
     const state = engine.getGameState();
     
-    // 顶部 6 行应该都有垃圾行特征
-    const topRows = state.board.slice(0, 6);
-    const garbageRowCount = topRows.filter(row => {
+    // 底部 6 行应该都有垃圾行特征
+    const bottomRows = state.board.slice(-6);
+    const garbageRowCount = bottomRows.filter(row => {
       const ones = row.filter(cell => cell === 1).length;
       return ones === GAME_CONFIG.GAME.COLS - 1;
     }).length;
@@ -126,8 +126,8 @@ describe('牌堆模式 + 抽空惩罚集成测试', () => {
     for (let i = 0; i < 20; i++) {
       (engine as any).addGarbageRow();
       const board = (engine as any).board;
-      const topRow = board[0];
-      const gapIndex = topRow.findIndex((cell: number) => cell === 0);
+      const bottomRow = board[board.length - 1];
+      const gapIndex = bottomRow.findIndex((cell: number) => cell === 0);
       gapPositions.add(gapIndex);
     }
     
