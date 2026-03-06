@@ -61,6 +61,7 @@ export class DeckManager {
   /**
    * 预设卡组定义
    * 提供 3 个默认卡组供新手使用
+   * 注意：使用明确的方块列表，避免包含已删除的方块类型
    */
   private readonly PRESET_DECKS: PresetDeck[] = [
     {
@@ -79,7 +80,8 @@ export class DeckManager {
       id: 'preset-complete',
       name: '全卡卡组',
       description: '包含所有基础方块（不含特殊方块）',
-      cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J', 'DOM', 'V3', 'COR', 'U5', 'W5', 'I5'],
+      // 从 GAME_CONFIG.CARDS 动态获取所有基础方块，确保不会包含已删除的方块
+      cards: GAME_CONFIG.CARDS.filter(card => card.type === 'basic').map(card => card.id),
     },
   ];
 
@@ -333,14 +335,52 @@ export class DeckManager {
 
       const parsed = JSON.parse(data);
       
-      // 恢复卡组
+      // 获取所有有效的卡牌 ID
+      const validCardIds = new Set(GAME_CONFIG.CARDS.map(card => card.id));
+      
+      // 恢复卡组（过滤掉无效的卡牌 ID）
       if (parsed.decks && Array.isArray(parsed.decks)) {
-        this.decks = new Map(parsed.decks);
+        const cleanedDecks: Array<[string, Deck]> = [];
+        let hasInvalidCards = false;
+        
+        for (const [deckId, deck] of parsed.decks) {
+          const originalCards = deck.cards;
+          // 过滤掉无效的卡牌 ID
+          const filteredCards = deck.cards.filter((cardId: string) => {
+            const isValid = validCardIds.has(cardId);
+            if (!isValid) {
+              hasInvalidCards = true;
+              console.warn(`卡组 "${deck.name}" 包含已删除的方块：${cardId}，已自动移除`);
+            }
+            return isValid;
+          });
+          
+          // 如果过滤后卡组仍然有效，保留该卡组
+          if (filteredCards.length >= this.config.minDeckSize) {
+            cleanedDecks.push([deckId, { ...deck, cards: filteredCards }]);
+          } else if (originalCards.length > 0) {
+            // 过滤后卡组太小，记录警告
+            console.warn(`卡组 "${deck.name}" 过滤无效卡牌后大小不足，已移除`);
+          }
+        }
+        
+        this.decks = new Map(cleanedDecks);
+        
+        if (hasInvalidCards) {
+          console.log('已自动清理卡组中的无效方块，保存到 localStorage');
+          this.saveDecks();
+        }
       }
 
       // 恢复激活状态
       if (parsed.activeDeckId) {
-        this.activeDeckId = parsed.activeDeckId;
+        // 检查激活的卡组是否仍然存在
+        if (this.decks.has(parsed.activeDeckId)) {
+          this.activeDeckId = parsed.activeDeckId;
+        } else {
+          console.warn(`激活的卡组 ${parsed.activeDeckId} 不存在，已清空激活状态`);
+          this.activeDeckId = null;
+        }
       }
 
       // 如果没有任何卡组，加载预设卡组

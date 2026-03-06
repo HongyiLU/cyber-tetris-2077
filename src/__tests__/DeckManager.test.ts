@@ -204,6 +204,85 @@ describe('DeckManager', () => {
       expect(names).toContain('新手卡组');
       expect(names).toContain('全卡卡组');
     });
+
+    test('加载时应该自动过滤已删除的方块 ID', () => {
+      localStorage.clear();
+      
+      // 模拟保存包含已删除方块（X5）的旧数据
+      const oldData = {
+        decks: [
+          ['deck-1', {
+            id: 'deck-1',
+            name: '旧卡组',
+            cards: ['I', 'O', 'X5', 'T', 'P5'], // X5 和 P5 是已删除的方块
+            createdAt: Date.now(),
+          }],
+        ],
+        activeDeckId: 'deck-1',
+      };
+      localStorage.setItem('cyber-blocks-decks', JSON.stringify(oldData));
+      
+      // 创建新的 DeckManager 实例，应该自动过滤无效卡牌
+      const manager = new DeckManager();
+      
+      const deck = manager.getDeck('deck-1');
+      expect(deck).toBeDefined();
+      // X5 和 P5 应该被过滤掉
+      expect(deck?.cards).not.toContain('X5');
+      expect(deck?.cards).not.toContain('P5');
+      expect(deck?.cards).toEqual(['I', 'O', 'T']);
+    });
+
+    test('过滤后卡组太小应该被移除', () => {
+      localStorage.clear();
+      
+      // 模拟保存只包含已删除方块的卡组
+      const oldData = {
+        decks: [
+          ['deck-tiny', {
+            id: 'deck-tiny',
+            name: '太小的卡组',
+            cards: ['X5', 'P5'], // 全部是已删除的方块
+            createdAt: Date.now(),
+          }],
+          ['deck-ok', {
+            id: 'deck-ok',
+            name: '正常的卡组',
+            cards: ['I', 'O', 'T'],
+            createdAt: Date.now(),
+          }],
+        ],
+        activeDeckId: 'deck-tiny',
+      };
+      localStorage.setItem('cyber-blocks-decks', JSON.stringify(oldData));
+      
+      const manager = new DeckManager();
+      
+      // 太小的卡组应该被移除
+      const tinyDeck = manager.getDeck('deck-tiny');
+      expect(tinyDeck).toBeUndefined();
+      
+      // 正常的卡组应该保留
+      const okDeck = manager.getDeck('deck-ok');
+      expect(okDeck).toBeDefined();
+      
+      // 激活状态应该被清空（因为激活的卡组被移除了）
+      expect(manager.getActiveDeck()).toBeNull();
+    });
+
+    test('全卡卡组不应该包含已删除的方块', () => {
+      const presets = deckManager.getPresetDecks();
+      const complete = presets.find(p => p.id === 'preset-complete');
+      
+      expect(complete).toBeDefined();
+      // 不应该包含已删除的方块
+      expect(complete?.cards).not.toContain('X5');
+      expect(complete?.cards).not.toContain('P5');
+      
+      // 应该包含所有基础方块
+      const basicCards = GAME_CONFIG.CARDS.filter(card => card.type === 'basic');
+      expect(complete?.cards).toEqual(basicCards.map(card => card.id));
+    });
   });
 
   // ==================== 激活卡组测试 ====================
