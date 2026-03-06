@@ -224,17 +224,30 @@ export class GameEngine {
 
   /**
    * 硬降方块
+   * 硬降时直接计算最低位置并移动，不依赖 movePiece()（避免 pieceLocked 检查）
    */
   public hardDrop(): number {
     if (!this.currentPiece || this.gameOver || this.paused || this.pieceLocked) return 0;
 
-    this.pieceLocked = true;
-
     let dropDistance = 0;
-    while (this.movePiece(0, 1)) {
-      dropDistance++;
+    const originalY = this.currentPiece.position.y;
+
+    // 直接计算最低位置，不使用 movePiece（避免 pieceLocked 检查）
+    while (true) {
+      const newPosition: Position = {
+        x: this.currentPiece.position.x,
+        y: this.currentPiece.position.y + 1,
+      };
+
+      if (!checkCollision(this.currentPiece.shape, newPosition, this.board, this.cols, this.rows)) {
+        this.currentPiece.position = newPosition;
+        dropDistance++;
+      } else {
+        break;
+      }
     }
     
+    // 硬降后锁定方块
     this.lockPiece();
     
     return dropDistance;

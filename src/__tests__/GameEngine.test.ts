@@ -117,6 +117,39 @@ describe('GameEngine', () => {
       expect(stateAfter.currentPiece!.position.y).toBeLessThanOrEqual(initialY);
     });
 
+    test('硬降应该将方块下落到最低点', () => {
+      const stateBefore = engine.getGameState();
+      const initialY = stateBefore.currentPiece!.position.y;
+      const shape = stateBefore.currentPiece!.shape;
+      
+      // 手动计算理论最低位置
+      let theoreticalMaxDrop = 0;
+      for (let y = initialY + 1; y < GAME_CONFIG.GAME.ROWS; y++) {
+        const testPosition = { x: stateBefore.currentPiece!.position.x, y };
+        // 简单检查：如果下一行有碰撞则停止
+        let hasCollision = false;
+        for (let row = 0; row < shape.length; row++) {
+          for (let col = 0; col < shape[row].length; col++) {
+            if (shape[row][col] !== 0) {
+              const boardY = y + row;
+              if (boardY >= GAME_CONFIG.GAME.ROWS - 1) {
+                hasCollision = true;
+                break;
+              }
+            }
+          }
+          if (hasCollision) break;
+        }
+        if (hasCollision) break;
+        theoreticalMaxDrop++;
+      }
+      
+      const dropDistance = engine.hardDrop();
+      
+      // 硬降距离应该接近理论最大值（允许 1 格误差）
+      expect(dropDistance).toBeGreaterThanOrEqual(theoreticalMaxDrop - 1);
+    });
+
     test('硬降后不应该能移动已锁定的方块', () => {
       // 硬降
       engine.hardDrop();
