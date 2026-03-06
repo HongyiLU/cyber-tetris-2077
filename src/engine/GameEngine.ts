@@ -125,6 +125,10 @@ export class GameEngine {
     return false;
   }
 
+  /**
+   * 硬降方块
+   * 修复说明：硬降后立即锁定方块，防止硬降后还能移动
+   */
   public hardDrop(): number {
     if (!this.currentPiece || this.gameOver || this.paused) return 0;
 
@@ -132,6 +136,10 @@ export class GameEngine {
     while (this.movePiece(0, 1)) {
       dropDistance++;
     }
+    
+    // 硬降后立即锁定方块
+    this.lockPiece();
+    
     return dropDistance;
   }
 

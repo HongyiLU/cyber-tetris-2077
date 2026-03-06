@@ -9,6 +9,15 @@ interface GameCanvasProps {
   blockSize?: number;
 }
 
+// 创建 typeId 到颜色的反向映射
+const TYPE_ID_TO_COLOR: Record<number, string> = {};
+Object.entries(GAME_CONFIG.PIECE_TYPE_MAP).forEach(([type, id]) => {
+  const color = GAME_CONFIG.COLORS[type as keyof typeof GAME_CONFIG.COLORS];
+  if (color) {
+    TYPE_ID_TO_COLOR[id] = color;
+  }
+});
+
 const GameCanvas: React.FC<GameCanvasProps> = ({ 
   gameState, 
   blockSize = GAME_CONFIG.GAME.BLOCK_SIZE 
@@ -42,11 +51,12 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.stroke();
     }
 
-    // 绘制已固定的方块
+    // 绘制已固定的方块 - 修复：使用正确的颜色映射
     gameState.board.forEach((row, y) => {
       row.forEach((cell, x) => {
         if (cell !== 0) {
-          const color = Object.values(GAME_CONFIG.COLORS)[cell - 1] || '#ffffff';
+          // 修复：使用 TYPE_ID_TO_COLOR 反向映射获取正确颜色
+          const color = TYPE_ID_TO_COLOR[cell] || '#ffffff';
           drawBlock(ctx, x, y, blockSize, color);
         }
       });

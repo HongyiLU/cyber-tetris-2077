@@ -1,25 +1,25 @@
+// ==================== Jest 测试环境配置 ====================
+
 import '@testing-library/jest-dom';
 
-// Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
+// 模拟 Canvas API
+class MockCanvasElement {
+  getContext() {
+    return {
+      fillStyle: '',
+      fillRect: () => {},
+      strokeStyle: '',
+      lineWidth: 0,
+      beginPath: () => {},
+      moveTo: () => {},
+      lineTo: () => {},
+      stroke: () => {},
+      shadowColor: '',
+      shadowBlur: 0,
+      strokeRect: () => {},
+    };
+  }
+}
 
-// Mock requestAnimationFrame
-global.requestAnimationFrame = (callback: FrameRequestCallback): number => {
-  return setTimeout(callback, 0) as unknown as number;
-};
-
-global.cancelAnimationFrame = (id: number): void => {
-  clearTimeout(id);
-};
+// 模拟 HTMLCanvasElement
+global.HTMLCanvasElement = MockCanvasElement as any;
