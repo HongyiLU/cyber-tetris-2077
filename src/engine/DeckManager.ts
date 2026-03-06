@@ -1,10 +1,25 @@
 // ==================== 卡组管理器 ====================
 
 import { GAME_CONFIG } from '../config/game-config';
-import type { CardData, PieceType } from '../types';
+import type { Deck, DeckConfig, DeckValidationResult, PresetDeck } from '../types/deck';
+import type { CardData } from '../types';
 
 /**
- * 卡牌稀有度权重
+ * localStorage 操作结果
+ */
+export interface StorageOperationResult {
+  success: boolean;
+  error?: string;
+  data?: string;
+}
+
+/**
+ * 错误回调函数类型
+ */
+export type StorageErrorCallback = (error: Error, operation: 'save' | 'load') => void;
+
+/**
+ * 卡牌稀有度权重（用于奖励系统）
  */
 const RARITY_WEIGHTS: Record<string, number> = {
   common: 50,
@@ -16,21 +31,470 @@ const RARITY_WEIGHTS: Record<string, number> = {
 
 /**
  * 卡组管理器类
- * 负责卡牌的收集、抽卡、卡组构建等功能
+ * 负责卡组的 CRUD 操作、验证和持久化
+ * 
+ * 功能：
+ * - 创建、读取、更新、删除卡组
+ * - 卡组验证（大小、重复等）
+ * - localStorage 持久化（带错误处理）
+ * - 预设卡组管理
+ * - 卡牌收集系统（向后兼容）
  */
 export class DeckManager {
+  private decks: Map<string, Deck>;
+  private activeDeckId: string | null;
+  private readonly storageKey: string;
+  private readonly config: DeckConfig;
+  
+  // 向后兼容：卡牌收集系统
   private collectedCards: Set<string>;
   private currentDeck: string[];
   private readonly maxDeckSize: number;
 
-  constructor(maxDeckSize: number = 10) {
+  // 错误处理
+  private onErrorCallback?: StorageErrorCallback;
+  private lastStorageError?: Error;
+
+  /**
+   * 预设卡组定义
+   * 提供 3 个默认卡组供新手使用
+   */
+  private readonly PRESET_DECKS: PresetDeck[] = [
+    {
+      id: 'preset-classic',
+      name: '经典卡组',
+      description: '只包含 7 种经典 4 块方块（I、O、T、S、Z、L、J）',
+      cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J'],
+    },
+    {
+      id: 'preset-beginner',
+      name: '新手卡组',
+      description: '包含所有 2 块、3 块和 4 块方块，适合新手练习',
+      cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J', 'DOM', 'V3', 'COR'],
+    },
+    {
+      id: 'preset-complete',
+      name: '全卡卡组',
+      description: '包含所有基础方块（不含特殊方块）',
+      cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J', 'DOM', 'V3', 'COR', 'U5', 'W5', 'I5'],
+    },
+  ];
+
+  constructor(config: Partial<DeckConfig> = {}) {
+    this.decks = new Map();
+    this.activeDeckId = null;
+    this.storageKey = 'cyber-blocks-decks';
+    
+    // 合并默认配置和用户配置
+    this.config = {
+      minDeckSize: config.minDeckSize ?? 3,
+      maxDeckSize: config.maxDeckSize ?? 15,
+      rarityWeights: config.rarityWeights ?? {
+        common: 50,
+        uncommon: 30,
+        rare: 15,
+        epic: 4,
+        legendary: 1,
+      },
+    };
+
+    // 向后兼容：初始化卡牌收集系统
     this.collectedCards = new Set();
     this.currentDeck = [];
-    this.maxDeckSize = maxDeckSize;
-    
-    // 初始化时解锁所有基础方块
+    this.maxDeckSize = 10;
     this.initializeBasicCards();
+
+    // 加载已保存的卡组
+    this.loadDecks();
   }
+
+  // ==================== 错误处理 ====================
+
+  /**
+   * 设置错误回调
+   * @param callback 错误回调函数
+   */
+  public setOnErrorCallback(callback: StorageErrorCallback): void {
+    this.onErrorCallback = callback;
+  }
+
+  /**
+   * 获取最后的存储错误
+   */
+  public getLastStorageError(): Error | undefined {
+    return this.lastStorageError;
+  }
+
+  /**
+   * 清除错误状态
+   */
+  public clearError(): void {
+    this.lastStorageError = undefined;
+  }
+
+  /**
+   * 处理存储错误
+   */
+  private handleStorageError(error: unknown, operation: 'save' | 'load'): void {
+    const err = error instanceof Error ? error : new Error(String(error));
+    this.lastStorageError = err;
+    
+    console.error(`卡组${operation}失败:`, err);
+    
+    if (this.onErrorCallback) {
+      this.onErrorCallback(err, operation);
+    }
+  }
+
+  // ==================== 卡组 CRUD 操作 ====================
+
+  /**
+   * 创建新卡组
+   * @param name 卡组名称
+   * @param cards 方块 ID 列表
+   * @returns 创建的卡组对象，如果验证失败则抛出错误
+   */
+  public createDeck(name: string, cards: string[]): Deck {
+    // 生成唯一 ID
+    const id = `deck_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const deck: Deck = {
+      id,
+      name,
+      cards: [...cards],
+      createdAt: Date.now(),
+    };
+
+    // 验证卡组
+    const validation = this.validateDeck(deck);
+    if (!validation.valid) {
+      throw new Error(`卡组验证失败：${validation.errors.join(', ')}`);
+    }
+
+    // 保存到内存
+    this.decks.set(id, deck);
+    
+    // 持久化
+    this.saveDecks();
+
+    return deck;
+  }
+
+  /**
+   * 获取卡组
+   * @param deckId 卡组 ID
+   * @returns 卡组对象，不存在则返回 undefined
+   */
+  public getDeck(deckId: string): Deck | undefined {
+    return this.decks.get(deckId);
+  }
+
+  /**
+   * 更新卡组
+   * @param deckId 卡组 ID
+   * @param updates 要更新的字段
+   * @throws 如果卡组不存在或验证失败
+   */
+  public updateDeck(deckId: string, updates: Partial<Deck>): void {
+    const deck = this.decks.get(deckId);
+    if (!deck) {
+      throw new Error(`卡组不存在：${deckId}`);
+    }
+
+    // 合并更新
+    const updatedDeck: Deck = {
+      ...deck,
+      ...updates,
+      // 确保 cards 是新的数组
+      cards: updates.cards ? [...updates.cards] : deck.cards,
+    };
+
+    // 验证更新后的卡组
+    const validation = this.validateDeck(updatedDeck);
+    if (!validation.valid) {
+      throw new Error(`卡组验证失败：${validation.errors.join(', ')}`);
+    }
+
+    // 保存到内存
+    this.decks.set(deckId, updatedDeck);
+    
+    // 持久化
+    this.saveDecks();
+  }
+
+  /**
+   * 删除卡组
+   * @param deckId 卡组 ID
+   * @throws 如果卡组不存在
+   */
+  public deleteDeck(deckId: string): void {
+    if (!this.decks.has(deckId)) {
+      throw new Error(`卡组不存在：${deckId}`);
+    }
+
+    // 如果删除的是当前激活的卡组，清空激活状态
+    if (this.activeDeckId === deckId) {
+      this.activeDeckId = null;
+    }
+
+    this.decks.delete(deckId);
+    this.saveDecks();
+  }
+
+  /**
+   * 列出所有卡组
+   * @returns 所有卡组的数组
+   */
+  public listDecks(): Deck[] {
+    return Array.from(this.decks.values());
+  }
+
+  // ==================== 卡组验证 ====================
+
+  /**
+   * 验证卡组是否有效
+   * @param deck 要验证的卡组
+   * @returns 验证结果
+   */
+  public validateDeck(deck: Deck): DeckValidationResult {
+    const errors: string[] = [];
+
+    // 检查名称
+    if (!deck.name || deck.name.trim().length === 0) {
+      errors.push('卡组名称不能为空');
+    }
+
+    // 检查卡片数量
+    if (deck.cards.length < this.config.minDeckSize) {
+      errors.push(`卡组至少需要 ${this.config.minDeckSize} 张卡牌（当前：${deck.cards.length}）`);
+    }
+    if (deck.cards.length > this.config.maxDeckSize) {
+      errors.push(`卡组最多容纳 ${this.config.maxDeckSize} 张卡牌（当前：${deck.cards.length}）`);
+    }
+
+    // 检查是否有重复的卡牌
+    const uniqueCards = new Set(deck.cards);
+    if (uniqueCards.size !== deck.cards.length) {
+      errors.push('卡组中包含重复的卡牌');
+    }
+
+    // 检查所有卡牌是否有效
+    const validCardIds = GAME_CONFIG.CARDS.map(card => card.id);
+    for (const cardId of deck.cards) {
+      if (!validCardIds.includes(cardId)) {
+        errors.push(`无效的卡牌 ID: ${cardId}`);
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+    };
+  }
+
+  // ==================== 卡组持久化（带错误处理） ====================
+
+  /**
+   * 保存卡组到 localStorage
+   * @returns 操作结果
+   */
+  public saveDecks(): StorageOperationResult {
+    try {
+      const data = {
+        decks: Array.from(this.decks.entries()),
+        activeDeckId: this.activeDeckId,
+      };
+      localStorage.setItem(this.storageKey, JSON.stringify(data));
+      return { success: true };
+    } catch (error) {
+      this.handleStorageError(error, 'save');
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : '保存失败' 
+      };
+    }
+  }
+
+  /**
+   * 从 localStorage 加载卡组
+   * @returns 操作结果
+   */
+  public loadDecks(): StorageOperationResult {
+    try {
+      const data = localStorage.getItem(this.storageKey);
+      if (!data) {
+        // 首次使用，加载预设卡组
+        this.loadPresetDecks();
+        return { success: true };
+      }
+
+      const parsed = JSON.parse(data);
+      
+      // 恢复卡组
+      if (parsed.decks && Array.isArray(parsed.decks)) {
+        this.decks = new Map(parsed.decks);
+      }
+
+      // 恢复激活状态
+      if (parsed.activeDeckId) {
+        this.activeDeckId = parsed.activeDeckId;
+      }
+
+      // 如果没有任何卡组，加载预设卡组
+      if (this.decks.size === 0) {
+        this.loadPresetDecks();
+      }
+
+      return { success: true, data };
+    } catch (error) {
+      this.handleStorageError(error, 'load');
+      // 加载失败时，使用预设卡组
+      this.loadPresetDecks();
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : '加载失败' 
+      };
+    }
+  }
+
+  /**
+   * 加载预设卡组
+   */
+  private loadPresetDecks(): void {
+    for (const preset of this.PRESET_DECKS) {
+      const deck: Deck = {
+        id: preset.id,
+        name: preset.name,
+        cards: [...preset.cards],
+        createdAt: Date.now(),
+      };
+      this.decks.set(preset.id, deck);
+    }
+    this.saveDecks();
+  }
+
+  // ==================== 数据导出/导入（备份功能） ====================
+
+  /**
+   * 导出所有卡组数据为 JSON 字符串（用于备份）
+   * @returns JSON 字符串
+   */
+  public exportAllData(): string {
+    const data = {
+      version: '1.0',
+      exportDate: new Date().toISOString(),
+      decks: Array.from(this.decks.entries()),
+      activeDeckId: this.activeDeckId,
+      collectedCards: Array.from(this.collectedCards),
+      currentDeck: [...this.currentDeck],
+    };
+    return JSON.stringify(data, null, 2);
+  }
+
+  /**
+   * 从 JSON 字符串导入数据（用于恢复备份）
+   * @param jsonString JSON 字符串
+   * @returns 导入结果
+   */
+  public importAllData(jsonString: string): StorageOperationResult {
+    try {
+      const parsed = JSON.parse(jsonString);
+      
+      if (parsed.decks && Array.isArray(parsed.decks)) {
+        this.decks = new Map(parsed.decks);
+      }
+
+      if (parsed.activeDeckId) {
+        this.activeDeckId = parsed.activeDeckId;
+      }
+
+      if (parsed.collectedCards && Array.isArray(parsed.collectedCards)) {
+        this.collectedCards = new Set(parsed.collectedCards);
+      }
+
+      if (parsed.currentDeck && Array.isArray(parsed.currentDeck)) {
+        this.currentDeck = parsed.currentDeck;
+      }
+
+      // 保存导入的数据
+      return this.saveDecks();
+    } catch (error) {
+      this.handleStorageError(error, 'load');
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : '导入失败' 
+      };
+    }
+  }
+
+  /**
+   * 下载数据备份文件
+   * @param filename 文件名（可选）
+   */
+  public downloadBackup(filename: string = 'cyber-blocks-backup.json'): void {
+    const data = this.exportAllData();
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ==================== 激活卡组管理 ====================
+
+  /**
+   * 设置当前激活的卡组
+   * @param deckId 卡组 ID，null 表示不使用卡组（使用默认随机）
+   */
+  public setActiveDeck(deckId: string | null): void {
+    if (deckId !== null && !this.decks.has(deckId)) {
+      throw new Error(`卡组不存在：${deckId}`);
+    }
+    this.activeDeckId = deckId;
+    this.saveDecks();
+  }
+
+  /**
+   * 获取当前激活的卡组
+   * @returns 激活的卡组，未设置则返回 null
+   */
+  public getActiveDeck(): Deck | null {
+    if (!this.activeDeckId) {
+      return null;
+    }
+    return this.decks.get(this.activeDeckId) || null;
+  }
+
+  /**
+   * 获取预设卡组列表
+   */
+  public getPresetDecks(): PresetDeck[] {
+    return [...this.PRESET_DECKS];
+  }
+
+  // ==================== 卡组配置 ====================
+
+  /**
+   * 获取卡组配置
+   */
+  public getConfig(): DeckConfig {
+    return { ...this.config };
+  }
+
+  /**
+   * 获取稀有度权重
+   */
+  public getRarityWeights(): Record<string, number> {
+    return { ...this.config.rarityWeights };
+  }
+
+  // ==================== 向后兼容：卡牌收集系统 ====================
+  // 以下方法用于支持旧的 UI 组件
 
   /**
    * 初始化基础卡牌（解锁所有基础方块）
@@ -77,37 +541,35 @@ export class DeckManager {
    */
   public unlockCard(cardId: string): boolean {
     if (this.collectedCards.has(cardId)) {
-      return false; // 已经拥有
+      return false;
     }
-    
     this.collectedCards.add(cardId);
     return true;
   }
 
   /**
-   * 获取当前卡组
+   * @deprecated 使用 getActiveDeck() 和 listDecks() 代替
+   * 获取当前卡组（旧 API）
    */
   public getCurrentDeck(): string[] {
     return [...this.currentDeck];
   }
 
   /**
-   * 向卡组添加卡牌
+   * @deprecated 使用 createDeck() 和 updateDeck() 代替
+   * 向卡组添加卡牌（旧 API）
    */
   public addToDeck(cardId: string): boolean {
-    // 检查是否已收集
     if (!this.collectedCards.has(cardId)) {
       console.warn(`卡牌 ${cardId} 未收集，无法添加到卡组`);
       return false;
     }
 
-    // 检查是否已在卡组中
     if (this.currentDeck.includes(cardId)) {
       console.warn(`卡牌 ${cardId} 已在卡组中`);
       return false;
     }
 
-    // 检查卡组大小
     if (this.currentDeck.length >= this.maxDeckSize) {
       console.warn(`卡组已达上限 (${this.maxDeckSize})`);
       return false;
@@ -118,27 +580,29 @@ export class DeckManager {
   }
 
   /**
-   * 从卡组移除卡牌
+   * @deprecated 使用 updateDeck() 代替
+   * 从卡组移除卡牌（旧 API）
    */
   public removeFromDeck(cardId: string): boolean {
     const index = this.currentDeck.indexOf(cardId);
     if (index === -1) {
       return false;
     }
-    
     this.currentDeck.splice(index, 1);
     return true;
   }
 
   /**
-   * 清空卡组
+   * @deprecated 使用 deleteDeck() 或 updateDeck() 代替
+   * 清空卡组（旧 API）
    */
   public clearDeck(): void {
     this.currentDeck = [];
   }
 
   /**
-   * 自动填充卡组（使用所有已收集的基础方块）
+   * @deprecated 使用预设卡组功能代替
+   * 自动填充卡组（旧 API）
    */
   public autoFillDeck(): void {
     this.clearDeck();
@@ -147,13 +611,11 @@ export class DeckManager {
       card => card.type === 'basic' && this.collectedCards.has(card.id)
     );
     
-    // 按稀有度排序
     basicCards.sort((a, b) => {
       const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
       return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
     });
     
-    // 填充到卡组上限
     for (const card of basicCards) {
       if (this.currentDeck.length >= this.maxDeckSize) break;
       this.currentDeck.push(card.id);
@@ -161,22 +623,21 @@ export class DeckManager {
   }
 
   /**
-   * 抽卡（从当前卡组中随机选择一张）
+   * @deprecated 使用新的统计 API 代替
+   * 获取卡组统计信息（旧 API）
    */
-  public drawCard(): CardData | null {
-    if (this.currentDeck.length === 0) {
-      // 如果卡组为空，自动填充
-      this.autoFillDeck();
-    }
-
-    if (this.currentDeck.length === 0) {
-      return null;
-    }
-
-    const randomIndex = Math.floor(Math.random() * this.currentDeck.length);
-    const cardId = this.currentDeck[randomIndex];
-    
-    return (GAME_CONFIG.CARDS.find(card => card.id === cardId) as CardData) || null;
+  public getDeckStats(): {
+    totalCards: number;
+    collectedCount: number;
+    totalCollected: number;
+    deckSize: number;
+  } {
+    return {
+      totalCards: GAME_CONFIG.CARDS.length,
+      collectedCount: this.collectedCards.size,
+      totalCollected: GAME_CONFIG.CARDS.length,
+      deckSize: this.currentDeck.length,
+    };
   }
 
   /**
@@ -191,10 +652,9 @@ export class DeckManager {
     }) as CardData[];
 
     if (cards.length === 0) {
-      return null; // 所有卡牌都已收集
+      return null;
     }
 
-    // 如果没有指定稀有度，根据权重随机选择
     if (!targetRarity) {
       const totalWeight = cards.reduce((sum, card) => {
         return sum + (RARITY_WEIGHTS[card.rarity] || 1);
@@ -214,30 +674,13 @@ export class DeckManager {
       return cards[0];
     }
 
-    // 指定稀有度，随机选择一张
     const randomIndex = Math.floor(Math.random() * cards.length);
     return cards[randomIndex];
   }
 
   /**
-   * 获取卡组统计信息
-   */
-  public getDeckStats(): {
-    totalCards: number;
-    collectedCount: number;
-    totalCollected: number;
-    deckSize: number;
-  } {
-    return {
-      totalCards: GAME_CONFIG.CARDS.length,
-      collectedCount: this.collectedCards.size,
-      totalCollected: GAME_CONFIG.CARDS.length,
-      deckSize: this.currentDeck.length,
-    };
-  }
-
-  /**
-   * 导出卡组配置
+   * @deprecated 使用 exportAllData() 代替
+   * 导出卡组配置（旧 API）
    */
   public exportDeck(): string {
     return JSON.stringify({
@@ -247,7 +690,8 @@ export class DeckManager {
   }
 
   /**
-   * 导入卡组配置
+   * @deprecated 使用 importAllData() 代替
+   * 导入卡组配置（旧 API）
    */
   public importDeck(data: string): boolean {
     try {

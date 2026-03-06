@@ -1,0 +1,318 @@
+/* ==================== CardDeck 赛博朋克风格样式 ==================== */
+
+/* 主容器 */
+.card-deck-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  padding: 20px;
+  overflow: auto;
+}
+
+.card-deck-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 标题栏 */
+.card-deck-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #00ffff;
+}
+
+.card-deck-title {
+  font-size: 28px;
+  color: #00ffff;
+  text-shadow: 0 0 10px #00ffff;
+  margin: 0;
+}
+
+.card-deck-close-btn {
+  background: transparent;
+  border: 2px solid #ff0040;
+  color: #ff0040;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: Orbitron, monospace;
+  transition: all 0.3s;
+}
+
+.card-deck-close-btn:hover {
+  background: #ff0040;
+  color: #fff;
+}
+
+/* 统计信息卡片 */
+.card-deck-stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(0, 255, 255, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.card-deck-stat-item {
+  color: #fff;
+}
+
+.card-deck-stat-label {
+  font-size: 12px;
+  color: #888;
+}
+
+.card-deck-stat-value {
+  font-size: 24px;
+}
+
+.card-deck-stat-value.collected {
+  color: #00ff80;
+}
+
+.card-deck-stat-value.deck-size {
+  color: #00ffff;
+}
+
+.card-deck-stat-value.uncollected {
+  color: #ff66b2;
+}
+
+.card-deck-stat-item:last-child {
+  margin-left: auto;
+}
+
+/* 标签页按钮 */
+.card-deck-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.card-deck-tab-btn {
+  padding: 10px 25px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #666;
+  color: #888;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: Orbitron, monospace;
+  transition: all 0.3s;
+}
+
+.card-deck-tab-btn.active {
+  background: rgba(0, 255, 255, 0.3);
+  border: 2px solid #00ffff;
+  color: #00ffff;
+}
+
+/* 稀有度过滤器 */
+.card-deck-rarity-filter {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.card-deck-rarity-btn {
+  padding: 6px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #444;
+  color: #666;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-family: Orbitron, monospace;
+  transition: all 0.3s;
+}
+
+.card-deck-rarity-btn.active {
+  background: rgba(0, 255, 255, 0.3);
+  color: #fff;
+}
+
+.card-deck-rarity-btn.active[data-rarity="all"] {
+  border: 2px solid #00ffff;
+}
+
+.card-deck-rarity-btn.active[data-rarity="common"] {
+  border: 2px solid #888;
+}
+
+.card-deck-rarity-btn.active[data-rarity="uncommon"] {
+  border: 2px solid #00cc66;
+}
+
+.card-deck-rarity-btn.active[data-rarity="rare"] {
+  border: 2px solid #0099ff;
+}
+
+.card-deck-rarity-btn.active[data-rarity="epic"] {
+  border: 2px solid #bf00ff;
+}
+
+.card-deck-rarity-btn.active[data-rarity="legendary"] {
+  border: 2px solid #ffd700;
+}
+
+/* 卡组操作按钮 */
+.card-deck-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.card-deck-action-btn {
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: Orbitron, monospace;
+}
+
+.card-deck-action-btn.auto-fill {
+  background: rgba(0, 255, 128, 0.2);
+  border: 2px solid #00ff80;
+  color: #00ff80;
+}
+
+.card-deck-action-btn.clear {
+  background: rgba(255, 0, 64, 0.2);
+  border: 2px solid #ff0040;
+  color: #ff0040;
+}
+
+/* 卡牌网格 */
+.card-deck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.card-deck-empty-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px;
+  color: #666;
+  font-size: 18px;
+}
+
+/* 卡牌详情弹窗 */
+.card-deck-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.card-deck-modal-content {
+  background: linear-gradient(135deg, rgba(20, 20, 40, 0.95), rgba(40, 40, 80, 0.95));
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 400px;
+}
+
+.card-deck-modal-content.legendary {
+  border: 3px solid #ffd700;
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+}
+
+.card-deck-modal-content.epic {
+  border: 3px solid #bf00ff;
+  box-shadow: 0 0 40px rgba(191, 0, 255, 0.6);
+}
+
+.card-deck-modal-content.rare {
+  border: 3px solid #0099ff;
+  box-shadow: 0 0 40px rgba(0, 153, 255, 0.6);
+}
+
+.card-deck-modal-content.uncommon {
+  border: 3px solid #00cc66;
+  box-shadow: 0 0 40px rgba(0, 204, 102, 0.6);
+}
+
+.card-deck-modal-content.common {
+  border: 3px solid #888;
+  box-shadow: 0 0 40px rgba(136, 136, 136, 0.6);
+}
+
+.card-deck-modal-title {
+  font-size: 24px;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.card-deck-modal-icon {
+  font-size: 60px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.card-deck-modal-meta {
+  color: #888;
+  font-size: 14px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.card-deck-modal-desc {
+  color: #aaa;
+  line-height: 1.6;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.card-deck-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.card-deck-modal-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: Orbitron, monospace;
+}
+
+.card-deck-modal-btn.add {
+  background: rgba(0, 255, 128, 0.2);
+  border: 2px solid #00ff80;
+  color: #00ff80;
+}
+
+.card-deck-modal-btn.add:disabled {
+  background: rgba(136, 136, 136, 0.3);
+  border: 2px solid #666;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.card-deck-modal-btn.close {
+  padding: 12px 25px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #666;
+  color: #888;
+}

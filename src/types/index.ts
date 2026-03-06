@@ -130,5 +130,9 @@ export interface CardData {
  */
 export type PieceSizeMultiplier = Record<number, number>;
 
-// 前向声明 DeckManager 类
+// 导出卡组系统类型
+export type { Deck, DeckConfig, DeckValidationResult, PresetDeck } from './deck';
+export { DEFAULT_DECK_CONFIG } from './deck';
+
+// 导出 DeckManager 类
 export { DeckManager } from '../engine/DeckManager';

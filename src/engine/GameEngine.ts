@@ -1,10 +1,20 @@
 // ==================== 游戏引擎 ====================
 
 import { GAME_CONFIG, PIECE_SIZE_MULTIPLIER } from '../config/game-config';
-import { DeckSystem } from './DeckSystem';
+import { DeckManager } from './DeckManager';
 import type { Piece, Position, GameState } from '../types';
+import type { Deck } from '../types/deck';
 import { createEmptyBoard, checkCollision, rotateShape, copyBoard, copyShape } from '../utils/game-utils';
 
+/**
+ * 游戏引擎类
+ * 负责游戏核心逻辑：方块生成、移动、旋转、消除等
+ * 
+ * 支持卡组系统：
+ * - 可以从自定义卡组中抽取方块
+ * - 支持稀有度权重抽取
+ * - 未设置卡组时使用完全随机
+ */
 export class GameEngine {
   private cols: number;
   private rows: number;
@@ -16,20 +26,58 @@ export class GameEngine {
   private level: number = 1;
   private gameOver: boolean = false;
   private paused: boolean = false;
-  private deckSystem: DeckSystem;
+  private deckManager: DeckManager;
+  private activeDeck: Deck | null = null; // 当前激活的卡组
   private pieceLocked: boolean = false; // 标记方块是否已锁定
 
-  constructor(cols: number = GAME_CONFIG.GAME.COLS, rows: number = GAME_CONFIG.GAME.ROWS) {
+  constructor(
+    cols: number = GAME_CONFIG.GAME.COLS,
+    rows: number = GAME_CONFIG.GAME.ROWS,
+    deckManager?: DeckManager
+  ) {
     this.cols = cols;
     this.rows = rows;
     this.board = createEmptyBoard(cols, rows);
-    this.deckSystem = new DeckSystem();
+    this.deckManager = deckManager || new DeckManager();
     this.pieceLocked = false;
   }
 
+  /**
+   * 设置当前使用的卡组
+   * @param deck 卡组对象，null 表示不使用卡组（使用默认随机）
+   */
+  public setDeck(deck: Deck | null): void {
+    this.activeDeck = deck;
+  }
+
+  /**
+   * 获取当前卡组管理器
+   */
+  public getDeckManager(): DeckManager {
+    return this.deckManager;
+  }
+
+  /**
+   * 创建新方块
+   * 支持两种模式：
+   * 1. 从激活的卡组中抽取（支持稀有度权重）
+   * 2. 完全随机（未设置卡组时）
+   * 
+   * @param type 指定方块类型（可选，用于测试或特殊方块）
+   * @returns 新创建的方块对象
+   */
   private createPiece(type?: string): Piece {
-    // 从卡组系统抽取方块类型
-    const pieceType = type || this.deckSystem.drawPiece();
+    let pieceType: string;
+
+    if (this.activeDeck && this.activeDeck.cards.length > 0) {
+      // 从卡组中抽取（支持稀有度权重）
+      pieceType = this.drawFromDeck();
+    } else {
+      // 使用所有方块类型（当前逻辑）
+      const types = Object.keys(GAME_CONFIG.SHAPES);
+      pieceType = type || types[Math.floor(Math.random() * types.length)];
+    }
+
     const shape = GAME_CONFIG.SHAPES[pieceType as keyof typeof GAME_CONFIG.SHAPES];
     const color = GAME_CONFIG.COLORS[pieceType as keyof typeof GAME_CONFIG.COLORS];
 
@@ -44,6 +92,67 @@ export class GameEngine {
     };
   }
 
+  /**
+   * 从卡组抽取方块
+   * 实现带权重随机抽取算法
+   * 
+   * 算法说明：
+   * 1. 根据卡组中的方块 ID，获取对应的稀有度
+   * 2. 根据稀有度权重计算每个方块的抽取概率
+   * 3. 使用轮盘赌算法进行加权随机选择
+   * 
+   * @returns 抽取的方块 ID
+   */
+  private drawFromDeck(): string {
+    if (!this.activeDeck || this.activeDeck.cards.length === 0) {
+      //  fallback：随机返回一个方块
+      const types = Object.keys(GAME_CONFIG.SHAPES);
+      return types[Math.floor(Math.random() * types.length)];
+    }
+
+    const cards = this.activeDeck.cards;
+    
+    // 数组越界防护：当 cards.length === 0 时返回默认方块
+    if (cards.length === 0) {
+      return 'T'; // 返回默认方块
+    }
+    
+    const rarityWeights = this.deckManager.getRarityWeights();
+
+    // 如果只有 1 张卡，直接返回
+    if (cards.length === 1) {
+      return cards[0];
+    }
+
+    // 计算每张卡的权重
+    const weights: number[] = [];
+    let totalWeight = 0;
+
+    for (const cardId of cards) {
+      const cardData = GAME_CONFIG.CARDS.find(c => c.id === cardId);
+      const rarity = cardData?.rarity || 'common';
+      const weight = rarityWeights[rarity] || 1;
+      weights.push(weight);
+      totalWeight += weight;
+    }
+
+    // 轮盘赌选择
+    let random = Math.random() * totalWeight;
+    
+    for (let i = 0; i < cards.length; i++) {
+      random -= weights[i];
+      if (random <= 0) {
+        return cards[i];
+      }
+    }
+
+    // 理论上不会到这里，但为了安全返回最后一个
+    return cards[cards.length - 1];
+  }
+
+  /**
+   * 初始化游戏
+   */
   public init(): void {
     this.board = createEmptyBoard(this.cols, this.rows);
     this.score = 0;
@@ -52,11 +161,17 @@ export class GameEngine {
     this.gameOver = false;
     this.paused = false;
     this.pieceLocked = false;
-    this.deckSystem.initializeDeck();
+    
+    // 获取激活的卡组
+    this.activeDeck = this.deckManager.getActiveDeck();
+    
     this.currentPiece = this.createPiece();
     this.nextPiece = this.createPiece();
   }
 
+  /**
+   * 移动方块
+   */
   public movePiece(dx: number, dy: number): boolean {
     if (!this.currentPiece || this.gameOver || this.paused || this.pieceLocked) return false;
 
@@ -74,14 +189,7 @@ export class GameEngine {
 
   /**
    * 旋转方块
-   * 修复说明：实现基础墙踢机制，旋转时尝试多个位置
-   * 
-   * 墙踢顺序：
-   * 1. 原位置
-   * 2. 向右移动 1 格
-   * 3. 向左移动 1 格
-   * 4. 向右移动 2 格
-   * 5. 向左移动 2 格
+   * 实现基础墙踢机制
    */
   public rotatePiece(): boolean {
     if (!this.currentPiece || this.gameOver || this.paused || this.pieceLocked) return false;
@@ -90,56 +198,36 @@ export class GameEngine {
     const originalPosition = { ...this.currentPiece.position };
 
     // 基础墙踢机制：尝试多个位置
-    // 1. 原位置
-    if (!checkCollision(rotated, originalPosition, this.board, this.cols, this.rows)) {
-      this.currentPiece.shape = rotated;
-      return true;
+    const kickOffsets = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: -1, y: 0 },
+      { x: 2, y: 0 },
+      { x: -2, y: 0 },
+    ];
+
+    for (const offset of kickOffsets) {
+      const kickPosition = {
+        x: originalPosition.x + offset.x,
+        y: originalPosition.y + offset.y,
+      };
+      
+      if (!checkCollision(rotated, kickPosition, this.board, this.cols, this.rows)) {
+        this.currentPiece.shape = rotated;
+        this.currentPiece.position = kickPosition;
+        return true;
+      }
     }
 
-    // 2. 向右移动 1 格
-    const kickRight = { ...originalPosition, x: originalPosition.x + 1 };
-    if (!checkCollision(rotated, kickRight, this.board, this.cols, this.rows)) {
-      this.currentPiece.shape = rotated;
-      this.currentPiece.position = kickRight;
-      return true;
-    }
-
-    // 3. 向左移动 1 格
-    const kickLeft = { ...originalPosition, x: originalPosition.x - 1 };
-    if (!checkCollision(rotated, kickLeft, this.board, this.cols, this.rows)) {
-      this.currentPiece.shape = rotated;
-      this.currentPiece.position = kickLeft;
-      return true;
-    }
-
-    // 4. 向右移动 2 格
-    const kickRight2 = { ...originalPosition, x: originalPosition.x + 2 };
-    if (!checkCollision(rotated, kickRight2, this.board, this.cols, this.rows)) {
-      this.currentPiece.shape = rotated;
-      this.currentPiece.position = kickRight2;
-      return true;
-    }
-
-    // 5. 向左移动 2 格
-    const kickLeft2 = { ...originalPosition, x: originalPosition.x - 2 };
-    if (!checkCollision(rotated, kickLeft2, this.board, this.cols, this.rows)) {
-      this.currentPiece.shape = rotated;
-      this.currentPiece.position = kickLeft2;
-      return true;
-    }
-
-    // 所有墙踢尝试都失败
     return false;
   }
 
   /**
    * 硬降方块
-   * 修复说明：硬降后立即锁定方块，防止硬降后还能移动
    */
   public hardDrop(): number {
     if (!this.currentPiece || this.gameOver || this.paused || this.pieceLocked) return 0;
 
-    // 硬降时立即锁定，防止在硬降过程中被移动
     this.pieceLocked = true;
 
     let dropDistance = 0;
@@ -147,7 +235,6 @@ export class GameEngine {
       dropDistance++;
     }
     
-    // 硬降后立即锁定方块
     this.lockPiece();
     
     return dropDistance;
@@ -155,7 +242,6 @@ export class GameEngine {
 
   /**
    * 锁定方块到棋盘
-   * 修复说明：修复类型安全问题，显式检查 cell !== 0 和 cell !== undefined
    */
   public lockPiece(): number {
     if (!this.currentPiece) return 0;
@@ -166,24 +252,18 @@ export class GameEngine {
     // 将方块固定到棋盘
     for (let row = 0; row < shape.length; row++) {
       for (let col = 0; col < shape[row].length; col++) {
-        // 类型安全修复：显式检查 cell 是否为非零值，并处理边界情况
         const cell = shape[row][col];
         const boardY = position.y + row;
         const boardX = position.x + col;
         
-        // 确保方块在棋盘范围内且 cell 有效
         if (cell !== 0 && cell !== undefined && boardY >= 0 && boardY < this.rows && boardX >= 0 && boardX < this.cols) {
           this.board[boardY][boardX] = typeId;
         }
       }
     }
 
-    // 将方块类型放回弃牌堆
-    this.deckSystem.discardPiece(type);
-
     // 计算消除行数和分数
     const clearedLines = this.clearLines();
-    // 类型安全修复：使用更可靠的过滤方式
     const pieceSize = shape.flat().filter(cell => cell !== 0 && cell !== undefined).length;
     const sizeMultiplier = PIECE_SIZE_MULTIPLIER[pieceSize] || 1.0;
     
@@ -203,7 +283,7 @@ export class GameEngine {
     this.currentPiece = this.nextPiece;
     this.nextPiece = this.createPiece();
     
-    // 重置锁定标记（在生成新方块后）
+    // 重置锁定标记
     this.pieceLocked = false;
 
     // 检查游戏结束
@@ -214,6 +294,9 @@ export class GameEngine {
     return clearedLines;
   }
 
+  /**
+   * 消除完整行
+   */
   private clearLines(): number {
     let cleared = 0;
 
@@ -229,6 +312,9 @@ export class GameEngine {
     return cleared;
   }
 
+  /**
+   * 获取游戏状态
+   */
   public getGameState(): GameState {
     return {
       board: copyBoard(this.board),
@@ -242,10 +328,16 @@ export class GameEngine {
     };
   }
 
+  /**
+   * 切换暂停状态
+   */
   public togglePause(): void {
     this.paused = !this.paused;
   }
 
+  /**
+   * 检查游戏是否结束
+   */
   public isGameOver(): boolean {
     return this.gameOver;
   }
