@@ -170,20 +170,34 @@ const App: React.FC = () => {
         </div>
       ) : (
         <>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {/* 游戏主区域：棋盘 + 信息面板 */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '20px', 
+            alignItems: 'flex-start', 
+            flexWrap: 'wrap', 
+            justifyContent: 'center',
+            marginBottom: '10px',
+          }}>
             <GameCanvas gameState={gameState} />
             <GameInfo gameState={gameState} />
           </div>
           
-          {/* 战斗 UI */}
+          {/* 战斗 UI - 放在棋盘下方，不遮挡 */}
           {gameState && gameState.battleState !== BattleState.IDLE && (
-            <BattleUI
-              playerHp={gameState.playerHp}
-              playerMaxHp={gameState.playerMaxHp}
-              enemyHp={gameState.enemyHp}
-              enemyMaxHp={gameState.enemyMaxHp}
-              battleState={gameState.battleState}
-            />
+            <div style={{
+              width: '100%',
+              maxWidth: '800px',
+              margin: '10px auto',
+            }}>
+              <BattleUI
+                playerHp={gameState.playerHp}
+                playerMaxHp={gameState.playerMaxHp}
+                enemyHp={gameState.enemyHp}
+                enemyMaxHp={gameState.enemyMaxHp}
+                battleState={gameState.battleState}
+              />
+            </div>
           )}
           
           {/* 开始战斗按钮 */}

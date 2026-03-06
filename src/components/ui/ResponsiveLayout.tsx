@@ -86,7 +86,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
           </div>
         )}
 
-        {/* 子内容（如开始按钮） */}
+        {/* 子内容（如战斗 UI、开始按钮等） */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',

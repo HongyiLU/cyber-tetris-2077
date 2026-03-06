@@ -19,47 +19,76 @@ export const BattleUI: React.FC<BattleUIProps> = ({
   battleState,
   enemyName = '史莱姆',
 }) => {
-  const playerPercent = (playerHp / playerMaxHp) * 100;
-  const enemyPercent = (enemyHp / enemyMaxHp) * 100;
+  const playerPercent = Math.max(0, Math.min(100, (playerHp / playerMaxHp) * 100));
+  const enemyPercent = Math.max(0, Math.min(100, (enemyHp / enemyMaxHp) * 100));
+
+  const isFighting = battleState === BattleState.FIGHTING;
+  const isWon = battleState === BattleState.WON;
+  const isLost = battleState === BattleState.LOST;
 
   return (
     <div className="battle-ui">
-      {/* 玩家血量条 */}
-      <div className="hp-section player-section">
-        <div className="character-name">玩家</div>
-        <div className="hp-bar player">
-          <div 
-            className="hp-fill" 
-            style={{ width: `${playerPercent}%` }}
-          />
-          <span className="hp-text">{playerHp}/{playerMaxHp}</span>
+      {/* 顶部血量条区域 */}
+      <div className="battle-top-bar">
+        {/* 玩家血量（左侧） */}
+        <div className="hp-section player-section">
+          <div className="section-header">
+            <span className="player-icon">👤</span>
+            <span className="character-name player-name">玩家</span>
+          </div>
+          <div className="hp-bar-container">
+            <div className="hp-bar player">
+              <div 
+                className="hp-fill" 
+                style={{ width: `${playerPercent}%` }}
+              />
+            </div>
+            <span className="hp-text">{playerHp}/{playerMaxHp}</span>
+          </div>
         </div>
-      </div>
-      
-      {/* 敌人显示 */}
-      <div className="enemy-display">
-        <div className="enemy-avatar">🦠</div>
-        <div className="enemy-info">
-          <div className="character-name">{enemyName}</div>
-          <div className="hp-bar enemy">
-            <div 
-              className="hp-fill" 
-              style={{ width: `${enemyPercent}%` }}
-            />
+
+        {/* VS 分隔符 */}
+        <div className="vs-divider">
+          <span className="vs-text">VS</span>
+        </div>
+
+        {/* 敌人血量（右侧） */}
+        <div className="hp-section enemy-section">
+          <div className="section-header">
+            <span className="character-name enemy-name">{enemyName}</span>
+            <span className="enemy-icon">🦠</span>
+          </div>
+          <div className="hp-bar-container">
+            <div className="hp-bar enemy">
+              <div 
+                className="hp-fill" 
+                style={{ width: `${enemyPercent}%` }}
+              />
+            </div>
             <span className="hp-text">{enemyHp}/{enemyMaxHp}</span>
           </div>
         </div>
       </div>
-      
-      {/* 战斗状态提示 */}
-      {battleState === BattleState.WON && (
-        <div className="battle-result victory">
-          ✨ 胜利!
+
+      {/* 战斗状态提示（居中，不遮挡棋盘） */}
+      {isFighting && (
+        <div className="battle-status fighting">
+          <div className="status-icon">⚔️</div>
+          <div className="status-text">战斗中!</div>
         </div>
       )}
-      {battleState === BattleState.LOST && (
+      
+      {isWon && (
+        <div className="battle-result victory">
+          <div className="result-icon">✨</div>
+          <div className="result-text">胜利!</div>
+        </div>
+      )}
+      
+      {isLost && (
         <div className="battle-result defeat">
-          💀 失败!
+          <div className="result-icon">💀</div>
+          <div className="result-text">失败!</div>
         </div>
       )}
     </div>
