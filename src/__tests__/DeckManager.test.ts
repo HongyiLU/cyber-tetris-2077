@@ -315,3 +315,112 @@ describe('GameEngine with DeckManager', () => {
     expect(true).toBe(true);
   });
 });
+
+// ==================== 牌堆模式测试 ====================
+
+describe('DeckManager - 牌堆模式（无放回抽样）', () => {
+  let deckManager: DeckManager;
+  let testDeck: Deck;
+
+  beforeEach(() => {
+    localStorage.clear();
+    deckManager = new DeckManager();
+    testDeck = deckManager.createDeck('测试牌堆', ['I', 'O', 'T', 'S', 'Z']);
+    deckManager.setActiveDeck(testDeck.id);
+  });
+
+  test('应该成功初始化抽取池', () => {
+    // 初始时抽取池应为空
+    expect(deckManager.getDrawPoolSize()).toBe(0);
+    
+    // 第一次抽卡会自动填充
+    const result = deckManager.drawFromDeck();
+    
+    expect(result.success).toBe(true);
+    expect(result.card).toBeDefined();
+    expect(result.wasRefilled).toBe(true); // 第一次抽卡会触发填充
+    expect(deckManager.getDrawPoolSize()).toBe(4); // 5 张卡抽了 1 张，剩 4 张
+  });
+
+  test('应该实现无放回抽样（抽一张少一张）', () => {
+    const initialSize = 5; // 5 张卡
+    
+    // 第一次抽卡
+    const result1 = deckManager.drawFromDeck();
+    expect(result1.success).toBe(true);
+    expect(deckManager.getDrawPoolSize()).toBe(initialSize - 1);
+    
+    // 第二次抽卡
+    const result2 = deckManager.drawFromDeck();
+    expect(result2.success).toBe(true);
+    expect(deckManager.getDrawPoolSize()).toBe(initialSize - 2);
+    
+    // 第三次抽卡
+    const result3 = deckManager.drawFromDeck();
+    expect(result3.success).toBe(true);
+    expect(deckManager.getDrawPoolSize()).toBe(initialSize - 3);
+  });
+
+  test('抽空后应该自动洗牌', () => {
+    // 连续抽 5 次，抽空牌堆
+    for (let i = 0; i < 5; i++) {
+      const result = deckManager.drawFromDeck();
+      expect(result.success).toBe(true);
+      expect(result.wasRefilled).toBe(i === 0); // 只有第一次会触发填充
+    }
+    
+    // 此时抽取池应为空
+    expect(deckManager.getDrawPoolSize()).toBe(0);
+    
+    // 第 6 次抽卡应该触发洗牌
+    const result6 = deckManager.drawFromDeck();
+    expect(result6.success).toBe(true);
+    expect(result6.wasRefilled).toBe(true); // 触发洗牌
+    expect(deckManager.getDrawPoolSize()).toBe(4); // 5 张卡抽了 1 张，剩 4 张
+  });
+
+  test('应该使用 Fisher-Yates 洗牌算法', () => {
+    // 多次重置并抽卡，验证随机性
+    const results: string[] = [];
+    
+    for (let i = 0; i < 10; i++) {
+      deckManager.resetDrawPool();
+      const result = deckManager.drawFromDeck();
+      if (result.card) {
+        results.push(result.card.id);
+      }
+    }
+    
+    // 验证结果有一定的随机性（不应该总是相同顺序）
+    const uniqueResults = new Set(results);
+    expect(uniqueResults.size).toBeGreaterThan(1);
+  });
+
+  test('重置抽取池应该清空当前池', () => {
+    // 抽一些卡
+    deckManager.drawFromDeck();
+    deckManager.drawFromDeck();
+    expect(deckManager.getDrawPoolSize()).toBe(3);
+    
+    // 重置
+    deckManager.resetDrawPool();
+    expect(deckManager.getDrawPoolSize()).toBe(0);
+    
+    // 再次抽卡会重新填充
+    const result = deckManager.drawFromDeck();
+    expect(result.wasRefilled).toBe(true);
+    expect(deckManager.getDrawPoolSize()).toBe(4);
+  });
+
+  test('空卡组时应该返回回退卡牌', () => {
+    // 设置一个空卡组
+    deckManager.setActiveDeck(null);
+    
+    const result = deckManager.drawFromDeck();
+    
+    expect(result.success).toBe(false);
+    expect(result.card).toBeDefined();
+    expect(result.message).toBe('卡组为空');
+    expect(result.wasRefilled).toBe(false);
+  });
+});

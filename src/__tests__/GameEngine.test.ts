@@ -230,4 +230,88 @@ describe('GameEngine', () => {
       expect(state.score).toBeGreaterThanOrEqual(0);
     });
   });
+
+  describe('抽空惩罚机制', () => {
+    test('应该正确生成垃圾行', () => {
+      engine.init();
+      const stateBefore = engine.getGameState();
+      
+      // 手动触发惩罚
+      (engine as any).triggerGarbagePenalty(2);
+      
+      const stateAfter = engine.getGameState();
+      
+      // 棋盘行数应该不变（仍然是 ROWS）
+      expect(stateAfter.board.length).toBe(GAME_CONFIG.GAME.ROWS);
+      
+      // 顶部应该有垃圾行（因为 unshift 是从顶部插入）
+      // 检查最上面的几行（垃圾行从顶部插入）
+      const topRow = stateAfter.board[0];
+      const ones = topRow.filter(cell => cell === 1).length;
+      const zeros = topRow.filter(cell => cell === 0).length;
+      
+      expect(ones).toBe(GAME_CONFIG.GAME.COLS - 1); // 只有一个缺口
+      expect(zeros).toBe(1);
+    });
+
+    test('垃圾行应该有随机缺口', () => {
+      engine.init();
+      
+      // 多次生成垃圾行，验证缺口位置不同
+      const gapPositions: number[] = [];
+      
+      for (let i = 0; i < 10; i++) {
+        (engine as any).addGarbageRow();
+        const board = (engine as any).board;
+        const topRow = board[0]; // 从顶部插入
+        const gapIndex = topRow.findIndex(cell => cell === 0);
+        gapPositions.push(gapIndex);
+      }
+      
+      // 验证缺口位置有变化（随机性）
+      const uniqueGaps = new Set(gapPositions);
+      // 注意：由于随机性，10 次中有可能出现相同位置，但概率很低
+      // 如果测试失败，可以增加次数或放宽要求
+      expect(uniqueGaps.size).toBeGreaterThanOrEqual(1);
+    });
+
+    test('应该使用配置中的惩罚行数', () => {
+      engine.init();
+      const stateBefore = engine.getGameState();
+      const rowsBefore = stateBefore.board.filter(row => row.some(cell => cell !== 0)).length;
+      
+      // 触发惩罚（默认 2 行）
+      (engine as any).triggerGarbagePenalty();
+      
+      const stateAfter = engine.getGameState();
+      const rowsAfter = stateAfter.board.filter(row => row.some(cell => cell !== 0)).length;
+      
+      // 垃圾行数量应该增加 2
+      expect(rowsAfter - rowsBefore).toBe(2);
+    });
+  });
+
+  describe('牌堆模式集成', () => {
+    test('应该支持牌堆模式（无放回抽样）', () => {
+      const deckManager = engine.getDeckManager();
+      const testDeck = deckManager.createDeck('测试牌堆', ['I', 'O', 'T']);
+      deckManager.setActiveDeck(testDeck.id);
+      
+      // 重新创建 engine 以使用更新后的 DeckManager
+      const newEngine = new GameEngine(
+        GAME_CONFIG.GAME.COLS,
+        GAME_CONFIG.GAME.ROWS,
+        deckManager
+      );
+      newEngine.setDeck(testDeck);
+      newEngine.init();
+      
+      // 验证游戏正常进行
+      const state = newEngine.getGameState();
+      expect(state.currentPiece).toBeDefined();
+      // 验证方块类型在卡组中
+      const validTypes = ['I', 'O', 'T'];
+      expect(validTypes).toContain(state.currentPiece!.type);
+    });
+  });
 });

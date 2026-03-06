@@ -77,3 +77,27 @@ export interface PresetDeck {
   /** 方块 ID 列表 */
   cards: string[];
 }
+
+/**
+ * 卡组卡牌配置（支持数量）
+ */
+export interface DeckCard {
+  /** 卡牌 ID */
+  cardId: string;
+  /** 卡牌数量（默认 1） */
+  count: number;
+}
+
+/**
+ * 抽卡结果
+ */
+export interface DrawResult {
+  /** 是否成功 */
+  success: boolean;
+  /** 抽到的卡牌 */
+  card: { id: string } | null;
+  /** 提示信息 */
+  message?: string;
+  /** 是否刚重新填充（洗牌） */
+  wasRefilled: boolean;
+}

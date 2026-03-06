@@ -1,7 +1,7 @@
 // ==================== 卡组管理器 ====================
 
 import { GAME_CONFIG } from '../config/game-config';
-import type { Deck, DeckConfig, DeckValidationResult, PresetDeck } from '../types/deck';
+import type { Deck, DeckConfig, DeckValidationResult, PresetDeck, DeckCard, DrawResult } from '../types/deck';
 import type { CardData } from '../types';
 
 /**
@@ -45,6 +45,9 @@ export class DeckManager {
   private activeDeckId: string | null;
   private readonly storageKey: string;
   private readonly config: DeckConfig;
+  
+  // 牌堆模式：当前抽取池（会减少）
+  private currentDrawPool: string[] = [];
   
   // 向后兼容：卡牌收集系统
   private collectedCards: Set<string>;
@@ -468,6 +471,92 @@ export class DeckManager {
       return null;
     }
     return this.decks.get(this.activeDeckId) || null;
+  }
+
+  // ==================== 牌堆模式（无放回抽样） ====================
+
+  /**
+   * 重新填充抽取池（洗牌）
+   * 从激活的卡组中构建抽取池，使用 Fisher-Yates 洗牌算法
+   */
+  private refillDrawPool(): void {
+    const deck = this.getActiveDeck();
+    if (!deck) return;
+    
+    this.currentDrawPool = [];
+    
+    // 遍历卡组中的每张卡牌
+    deck.cards.forEach((cardId) => {
+      // 默认每张卡牌数量为 1
+      const poolCount = 1;
+      for (let i = 0; i < poolCount; i++) {
+        this.currentDrawPool.push(cardId);
+      }
+    });
+    
+    // 洗牌（Fisher-Yates 算法）
+    for (let i = this.currentDrawPool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.currentDrawPool[i], this.currentDrawPool[j]] = 
+      [this.currentDrawPool[j], this.currentDrawPool[i]];
+    }
+  }
+
+  /**
+   * 从牌堆抽取卡牌（无放回抽样）
+   * 抽一张少一张，抽空后自动洗牌
+   * @returns 抽卡结果
+   */
+  public drawFromDeck(): DrawResult {
+    // 如果抽取池为空，先填充并标记为"抽空"
+    const wasEmpty = this.currentDrawPool.length === 0;
+    
+    if (wasEmpty) {
+      this.refillDrawPool();
+    }
+    
+    if (this.currentDrawPool.length === 0) {
+      // 仍然为空，返回回退卡牌
+      return {
+        success: false,
+        card: this.getFallbackCard(),
+        message: '卡组为空',
+        wasRefilled: false,
+      };
+    }
+    
+    // 抽取最后一张（栈顶）
+    const cardId = this.currentDrawPool.pop()!;
+    
+    return {
+      success: true,
+      card: { id: cardId },
+      wasRefilled: wasEmpty, // 标记是否刚洗牌
+    };
+  }
+
+  /**
+   * 获取回退卡牌（当卡组为空时使用）
+   * @returns 回退卡牌 ID
+   */
+  private getFallbackCard(): { id: string } {
+    // 返回一个经典的 T 方块作为回退
+    return { id: 'T' };
+  }
+
+  /**
+   * 重置抽取池（用于重新开始游戏）
+   */
+  public resetDrawPool(): void {
+    this.currentDrawPool = [];
+  }
+
+  /**
+   * 获取当前抽取池剩余数量（用于 UI 显示）
+   * @returns 剩余卡牌数量
+   */
+  public getDrawPoolSize(): number {
+    return this.currentDrawPool.length;
   }
 
   /**

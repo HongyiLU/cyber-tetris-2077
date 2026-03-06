@@ -161,6 +161,12 @@ export const GAME_CONFIG = {
     { id: 'STAR', name: '万能方块', type: 'special', rarity: 'legendary', desc: '消除整行 +500 分' },
     { id: 'VORTEX', name: '漩涡方块', type: 'special', rarity: 'epic', desc: '随机打乱' },
   ],
+  
+  // ==================== 卡组系统配置 ====================
+  DECK: {
+    GARBAGE_PENALTY_ROWS: 2,    // 抽空惩罚行数
+    // GARBAGE_GAP_CHANCE: 0.1,  // 预留未来实现多缺口功能
+  },
 };
 
 // 分数倍率（根据方块大小）

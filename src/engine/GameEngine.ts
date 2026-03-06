@@ -3,7 +3,7 @@
 import { GAME_CONFIG, PIECE_SIZE_MULTIPLIER } from '../config/game-config';
 import { DeckManager } from './DeckManager';
 import type { Piece, Position, GameState } from '../types';
-import type { Deck } from '../types/deck';
+import type { Deck, DrawResult } from '../types/deck';
 import { createEmptyBoard, checkCollision, rotateShape, copyBoard, copyShape } from '../utils/game-utils';
 
 /**
@@ -29,6 +29,7 @@ export class GameEngine {
   private deckManager: DeckManager;
   private activeDeck: Deck | null = null; // 当前激活的卡组
   private pieceLocked: boolean = false; // 标记方块是否已锁定
+  private lastDrawnCard: { id: string } | null = null; // 记录上次抽取的卡牌
 
   constructor(
     cols: number = GAME_CONFIG.GAME.COLS,
@@ -60,7 +61,7 @@ export class GameEngine {
   /**
    * 创建新方块
    * 支持两种模式：
-   * 1. 从激活的卡组中抽取（支持稀有度权重）
+   * 1. 从激活的卡组中抽取（牌堆模式：无放回抽样）
    * 2. 完全随机（未设置卡组时）
    * 
    * @param type 指定方块类型（可选，用于测试或特殊方块）
@@ -70,8 +71,16 @@ export class GameEngine {
     let pieceType: string;
 
     if (this.activeDeck && this.activeDeck.cards.length > 0) {
-      // 从卡组中抽取（支持稀有度权重）
-      pieceType = this.drawFromDeck();
+      // 从卡组中抽取（牌堆模式：无放回抽样）
+      const drawResult = this.deckManager.drawFromDeck();
+      
+      // 触发抽空惩罚：如果刚重新填充（洗牌）
+      if (drawResult.wasRefilled) {
+        this.triggerGarbagePenalty();
+      }
+      
+      this.lastDrawnCard = drawResult.card;
+      pieceType = drawResult.card?.id || 'T';
     } else {
       // 使用所有方块类型（当前逻辑）
       const types = Object.keys(GAME_CONFIG.SHAPES);
@@ -93,61 +102,40 @@ export class GameEngine {
   }
 
   /**
-   * 从卡组抽取方块
-   * 实现带权重随机抽取算法
-   * 
-   * 算法说明：
-   * 1. 根据卡组中的方块 ID，获取对应的稀有度
-   * 2. 根据稀有度权重计算每个方块的抽取概率
-   * 3. 使用轮盘赌算法进行加权随机选择
-   * 
+   * 从卡组抽取方块（旧方法，保留用于向后兼容）
+   * @deprecated 使用 DeckManager.drawFromDeck() 代替
    * @returns 抽取的方块 ID
    */
   private drawFromDeck(): string {
-    if (!this.activeDeck || this.activeDeck.cards.length === 0) {
-      //  fallback：随机返回一个方块
-      const types = Object.keys(GAME_CONFIG.SHAPES);
-      return types[Math.floor(Math.random() * types.length)];
-    }
+    const drawResult = this.deckManager.drawFromDeck();
+    return drawResult.card?.id || 'T';
+  }
 
-    const cards = this.activeDeck.cards;
+  /**
+   * 触发抽空惩罚：从底部生成垃圾行
+   * @param rows 垃圾行数量（默认由配置决定）
+   */
+  private triggerGarbagePenalty(rows?: number): void {
+    const penaltyRows = rows ?? GAME_CONFIG.DECK.GARBAGE_PENALTY_ROWS;
     
-    // 数组越界防护：当 cards.length === 0 时返回默认方块
-    if (cards.length === 0) {
-      return 'T'; // 返回默认方块
+    // 从底部生成 rows 行垃圾行
+    for (let i = 0; i < penaltyRows; i++) {
+      this.addGarbageRow();
     }
+  }
+
+  /**
+   * 添加垃圾行（带随机缺口）
+   */
+  private addGarbageRow(): void {
+    // 生成带随机缺口的垃圾行
+    const gap = Math.floor(Math.random() * this.cols);
+    const garbageRow = Array(this.cols).fill(1);
+    garbageRow[gap] = 0; // 留一个缺口
     
-    const rarityWeights = this.deckManager.getRarityWeights();
-
-    // 如果只有 1 张卡，直接返回
-    if (cards.length === 1) {
-      return cards[0];
-    }
-
-    // 计算每张卡的权重
-    const weights: number[] = [];
-    let totalWeight = 0;
-
-    for (const cardId of cards) {
-      const cardData = GAME_CONFIG.CARDS.find(c => c.id === cardId);
-      const rarity = cardData?.rarity || 'common';
-      const weight = rarityWeights[rarity] || 1;
-      weights.push(weight);
-      totalWeight += weight;
-    }
-
-    // 轮盘赌选择
-    let random = Math.random() * totalWeight;
-    
-    for (let i = 0; i < cards.length; i++) {
-      random -= weights[i];
-      if (random <= 0) {
-        return cards[i];
-      }
-    }
-
-    // 理论上不会到这里，但为了安全返回最后一个
-    return cards[cards.length - 1];
+    // 从顶部插入垃圾行，移除最底部一行以保持棋盘大小
+    this.board.splice(this.rows - 1, 1);
+    this.board.unshift(garbageRow);
   }
 
   /**
@@ -161,9 +149,15 @@ export class GameEngine {
     this.gameOver = false;
     this.paused = false;
     this.pieceLocked = false;
+    this.lastDrawnCard = null;
     
     // 获取激活的卡组
     this.activeDeck = this.deckManager.getActiveDeck();
+    
+    // 重置抽取池（开始新的牌堆）
+    if (this.activeDeck) {
+      this.deckManager.resetDrawPool();
+    }
     
     this.currentPiece = this.createPiece();
     this.nextPiece = this.createPiece();
