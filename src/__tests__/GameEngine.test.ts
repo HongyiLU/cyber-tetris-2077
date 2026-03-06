@@ -264,7 +264,7 @@ describe('GameEngine', () => {
         (engine as any).addGarbageRow();
         const board = (engine as any).board;
         const topRow = board[0]; // 从顶部插入
-        const gapIndex = topRow.findIndex(cell => cell === 0);
+        const gapIndex = topRow.findIndex((cell: number) => cell === 0);
         gapPositions.push(gapIndex);
       }
       

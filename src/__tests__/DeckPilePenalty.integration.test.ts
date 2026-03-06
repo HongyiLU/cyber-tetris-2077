@@ -127,7 +127,7 @@ describe('牌堆模式 + 抽空惩罚集成测试', () => {
       (engine as any).addGarbageRow();
       const board = (engine as any).board;
       const topRow = board[0];
-      const gapIndex = topRow.findIndex(cell => cell === 0);
+      const gapIndex = topRow.findIndex((cell: number) => cell === 0);
       gapPositions.add(gapIndex);
     }
     
