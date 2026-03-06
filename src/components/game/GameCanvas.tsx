@@ -11,6 +11,15 @@ interface GameCanvasProps {
   blockSize?: number;
 }
 
+// 创建 typeId 到颜色的反向映射
+const TYPE_ID_TO_COLOR: Record<number, string> = {};
+Object.entries(GAME_CONFIG.PIECE_TYPE_MAP).forEach(([type, id]) => {
+  const color = GAME_CONFIG.COLORS[type as keyof typeof GAME_CONFIG.COLORS];
+  if (color) {
+    TYPE_ID_TO_COLOR[id] = color;
+  }
+});
+
 const GameCanvas: React.FC<GameCanvasProps> = ({ 
   gameState, 
   blockSize = GAME_CONFIG.GAME.BLOCK_SIZE 
