@@ -6,11 +6,12 @@ import { DeckManager } from './engine/DeckManager';
 import { GameCanvas, GameInfo } from './components/game';
 import { CardDeck, MobileControls, ResponsiveLayout } from './components/ui';
 import { useGameLoop, useKeyboardControl } from './hooks';
+import { GAME_CONFIG } from './config/game-config';
 import type { GameState } from './types';
 
 const App: React.FC = () => {
-  const [gameEngine] = useState(() => new GameEngine());
   const [deckManager] = useState(() => new DeckManager());
+  const [gameEngine] = useState(() => new GameEngine(GAME_CONFIG.GAME.COLS, GAME_CONFIG.GAME.ROWS, deckManager));
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [showDeck, setShowDeck] = useState(false);
