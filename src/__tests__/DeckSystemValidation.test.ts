@@ -166,25 +166,23 @@ describe('卡组系统综合验证测试', () => {
         expect(classic?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       });
 
-      test('新手卡组应该包含 2/3/4 块方块', () => {
+      test('新手卡组应该只包含经典 7 种方块', () => {
         const presets = deckManager.getPresetDecks();
         const beginner = presets.find(p => p.id === 'preset-beginner');
         
         expect(beginner).toBeDefined();
-        expect(beginner?.cards).toContain('DOM'); // 2 块
-        expect(beginner?.cards).toContain('V3'); // 3 块
-        expect(beginner?.cards).toContain('COR'); // 3 块
+        expect(beginner?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       });
 
-      test('全卡卡组应该包含所有基础方块', () => {
+      test('全卡卡组应该包含经典 7 种 + 特殊 8 种', () => {
         const presets = deckManager.getPresetDecks();
         const complete = presets.find(p => p.id === 'preset-complete');
         
         expect(complete).toBeDefined();
-        expect(complete?.cards.length).toBeGreaterThan(10);
-        expect(complete?.cards).toContain('U5');
-        expect(complete?.cards).toContain('W5');
-        expect(complete?.cards).toContain('I5');
+        expect(complete?.cards.length).toBe(15); // 7 经典 + 8 特殊
+        expect(complete?.cards).toContain('BOMB');
+        expect(complete?.cards).toContain('ROW');
+        expect(complete?.cards).toContain('STAR');
       });
     });
   });
@@ -241,13 +239,13 @@ describe('卡组系统综合验证测试', () => {
       });
 
       test('高稀有度卡牌应该更难抽取（统计测试）', () => {
-        // 创建一个包含不同稀有度的卡组
+        // 创建一个包含不同稀有度的卡组（经典 + 特殊）
         const deck = deckManager.createDeck('权重测试', [
           'I', // common
           'O', // common
           'T', // common
-          'DOM', // uncommon
-          'V3', // rare
+          'BOMB', // rare
+          'STAR', // legendary
         ]);
         deckManager.setActiveDeck(deck.id);
         
@@ -315,7 +313,7 @@ describe('卡组系统综合验证测试', () => {
       // 创建多个卡组
       deckManager.createDeck('卡组 1', ['I', 'O', 'T']);
       deckManager.createDeck('卡组 2', ['S', 'Z', 'L']);
-      deckManager.createDeck('卡组 3', ['J', 'DOM', 'V3']);
+      deckManager.createDeck('卡组 3', ['J', 'BOMB', 'ROW']);
       
       // 模拟刷新（创建新实例）
       const freshManager = new DeckManager();
@@ -523,7 +521,7 @@ describe('卡组系统综合验证测试', () => {
     test('抽取算法性能', () => {
       const deck = deckManager.createDeck('性能测试', [
         'I', 'O', 'T', 'S', 'Z', 'L', 'J',
-        'DOM', 'V3', 'COR', 'U5', 'W5', 'I5'
+        'BOMB', 'ROW', 'COL', 'RAINBOW', 'GRAVITY', 'SLOWMO', 'STAR', 'VORTEX'
       ]);
       deckManager.setActiveDeck(deck.id);
       

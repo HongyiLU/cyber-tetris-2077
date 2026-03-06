@@ -1,0 +1,189 @@
+﻿
+> cyber-tetris-2077@1.3.0 test
+> jest
+
+node.exe : PASS src/__tests__/DeckSystemValidation.test.ts
+所在位置 行:1 字符: 1
++ & "D:\Program Files\NodeJs/node.exe" "D:\Program Files\NodeJs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (PASS src/__test...idation.test.ts:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  鈼?Console
+
+    console.error
+      鍗＄粍load澶辫触: SyntaxError: Unexpected token 'i', "invalid json" is not valid JSON
+          at JSON.parse (<anonymous>)
+          at DeckManager.loadDecks (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\src\engine\DeckManager.ts:336
+:27)
+          at new DeckManager (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\src\engine\DeckManager.ts:113:10)
+          at Object.<anonymous> (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\src\__tests__\DeckSystemValidati
+on.test.ts:333:23)
+          at Promise.finally.completed (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-circus\
+build\jestAdapterInit.js:1557:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-circus\build\je
+stAdapterInit.js:1497:10)
+          at _callCircusTest (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-circus\build\jest
+AdapterInit.js:1007:40)
+          at _runTest (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-circus\build\jestAdapter
+Init.js:947:3)
+          at C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-circus\build\jestAdapterInit.js:84
+9:7
+          at _runTestsForDescribeBlock (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-circus\
+build\jestAdapterInit.js:862:11)
+          at _runTestsForDescribeBlock (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-circus\
+build\jestAdapterInit.js:857:11)
+          at _runTestsForDescribeBlock (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-circus\
+build\jestAdapterInit.js:857:11)
+          at run (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-circus\build\jestAdapterInit.
+js:761:3)
+          at runAndTransformResultsToJestFormat (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jes
+t-circus\build\jestAdapterInit.js:1918:21)
+          at jestAdapter (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-circus\build\runner.j
+s:101:19)
+          at runTestInternal (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-runner\build\inde
+x.js:275:16)
+          at runTest (C:\Users\hongyi lu\.openclaw\workspace\tetris-project\node_modules\jest-runner\build\index.js:343
+:7)
+
+    [0m [90m 145 |[39m     [36mthis[39m[33m.[39mlastStorageError [33m=[39m err[33m;[39m
+     [90m 146 |[39m     
+    [31m[1m>[22m[39m[90m 147 |[39m     console[33m.[39merror([32m`鍗＄粍${operation}澶辫触:`[39m[33m,[39m err)[3
+3m;[39m
+     [90m     |[39m             [31m[1m^[22m[39m
+     [90m 148 |[39m     
+     [90m 149 |[39m     [36mif[39m ([36mthis[39m[33m.[39monErrorCallback) {
+     [90m 150 |[39m       [36mthis[39m[33m.[39monErrorCallback(err[33m,[39m operation)[33m;[39m[0m
+
+      at DeckManager.handleStorageError (src/engine/DeckManager.ts:147:13)
+      at DeckManager.loadDecks (src/engine/DeckManager.ts:393:12)
+      at new DeckManager (src/engine/DeckManager.ts:113:10)
+      at Object.<anonymous> (src/__tests__/DeckSystemValidation.test.ts:333:23)
+
+PASS src/__tests__/DeckManager.test.ts
+  鈼?Console
+
+    console.warn
+      鍗＄粍 "鏃у崱缁? 鍖呭惈宸插垹闄ょ殑鏂瑰潡锛歑5锛屽凡鑷姩绉婚櫎
+
+    [0m [90m 351 |[39m             [36mif[39m ([33m![39misValid) {
+     [90m 352 |[39m               hasInvalidCards [33m=[39m [36mtrue[39m[33m;[39m
+    [31m[1m>[22m[39m[90m 353 |[39m               console[33m.[39mwarn([32m`鍗＄粍 "${deck.name}" 鍖呭惈宸插垹闄ょ殑鏂瑰潡锛?{c
+ardId}锛屽凡鑷姩绉婚櫎`[39m)[33m;[39m
+     [90m     |[39m                       [31m[1m^[22m[39m
+     [90m 354 |[39m             }
+     [90m 355 |[39m             [36mreturn[39m isValid[33m;[39m
+     [90m 356 |[39m           })[33m;[39m[0m
+
+      at src/engine/DeckManager.ts:353:23
+          at Array.filter (<anonymous>)
+      at DeckManager.loadDecks (src/engine/DeckManager.ts:349:44)
+      at new DeckManager (src/engine/DeckManager.ts:113:10)
+      at Object.<anonymous> (src/__tests__/DeckManager.test.ts:226:23)
+
+    console.warn
+      鍗＄粍 "鏃у崱缁? 鍖呭惈宸插垹闄ょ殑鏂瑰潡锛歅5锛屽凡鑷姩绉婚櫎
+
+    [0m [90m 351 |[39m             [36mif[39m ([33m![39misValid) {
+     [90m 352 |[39m               hasInvalidCards [33m=[39m [36mtrue[39m[33m;[39m
+    [31m[1m>[22m[39m[90m 353 |[39m               console[33m.[39mwarn([32m`鍗＄粍 "${deck.name}" 鍖呭惈宸插垹闄ょ殑鏂瑰潡锛?{c
+ardId}锛屽凡鑷姩绉婚櫎`[39m)[33m;[39m
+     [90m     |[39m                       [31m[1m^[22m[39m
+     [90m 354 |[39m             }
+     [90m 355 |[39m             [36mreturn[39m isValid[33m;[39m
+     [90m 356 |[39m           })[33m;[39m[0m
+
+      at src/engine/DeckManager.ts:353:23
+          at Array.filter (<anonymous>)
+      at DeckManager.loadDecks (src/engine/DeckManager.ts:349:44)
+      at new DeckManager (src/engine/DeckManager.ts:113:10)
+      at Object.<anonymous> (src/__tests__/DeckManager.test.ts:226:23)
+
+    console.log
+      宸茶嚜鍔ㄦ竻鐞嗗崱缁勪腑鐨勬棤鏁堟柟鍧楋紝淇濆瓨鍒?localStorage
+
+      at DeckManager.loadDecks (src/engine/DeckManager.ts:370:19)
+
+    console.warn
+      鍗＄粍 "澶皬鐨勫崱缁? 鍖呭惈宸插垹闄ょ殑鏂瑰潡锛歑5锛屽凡鑷姩绉婚櫎
+
+    [0m [90m 351 |[39m             [36mif[39m ([33m![39misValid) {
+     [90m 352 |[39m               hasInvalidCards [33m=[39m [36mtrue[39m[33m;[39m
+    [31m[1m>[22m[39m[90m 353 |[39m               console[33m.[39mwarn([32m`鍗＄粍 "${deck.name}" 鍖呭惈宸插垹闄ょ殑鏂瑰潡锛?{c
+ardId}锛屽凡鑷姩绉婚櫎`[39m)[33m;[39m
+     [90m     |[39m                       [31m[1m^[22m[39m
+     [90m 354 |[39m             }
+     [90m 355 |[39m             [36mreturn[39m isValid[33m;[39m
+     [90m 356 |[39m           })[33m;[39m[0m
+
+      at src/engine/DeckManager.ts:353:23
+          at Array.filter (<anonymous>)
+      at DeckManager.loadDecks (src/engine/DeckManager.ts:349:44)
+      at new DeckManager (src/engine/DeckManager.ts:113:10)
+      at Object.<anonymous> (src/__tests__/DeckManager.test.ts:259:23)
+
+    console.warn
+      鍗＄粍 "澶皬鐨勫崱缁? 鍖呭惈宸插垹闄ょ殑鏂瑰潡锛歅5锛屽凡鑷姩绉婚櫎
+
+    [0m [90m 351 |[39m             [36mif[39m ([33m![39misValid) {
+     [90m 352 |[39m               hasInvalidCards [33m=[39m [36mtrue[39m[33m;[39m
+    [31m[1m>[22m[39m[90m 353 |[39m               console[33m.[39mwarn([32m`鍗＄粍 "${deck.name}" 鍖呭惈宸插垹闄ょ殑鏂瑰潡锛?{c
+ardId}锛屽凡鑷姩绉婚櫎`[39m)[33m;[39m
+     [90m     |[39m                       [31m[1m^[22m[39m
+     [90m 354 |[39m             }
+     [90m 355 |[39m             [36mreturn[39m isValid[33m;[39m
+     [90m 356 |[39m           })[33m;[39m[0m
+
+      at src/engine/DeckManager.ts:353:23
+          at Array.filter (<anonymous>)
+      at DeckManager.loadDecks (src/engine/DeckManager.ts:349:44)
+      at new DeckManager (src/engine/DeckManager.ts:113:10)
+      at Object.<anonymous> (src/__tests__/DeckManager.test.ts:259:23)
+
+    console.warn
+      鍗＄粍 "澶皬鐨勫崱缁? 杩囨护鏃犳晥鍗＄墝鍚庡ぇ灏忎笉瓒筹紝宸茬Щ闄?
+    [0m [90m 361 |[39m           } [36melse[39m [36mif[39m (originalCards[33m.[39mlength [33m>[39m [35m0[3
+9m) {
+     [90m 362 |[39m             [90m// 杩囨护鍚庡崱缁勫お灏忥紝璁板綍璀﹀憡[39m
+    [31m[1m>[22m[39m[90m 363 |[39m             console[33m.[39mwarn([32m`鍗＄粍 "${deck.name}" 杩囨护鏃犳晥鍗＄墝鍚庡ぇ灏忎笉瓒筹紝
+宸茬Щ闄[39m)[33m;[39m
+     [90m     |[39m                     [31m[1m^[22m[39m
+     [90m 364 |[39m           }
+     [90m 365 |[39m         }
+     [90m 366 |[39m         [0m
+
+      at DeckManager.loadDecks (src/engine/DeckManager.ts:363:21)
+      at new DeckManager (src/engine/DeckManager.ts:113:10)
+      at Object.<anonymous> (src/__tests__/DeckManager.test.ts:259:23)
+
+    console.log
+      宸茶嚜鍔ㄦ竻鐞嗗崱缁勪腑鐨勬棤鏁堟柟鍧楋紝淇濆瓨鍒?localStorage
+
+      at DeckManager.loadDecks (src/engine/DeckManager.ts:370:19)
+
+    console.warn
+      婵€娲荤殑鍗＄粍 deck-tiny 涓嶅瓨鍦紝宸叉竻绌烘縺娲荤姸鎬?
+    [0m [90m 379 |[39m           [36mthis[39m[33m.[39mactiveDeckId [33m=[39m parsed[33m.[39mactiveDeckId[33
+m;[39m
+     [90m 380 |[39m         } [36melse[39m {
+    [31m[1m>[22m[39m[90m 381 |[39m           console[33m.[39mwarn([32m`婵€娲荤殑鍗＄粍 ${parsed.activeDeckId} 涓嶅瓨鍦紝宸
+叉竻绌烘縺娲荤姸鎬乣[39m)[33m;[39m
+     [90m     |[39m                   [31m[1m^[22m[39m
+     [90m 382 |[39m           [36mthis[39m[33m.[39mactiveDeckId [33m=[39m [36mnull[39m[33m;[39m
+     [90m 383 |[39m         }
+     [90m 384 |[39m       }[0m
+
+      at DeckManager.loadDecks (src/engine/DeckManager.ts:381:19)
+      at new DeckManager (src/engine/DeckManager.ts:113:10)
+      at Object.<anonymous> (src/__tests__/DeckManager.test.ts:259:23)
+
+PASS src/__tests__/GameEngine.test.ts
+PASS src/__tests__/DeckSystem.test.ts
+PASS src/__tests__/DeckPilePenalty.integration.test.ts
+
+Test Suites: 5 passed, 5 total
+Tests:       103 passed, 103 total
+Snapshots:   0 total
+Time:        0.722 s, estimated 1 s
+Ran all test suites.

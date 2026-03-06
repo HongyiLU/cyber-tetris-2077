@@ -1,0 +1,609 @@
+/* DeckUI.css - 赛博朋克霓虹风格卡组系统样式 */
+
+:root {
+  /* 赛博朋克基础配色 */
+  --neon-pink: #ff00ff;
+  --neon-blue: #00ffff;
+  --neon-purple: #bf00ff;
+  --neon-green: #00ff9d;
+  --neon-yellow: #ffff00;
+  --neon-orange: #ff9500;
+  
+  /* 背景色 */
+  --bg-dark: #0a0a0f;
+  --bg-card: #12121a;
+  --bg-card-hover: #1a1a25;
+  
+  /* 稀有度颜色 - 5 种等级 */
+  --rarity-common: #a0a0a0;      /* 普通 - 灰色 */
+  --rarity-rare: #00ffff;        /* 稀有 - 青色 */
+  --rarity-epic: #bf00ff;        /* 史诗 - 紫色 */
+  --rarity-legendary: #ff9500;   /* 传说 - 橙色 */
+  --rarity-mythic: #ff00ff;      /* 神话 - 粉色 */
+  
+  /* 文字颜色 */
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-dim: #606060;
+  
+  /* 边框和阴影 */
+  --border-glow: 0 0 10px;
+  --glow-intensity: 0.8;
+}
+
+/* 基础容器 */
+.deck-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+/* 卡组管理界面 */
+.deck-management {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.deck-header {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.deck-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--neon-blue);
+  text-shadow: 
+    0 0 10px var(--neon-blue),
+    0 0 20px var(--neon-blue),
+    0 0 30px var(--neon-blue);
+  letter-spacing: 3px;
+  animation: titlePulse 2s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* 卡组列表 */
+.deck-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.deck-card {
+  background: var(--bg-card);
+  border: 2px solid var(--neon-blue);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.deck-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.deck-card:hover::before {
+  left: 100%;
+}
+
+.deck-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 
+    var(--border-glow) var(--neon-blue),
+    0 10px 30px rgba(0, 255, 255, 0.3);
+  background: var(--bg-card-hover);
+}
+
+.deck-card.selected {
+  border-color: var(--neon-pink);
+  box-shadow: 
+    var(--border-glow) var(--neon-pink),
+    0 0 30px rgba(255, 0, 255, 0.4);
+}
+
+.deck-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: var(--neon-pink);
+  font-size: 1.5rem;
+  text-shadow: 0 0 10px var(--neon-pink);
+}
+
+.deck-card-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.deck-card-info {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+}
+
+.deck-card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* 按钮样式 */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  color: var(--text-primary);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 2px solid var(--neon-blue);
+  color: var(--neon-blue);
+}
+
+.btn-secondary:hover {
+  background: var(--neon-blue);
+  color: var(--bg-dark);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+}
+
+.btn-danger {
+  background: transparent;
+  border: 2px solid #ff4444;
+  color: #ff4444;
+}
+
+.btn-danger:hover {
+  background: #ff4444;
+  color: var(--text-primary);
+  box-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
+}
+
+/* 卡组编辑器 */
+.deck-editor {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 30px;
+  border: 2px solid var(--neon-purple);
+  box-shadow: var(--border-glow) var(--neon-purple);
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--neon-purple);
+}
+
+.deck-name-input {
+  background: var(--bg-dark);
+  border: 2px solid var(--neon-blue);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  width: 300px;
+  transition: all 0.3s ease;
+}
+
+.deck-name-input:focus {
+  outline: none;
+  border-color: var(--neon-pink);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+}
+
+.editor-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+/* 方块池 */
+.block-pool, .selected-blocks {
+  background: var(--bg-dark);
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 400px;
+}
+
+.pool-title {
+  font-size: 1.1rem;
+  color: var(--neon-blue);
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.block-filter {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--text-dim);
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.8rem;
+}
+
+.filter-btn:hover, .filter-btn.active {
+  border-color: var(--neon-green);
+  color: var(--neon-green);
+  box-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+}
+
+/* 方块项 */
+.block-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: var(--bg-card);
+  border-radius: 6px;
+  border-left: 4px solid var(--rarity-common);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.block-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.block-item.common { border-left-color: var(--rarity-common); }
+.block-item.rare { border-left-color: var(--rarity-rare); }
+.block-item.epic { border-left-color: var(--rarity-epic); }
+.block-item.legendary { border-left-color: var(--rarity-legendary); }
+.block-item.mythic { border-left-color: var(--rarity-mythic); }
+
+.block-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.block-shape {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.block-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.block-name {
+  color: var(--text-primary);
+  font-weight: bold;
+}
+
+.block-rarity {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.add-btn, .remove-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.add-btn {
+  background: var(--neon-green);
+  color: var(--bg-dark);
+}
+
+.add-btn:hover {
+  box-shadow: 0 0 15px var(--neon-green);
+  transform: scale(1.1);
+}
+
+.remove-btn {
+  background: #ff4444;
+  color: var(--text-primary);
+}
+
+.remove-btn:hover {
+  box-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
+  transform: scale(1.1);
+}
+
+/* 抽卡动画 */
+.draw-animation-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.draw-card {
+  width: 200px;
+  height: 300px;
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-dark));
+  border-radius: 16px;
+  border: 3px solid var(--neon-blue);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: cardDraw 1.5s ease-out forwards;
+}
+
+@keyframes cardDraw {
+  0% {
+    transform: scale(0.5) rotateY(90deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) rotateY(0deg);
+  }
+  100% {
+    transform: scale(1) rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+.draw-card.common { 
+  border-color: var(--rarity-common);
+  box-shadow: 0 0 30px var(--rarity-common);
+}
+.draw-card.rare { 
+  border-color: var(--rarity-rare);
+  box-shadow: 0 0 30px var(--rarity-rare);
+}
+.draw-card.epic { 
+  border-color: var(--rarity-epic);
+  box-shadow: 0 0 30px var(--rarity-epic);
+}
+.draw-card.legendary { 
+  border-color: var(--rarity-legendary);
+  box-shadow: 0 0 30px var(--rarity-legendary);
+}
+.draw-card.mythic { 
+  border-color: var(--rarity-mythic);
+  box-shadow: 0 0 30px var(--rarity-mythic);
+}
+
+.draw-card-shape {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  animation: shapeGlow 1s ease-in-out infinite alternate;
+}
+
+@keyframes shapeGlow {
+  from { 
+    filter: drop-shadow(0 0 10px currentColor);
+    transform: scale(1);
+  }
+  to { 
+    filter: drop-shadow(0 0 30px currentColor);
+    transform: scale(1.1);
+  }
+}
+
+.draw-card-name {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.draw-card-rarity {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+/* 粒子效果 */
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particleFloat 2s ease-out forwards;
+}
+
+@keyframes particleFloat {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(0);
+  }
+}
+
+/* 游戏内卡组显示 */
+.deck-display {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--bg-card);
+  border: 2px solid var(--neon-blue);
+  border-radius: 12px;
+  padding: 15px 20px;
+  min-width: 200px;
+  box-shadow: var(--border-glow) var(--neon-blue);
+  z-index: 100;
+}
+
+.deck-display-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--text-dim);
+}
+
+.deck-display-name {
+  color: var(--neon-blue);
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.next-block-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.next-block-label {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.next-block-shape {
+  font-size: 1.5rem;
+  padding: 8px;
+  background: var(--bg-dark);
+  border-radius: 6px;
+  border: 1px solid var(--neon-purple);
+}
+
+.rarity-indicator {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+.rarity-indicator.common { 
+  background: var(--rarity-common); 
+  color: var(--bg-dark);
+}
+.rarity-indicator.rare { 
+  background: var(--rarity-rare); 
+  color: var(--bg-dark);
+}
+.rarity-indicator.epic { 
+  background: var(--rarity-epic); 
+  color: var(--text-primary);
+}
+.rarity-indicator.legendary { 
+  background: var(--rarity-legendary); 
+  color: var(--bg-dark);
+}
+.rarity-indicator.mythic { 
+  background: var(--rarity-mythic); 
+  color: var(--text-primary);
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .editor-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .deck-title {
+    font-size: 1.8rem;
+  }
+  
+  .deck-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .deck-display {
+    top: auto;
+    bottom: 20px;
+    right: 20px;
+    left: 20px;
+  }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--neon-blue);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-pink);
+}

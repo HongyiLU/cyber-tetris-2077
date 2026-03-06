@@ -37,7 +37,7 @@ export interface GameState {
  * 注意：只包含 GAME_CONFIG.CARDS 中定义的方块类型
  */
 export enum PieceType {
-  // 经典 7 种 4 块
+  // 经典 7 种
   I = 'I',
   O = 'O',
   T = 'T',
@@ -45,16 +45,7 @@ export enum PieceType {
   Z = 'Z',
   L = 'L',
   J = 'J',
-  // 2 块
-  DOM = 'DOM',
-  // 3 块
-  V3 = 'V3',
-  COR = 'COR',
-  // 5 块
-  U5 = 'U5',
-  W5 = 'W5',
-  I5 = 'I5',
-  // 特殊方块
+  // 特殊方块（默认解锁）
   BOMB = 'BOMB',
   ROW = 'ROW',
   COL = 'COL',
