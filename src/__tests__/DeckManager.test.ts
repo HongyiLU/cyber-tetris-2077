@@ -278,10 +278,15 @@ describe('DeckManager', () => {
       // 不应该包含已删除的方块
       expect(complete?.cards).not.toContain('X5');
       expect(complete?.cards).not.toContain('P5');
+      expect(complete?.cards).not.toContain('DOM');
+      expect(complete?.cards).not.toContain('V3');
+      expect(complete?.cards).not.toContain('COR');
       
-      // 应该包含所有基础方块
-      const basicCards = GAME_CONFIG.CARDS.filter(card => card.type === 'basic');
-      expect(complete?.cards).toEqual(basicCards.map(card => card.id));
+      // 应该包含经典 7 种 + 特殊 8 种
+      expect(complete?.cards.length).toBe(15);
+      expect(complete?.cards).toContain('I');
+      expect(complete?.cards).toContain('BOMB');
+      expect(complete?.cards).toContain('STAR');
     });
   });
 
@@ -337,15 +342,13 @@ describe('DeckManager', () => {
       expect(classic?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
     });
 
-    test('新手卡组应该包含 2/3/4 块', () => {
+    test('新手卡组应该只包含经典 7 种', () => {
       const presets = deckManager.getPresetDecks();
       const beginner = presets.find(p => p.name === '新手卡组');
       
       expect(beginner).toBeDefined();
-      // 应该包含经典 7 块 + DOM(2 块) + V3, COR(3 块)
-      expect(beginner?.cards).toContain('DOM');
-      expect(beginner?.cards).toContain('V3');
-      expect(beginner?.cards).toContain('COR');
+      // 新手卡组只包含经典 7 种
+      expect(beginner?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
     });
   });
 

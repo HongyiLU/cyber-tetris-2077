@@ -61,7 +61,7 @@ export const GAME_CONFIG = {
   
   // ==================== 方块形状 ====================
   SHAPES: {
-    // 经典 4 块
+    // 经典 7 种
     I: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
     O: [[1,1],[1,1]],
     T: [[0,1,0],[1,1,1],[0,0,0]],
@@ -70,19 +70,7 @@ export const GAME_CONFIG = {
     L: [[0,0,1],[1,1,1],[0,0,0]],
     J: [[1,0,0],[1,1,1],[0,0,0]],
     
-    // 2 块
-    DOM: [[1,1]],
-    
-    // 3 块
-    V3: [[1],[1],[1]],
-    COR: [[1,0],[1,1]],
-    
-    // 5 块
-    U5: [[1,0,1],[1,1,1]],
-    W5: [[1,0,0],[1,1,0],[0,1,1]],
-    I5: [[1],[1],[1],[1],[1]],
-    
-    // 特殊方块
+    // 特殊方块（默认解锁）
     BOMB: [[1]],
     ROW: [[1,1,1]],
     COL: [[1],[1],[1]],
@@ -104,18 +92,6 @@ export const GAME_CONFIG = {
     L: '#ff8c00',    // 深橙色
     J: '#4169e1',    // 宝蓝色
     
-    // 2 块
-    DOM: '#20b2aa',  // 浅海绿色
-    
-    // 3 块
-    V3: '#1e90ff',   // 道奇蓝
-    COR: '#ff6347',  // 番茄红
-    
-    // 5 块
-    U5: '#ff1493',   // 深粉色
-    W5: '#9370db',   // 中紫色
-    I5: '#ff00ff',   // 品红色
-    
     // 特殊方块 - 使用更醒目的颜色
     BOMB: '#dc143c', // 深红色
     ROW: '#32cd32',  // 酸橙色
@@ -130,9 +106,6 @@ export const GAME_CONFIG = {
   // ==================== 方块类型映射 ====================
   PIECE_TYPE_MAP: {
     I: 1, O: 2, T: 3, S: 4, Z: 5, L: 6, J: 7,
-    DOM: 16,
-    V3: 17, COR: 18,
-    U5: 20, W5: 21, I5: 22,
     BOMB: 8, ROW: 9, COL: 10, RAINBOW: 11, GRAVITY: 12,
     SLOWMO: 13, STAR: 14, VORTEX: 15,
   },
@@ -146,12 +119,6 @@ export const GAME_CONFIG = {
     { id: 'Z', name: 'Z-方块', type: 'basic', rarity: 'common', desc: 'Z 型方块' },
     { id: 'L', name: 'L-方块', type: 'basic', rarity: 'common', desc: 'L 型方块' },
     { id: 'J', name: 'J-方块', type: 'basic', rarity: 'common', desc: 'J 型方块' },
-    { id: 'DOM', name: '多米诺', type: 'basic', rarity: 'common', desc: '2 块直线' },
-    { id: 'V3', name: '直线 3', type: 'basic', rarity: 'common', desc: '3 块直线' },
-    { id: 'COR', name: '直角', type: 'basic', rarity: 'common', desc: 'L 型 3 块' },
-    { id: 'U5', name: 'U 形', type: 'basic', rarity: 'rare', desc: 'U 形 5 块' },
-    { id: 'W5', name: 'W 形', type: 'basic', rarity: 'rare', desc: 'W 形 5 块' },
-    { id: 'I5', name: '长条 5', type: 'basic', rarity: 'epic', desc: '5 块长直线' },
     { id: 'BOMB', name: '炸弹方块', type: 'special', rarity: 'rare', desc: '炸 3×3 范围' },
     { id: 'SLOWMO', name: '减速方块', type: 'special', rarity: 'rare', desc: '减速 10 秒' },
     { id: 'ROW', name: '消行方块', type: 'special', rarity: 'rare', desc: '消除整行' },
@@ -171,10 +138,11 @@ export const GAME_CONFIG = {
 
 // 分数倍率（根据方块大小）
 export const PIECE_SIZE_MULTIPLIER: Record<number, number> = {
-  2: 0.5,   // 2 块
-  3: 0.8,   // 3 块
-  4: 1.0,   // 4 块
-  5: 1.5,   // 5 块
+  1: 1.0,   // 1 格方块（BOMB）
+  2: 0.5,   // 2 格方块（VORTEX）
+  3: 0.8,   // 3 格方块（ROW, COL）
+  4: 1.0,   // 4 格方块（经典 7 种 + GRAVITY + SLOWMO）
+  5: 1.5,   // 5 格方块（RAINBOW, STAR）
 };
 
 export default GAME_CONFIG;

@@ -67,21 +67,21 @@ export class DeckManager {
     {
       id: 'preset-classic',
       name: '经典卡组',
-      description: '只包含 7 种经典 4 块方块（I、O、T、S、Z、L、J）',
+      description: '只包含 7 种经典方块（I、O、T、S、Z、L、J）',
       cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J'],
     },
     {
       id: 'preset-beginner',
       name: '新手卡组',
-      description: '包含所有 2 块、3 块和 4 块方块，适合新手练习',
-      cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J', 'DOM', 'V3', 'COR'],
+      description: '只包含经典 7 种方块，适合新手练习',
+      cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J'],
     },
     {
       id: 'preset-complete',
       name: '全卡卡组',
-      description: '包含所有基础方块（不含特殊方块）',
-      // 从 GAME_CONFIG.CARDS 动态获取所有基础方块，确保不会包含已删除的方块
-      cards: GAME_CONFIG.CARDS.filter(card => card.type === 'basic').map(card => card.id),
+      description: '包含经典 7 种 + 特殊 8 种方块',
+      // 经典 7 种 + 特殊 8 种
+      cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J', 'BOMB', 'ROW', 'COL', 'RAINBOW', 'GRAVITY', 'SLOWMO', 'STAR', 'VORTEX'],
     },
   ];
 
