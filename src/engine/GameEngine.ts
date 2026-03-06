@@ -154,9 +154,9 @@ export class GameEngine {
     // 获取激活的卡组
     this.activeDeck = this.deckManager.getActiveDeck();
     
-    // 重置抽取池（开始新的牌堆）
+    // 初始化抽取池（开始新的牌堆，不触发抽空惩罚）
     if (this.activeDeck) {
-      this.deckManager.resetDrawPool();
+      this.deckManager.initializeDrawPool();
     }
     
     this.currentPiece = this.createPiece();

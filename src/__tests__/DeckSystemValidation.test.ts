@@ -174,15 +174,13 @@ describe('卡组系统综合验证测试', () => {
         expect(beginner?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       });
 
-      test('全卡卡组应该包含经典 7 种 + 特殊 8 种', () => {
+      test('全卡卡组应该只包含经典 7 种（特殊方块已移除）', () => {
         const presets = deckManager.getPresetDecks();
         const complete = presets.find(p => p.id === 'preset-complete');
         
         expect(complete).toBeDefined();
-        expect(complete?.cards.length).toBe(15); // 7 经典 + 8 特殊
-        expect(complete?.cards).toContain('BOMB');
-        expect(complete?.cards).toContain('ROW');
-        expect(complete?.cards).toContain('STAR');
+        expect(complete?.cards.length).toBe(7); // 只包含经典 7 种
+        expect(complete?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       });
     });
   });
@@ -238,15 +236,9 @@ describe('卡组系统综合验证测试', () => {
         expect(weights.legendary).toBe(1);
       });
 
-      test('高稀有度卡牌应该更难抽取（统计测试）', () => {
-        // 创建一个包含不同稀有度的卡组（经典 + 特殊）
-        const deck = deckManager.createDeck('权重测试', [
-          'I', // common
-          'O', // common
-          'T', // common
-          'BOMB', // rare
-          'STAR', // legendary
-        ]);
+      test('卡组抽取应该均匀分布（经典模式下所有方块等概率）', () => {
+        // 经典卡组，所有方块都是 common，等概率抽取
+        const deck = deckManager.createDeck('均匀测试', ['I', 'O', 'T', 'S', 'Z']);
         deckManager.setActiveDeck(deck.id);
         
         // 多次抽取统计
@@ -259,9 +251,13 @@ describe('卡组系统综合验证测试', () => {
           draws[type] = (draws[type] || 0) + 1;
         }
         
-        // 普通方块应该占大多数
-        const commonCount = (draws['I'] || 0) + (draws['O'] || 0) + (draws['T'] || 0);
-        expect(commonCount).toBeGreaterThan(totalDraws * 0.5); // 至少 50%
+        // 每个方块应该大致均匀分布（允许 20% 误差）
+        const expectedPerType = totalDraws / 5;
+        for (const type of ['I', 'O', 'T', 'S', 'Z']) {
+          const count = draws[type] || 0;
+          expect(count).toBeGreaterThanOrEqual(expectedPerType * 0.5);
+          expect(count).toBeLessThanOrEqual(expectedPerType * 1.5);
+        }
       });
     });
 
@@ -310,10 +306,10 @@ describe('卡组系统综合验证测试', () => {
     });
 
     test('刷新后数据保留', () => {
-      // 创建多个卡组
+      // 创建多个卡组（只使用经典方块）
       deckManager.createDeck('卡组 1', ['I', 'O', 'T']);
       deckManager.createDeck('卡组 2', ['S', 'Z', 'L']);
-      deckManager.createDeck('卡组 3', ['J', 'BOMB', 'ROW']);
+      deckManager.createDeck('卡组 3', ['J', 'I', 'O']);
       
       // 模拟刷新（创建新实例）
       const freshManager = new DeckManager();
@@ -520,8 +516,7 @@ describe('卡组系统综合验证测试', () => {
 
     test('抽取算法性能', () => {
       const deck = deckManager.createDeck('性能测试', [
-        'I', 'O', 'T', 'S', 'Z', 'L', 'J',
-        'BOMB', 'ROW', 'COL', 'RAINBOW', 'GRAVITY', 'SLOWMO', 'STAR', 'VORTEX'
+        'I', 'O', 'T', 'S', 'Z', 'L', 'J'
       ]);
       deckManager.setActiveDeck(deck.id);
       

@@ -275,18 +275,13 @@ describe('DeckManager', () => {
       const complete = presets.find(p => p.id === 'preset-complete');
       
       expect(complete).toBeDefined();
-      // 不应该包含已删除的方块
-      expect(complete?.cards).not.toContain('X5');
-      expect(complete?.cards).not.toContain('P5');
-      expect(complete?.cards).not.toContain('DOM');
-      expect(complete?.cards).not.toContain('V3');
-      expect(complete?.cards).not.toContain('COR');
-      
-      // 应该包含经典 7 种 + 特殊 8 种
-      expect(complete?.cards.length).toBe(15);
-      expect(complete?.cards).toContain('I');
-      expect(complete?.cards).toContain('BOMB');
-      expect(complete?.cards).toContain('STAR');
+      // 只包含经典 7 种（特殊方块已移除）
+      expect(complete?.cards.length).toBe(7);
+      expect(complete?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
+      // 不应该包含任何特殊方块
+      expect(complete?.cards).not.toContain('BOMB');
+      expect(complete?.cards).not.toContain('STAR');
+      expect(complete?.cards).not.toContain('ROW');
     });
   });
 

@@ -61,7 +61,7 @@ export class DeckManager {
   /**
    * 预设卡组定义
    * 提供 3 个默认卡组供新手使用
-   * 注意：使用明确的方块列表，避免包含已删除的方块类型
+   * 注意：只包含经典 7 种方块，已移除所有特殊方块
    */
   private readonly PRESET_DECKS: PresetDeck[] = [
     {
@@ -79,9 +79,9 @@ export class DeckManager {
     {
       id: 'preset-complete',
       name: '全卡卡组',
-      description: '包含经典 7 种 + 特殊 8 种方块',
-      // 经典 7 种 + 特殊 8 种
-      cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J', 'BOMB', 'ROW', 'COL', 'RAINBOW', 'GRAVITY', 'SLOWMO', 'STAR', 'VORTEX'],
+      description: '只包含经典 7 种方块（特殊方块已移除）',
+      // 只包含经典 7 种
+      cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J'],
     },
   ];
 
@@ -108,6 +108,21 @@ export class DeckManager {
     this.currentDeck = [];
     this.maxDeckSize = 10;
     this.initializeBasicCards();
+
+    // 方案 1: 强制重置 localStorage（版本检测）
+    const storedVersion = localStorage.getItem('deck_version');
+    const currentVersion = 'v1.3.0';
+    
+    // 只有当存在旧版本号且不匹配时才清除数据（避免清除测试数据）
+    if (storedVersion && storedVersion !== currentVersion) {
+      const hasOldData = localStorage.getItem('cyber-blocks-decks');
+      if (hasOldData) {
+        console.log(`检测到旧版本数据 (${storedVersion} → ${currentVersion})，清除旧数据...`);
+        localStorage.removeItem('cyber-blocks-decks');
+        localStorage.removeItem('tetris_decks');
+      }
+    }
+    localStorage.setItem('deck_version', currentVersion);
 
     // 加载已保存的卡组
     this.loadDecks();
@@ -330,6 +345,12 @@ export class DeckManager {
       if (!data) {
         // 首次使用，加载预设卡组
         this.loadPresetDecks();
+        // 方案 2: 默认激活经典卡组
+        if (this.decks.has('preset-classic')) {
+          this.activeDeckId = 'preset-classic';
+          console.log('首次使用，默认激活经典卡组');
+          this.saveDecks();
+        }
         return { success: true };
       }
 
@@ -383,9 +404,21 @@ export class DeckManager {
         }
       }
 
+      // 方案 2: 默认激活经典卡组
+      if (!this.activeDeckId && this.decks.has('preset-classic')) {
+        this.activeDeckId = 'preset-classic';
+        console.log('未检测到激活卡组，默认激活经典卡组');
+        this.saveDecks();
+      }
+
       // 如果没有任何卡组，加载预设卡组
       if (this.decks.size === 0) {
         this.loadPresetDecks();
+        // 加载预设卡组后，激活经典卡组
+        if (this.decks.has('preset-classic')) {
+          this.activeDeckId = 'preset-classic';
+          this.saveDecks();
+        }
       }
 
       return { success: true, data };
@@ -586,9 +619,19 @@ export class DeckManager {
 
   /**
    * 重置抽取池（用于重新开始游戏）
+   * 清空抽取池，下次抽取时会自动填充
    */
   public resetDrawPool(): void {
     this.currentDrawPool = [];
+  }
+
+  /**
+   * 初始化抽取池（用于游戏开始时）
+   * 填充抽取池但不标记为"抽空"（避免触发惩罚）
+   */
+  public initializeDrawPool(): void {
+    this.currentDrawPool = [];
+    this.refillDrawPool();
   }
 
   /**
