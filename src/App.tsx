@@ -204,7 +204,7 @@ const App: React.FC = () => {
           <button
             className="start-battle-btn"
             onClick={() => {
-              gameEngine.initBattle(200);
+              gameEngine.initBattle('slime');
               setGameState(gameEngine.getGameState());
             }}
             style={{

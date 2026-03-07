@@ -1,0 +1,184 @@
+/* ==================== 敌人选择组件样式 ==================== */
+
+.enemy-select {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.enemy-select-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.enemy-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.enemy-card {
+  background: rgba(20, 20, 40, 0.8);
+  border: 2px solid #444;
+  border-radius: 10px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.enemy-card:hover {
+  transform: translateY(-5px);
+  border-color: #00ffff;
+  box-shadow: 0 5px 20px rgba(0, 255, 255, 0.3);
+}
+
+.enemy-card.selected {
+  border-color: #00ffff;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  background: rgba(0, 255, 255, 0.1);
+}
+
+.enemy-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.enemy-emoji {
+  font-size: 32px;
+}
+
+.enemy-rarity {
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.enemy-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  margin: 10px 0;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+}
+
+.enemy-stats {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+  padding: 8px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: bold;
+  color: #00ffff;
+}
+
+.enemy-description {
+  font-size: 12px;
+  color: #aaa;
+  margin: 10px 0 0 0;
+  line-height: 1.4;
+}
+
+.selected-enemy-preview {
+  background: rgba(0, 255, 255, 0.1);
+  border: 2px solid #00ffff;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.selected-enemy-preview h4 {
+  font-size: 14px;
+  color: #00ffff;
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+}
+
+.preview-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.preview-emoji {
+  font-size: 48px;
+}
+
+.preview-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.preview-desc {
+  font-size: 14px;
+  color: #aaa;
+  margin-top: 5px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .enemy-list {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .enemy-emoji {
+    font-size: 24px;
+  }
+
+  .enemy-name {
+    font-size: 14px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .stat-value {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .enemy-list {
+    grid-template-columns: 1fr;
+  }
+
+  .enemy-select {
+    padding: 15px;
+  }
+}

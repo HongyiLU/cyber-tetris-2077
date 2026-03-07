@@ -5,6 +5,8 @@ import { DeckManager } from './DeckManager';
 import type { Piece, Position, GameState } from '../types';
 import { BattleState } from '../types';
 import type { Deck, DrawResult } from '../types/deck';
+import type { EnemyType } from '../types/enemy';
+import { getEnemyType } from '../config/enemy-config';
 import { createEmptyBoard, checkCollision, rotateShape, copyBoard, copyShape } from '../utils/game-utils';
 
 /**
@@ -37,6 +39,7 @@ export class GameEngine {
   private enemyHp: number = 200;
   private enemyMaxHp: number = 200;
   private battleState: BattleState = BattleState.IDLE;
+  private currentEnemyType: EnemyType | null = null; // 当前敌人类型
   
   // 敌人 AI 计时器属性
   private enemyAttackInterval: number = 10000; // 10 秒（毫秒）
@@ -384,14 +387,29 @@ export class GameEngine {
 
   /**
    * 初始化战斗
-   * @param enemyHp 敌人初始血量（默认 200）
+   * @param enemyType 敌人类型 ID（可选，默认为史莱姆）
    */
-  public initBattle(enemyHp: number = 200): void {
-    this.playerHp = 100;
-    this.playerMaxHp = 100;
-    this.enemyHp = enemyHp;
-    this.enemyMaxHp = enemyHp;
-    this.battleState = BattleState.FIGHTING;
+  public initBattle(enemyType: string = 'slime'): void {
+    const enemy = getEnemyType(enemyType);
+    
+    if (enemy) {
+      this.currentEnemyType = enemy;
+      this.playerHp = 100;
+      this.playerMaxHp = 100;
+      this.enemyHp = enemy.hp;
+      this.enemyMaxHp = enemy.hp;
+      this.enemyAttackInterval = enemy.attackInterval;
+      this.battleState = BattleState.FIGHTING;
+    } else {
+      // 如果敌人类型不存在，使用默认值
+      this.currentEnemyType = getEnemyType('slime') || null;
+      this.playerHp = 100;
+      this.playerMaxHp = 100;
+      this.enemyHp = 200;
+      this.enemyMaxHp = 200;
+      this.enemyAttackInterval = 10000;
+      this.battleState = BattleState.FIGHTING;
+    }
   }
 
   /**
@@ -435,6 +453,23 @@ export class GameEngine {
   }
 
   /**
+   * 获取当前敌人类型
+   * @returns 当前敌人类型，未设置战斗时返回 null
+   */
+  public getCurrentEnemyType(): EnemyType | null {
+    return this.currentEnemyType;
+  }
+
+  /**
+   * 获取所有可用敌人类型
+   * @returns 敌人类型数组
+   */
+  public getAllEnemyTypes(): EnemyType[] {
+    const { getAllEnemies } = require('../config/enemy-config');
+    return getAllEnemies();
+  }
+
+  /**
    * 计算消行造成的伤害
    * @param lines 消除的行数
    * @returns 伤害值
@@ -460,14 +495,19 @@ export class GameEngine {
   }
 
   /**
-   * 执行敌人攻击（史莱姆：生成 1 行垃圾 + 10 伤害）
+   * 执行敌人攻击
+   * 根据当前敌人类型生成垃圾行和造成伤害
    */
   private executeEnemyAttack(): void {
-    // 生成 1 行垃圾行
-    this.addGarbageRow(1);
-    
-    // 玩家受到 10 点伤害
-    this.takeDamage(10);
+    if (!this.currentEnemyType) {
+      // 默认攻击（史莱姆）
+      this.addGarbageRow(1);
+      this.takeDamage(10);
+    } else {
+      // 根据敌人类型攻击
+      this.addGarbageRow(this.currentEnemyType.garbageRows);
+      this.takeDamage(this.currentEnemyType.attackDamage);
+    }
     
     // 检查失败
     if (this.isPlayerDead()) {

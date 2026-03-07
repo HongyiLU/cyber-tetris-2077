@@ -14,7 +14,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
 
   describe('1. 完整流程测试', () => {
     test('初始化战斗时血量正确显示', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       const state = engine.getGameState();
       
       expect(state.playerHp).toBe(100);
@@ -25,7 +25,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('负数伤害对玩家无效', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       const initialHp = engine.getGameState().playerHp;
       
       // 尝试造成负数伤害
@@ -36,7 +36,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('负数伤害对敌人无效', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       const initialHp = engine.getGameState().enemyHp;
       
       // 尝试造成负数伤害
@@ -47,7 +47,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('消行对敌人造成伤害', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       
       // 模拟消 4 行造成 80 伤害
       engine.enemyTakeDamage(80);
@@ -56,7 +56,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('敌人 AI 每 10 秒攻击玩家', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       const startTime = Date.now();
       
       // 初始血量
@@ -76,7 +76,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('敌人 HP 归零显示胜利', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       
       // 造成 200 点伤害击败敌人
       engine.enemyTakeDamage(200);
@@ -86,7 +86,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('玩家 HP 归零显示失败', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       
       // 受到 100 点伤害击败玩家
       engine.takeDamage(100);
@@ -98,7 +98,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
 
   describe('2. 边界条件测试', () => {
     test('同时消行和受到攻击 - 血量计算正确', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       const startTime = Date.now();
       
       // 玩家对敌人造成伤害
@@ -114,7 +114,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('血量刚好归零 - 触发正确状态', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       
       // 造成恰好 200 伤害
       engine.enemyTakeDamage(100);
@@ -125,7 +125,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('连续快速消行 - 伤害累加正确', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       
       // 连续消行：4 行 + 3 行 + 2 行 + 1 行
       engine.enemyTakeDamage(80);  // 4 行
@@ -137,7 +137,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('战斗结束后不能继续操作', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       
       // 结束战斗
       engine.enemyTakeDamage(200);
@@ -154,31 +154,31 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
 
   describe('3. 伤害计算验证', () => {
     test('消 1 行 = 10 伤害', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.enemyTakeDamage(10);
       expect(engine.getGameState().enemyHp).toBe(190);
     });
 
     test('消 2 行 = 25 伤害', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.enemyTakeDamage(25);
       expect(engine.getGameState().enemyHp).toBe(175);
     });
 
     test('消 3 行 = 45 伤害', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.enemyTakeDamage(45);
       expect(engine.getGameState().enemyHp).toBe(155);
     });
 
     test('消 4 行 = 80 伤害', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.enemyTakeDamage(80);
       expect(engine.getGameState().enemyHp).toBe(120);
     });
 
     test('伤害不会超过最大血量', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       
       // 造成过量伤害
       engine.enemyTakeDamage(500);
@@ -190,7 +190,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
 
   describe('4. 敌人 AI 行为验证', () => {
     test('敌人攻击生成垃圾行', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       
       // 获取初始棋盘底部行状态
       const stateBefore = engine.getGameState();
@@ -208,7 +208,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('敌人攻击造成 10 点伤害', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       
       engine.updateEnemyAI(Date.now() + 10000);
       
@@ -228,7 +228,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
 
   describe('5. 战斗状态同步', () => {
     test('战斗状态正确同步到游戏状态', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       let state = engine.getGameState();
       
       expect(state.battleState).toBe(BattleState.FIGHTING);
@@ -251,7 +251,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('胜利状态不可逆', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.enemyTakeDamage(200);
       
       expect(engine.getGameState().battleState).toBe(BattleState.WON);
@@ -265,7 +265,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('失败状态不可逆', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.takeDamage(100);
       
       expect(engine.getGameState().battleState).toBe(BattleState.LOST);
@@ -279,7 +279,7 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
 
   describe('6. 血量条比例计算', () => {
     test('血量百分比计算正确', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       
       // 50% 血量
       engine.takeDamage(50);
@@ -291,14 +291,14 @@ describe('战斗系统 - v1.4.0 完整流程测试', () => {
     });
 
     test('满血时百分比为 100', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       
       expect((engine.getGameState().playerHp / engine.getGameState().playerMaxHp) * 100).toBe(100);
       expect((engine.getGameState().enemyHp / engine.getGameState().enemyMaxHp) * 100).toBe(100);
     });
 
     test('空血时百分比为 0', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.takeDamage(100);
       engine.enemyTakeDamage(200);
       

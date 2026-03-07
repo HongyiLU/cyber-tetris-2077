@@ -318,38 +318,38 @@ describe('GameEngine', () => {
 
   describe('战斗系统 - 血量管理', () => {
     test('初始化战斗时血量正确', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       const state = engine.getGameState();
       expect(state.playerHp).toBe(100);
       expect(state.enemyHp).toBe(200);
     });
 
     test('玩家受伤后血量减少', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.takeDamage(50);
       expect(engine.getGameState().playerHp).toBe(50);
     });
 
     test('血量不会低于 0', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.takeDamage(150);
       expect(engine.getGameState().playerHp).toBe(0);
     });
 
     test('敌人受伤后血量减少', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.enemyTakeDamage(100);
       expect(engine.getGameState().enemyHp).toBe(100);
     });
 
     test('玩家血量归零触发失败', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.takeDamage(100);
       expect(engine.isPlayerDead()).toBe(true);
     });
 
     test('敌人血量归零触发胜利', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.enemyTakeDamage(200);
       expect(engine.isEnemyDead()).toBe(true);
     });
@@ -357,32 +357,32 @@ describe('GameEngine', () => {
 
   describe('战斗系统 - 伤害计算', () => {
     test('消 1 行造成 10 点伤害', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       // 模拟消 1 行
       engine.enemyTakeDamage(10);
       expect(engine.getGameState().enemyHp).toBe(190);
     });
 
     test('消 2 行造成 25 点伤害', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.enemyTakeDamage(25);
       expect(engine.getGameState().enemyHp).toBe(175);
     });
 
     test('消 3 行造成 45 点伤害', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.enemyTakeDamage(45);
       expect(engine.getGameState().enemyHp).toBe(155);
     });
 
     test('消 4 行造成 80 点伤害', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.enemyTakeDamage(80);
       expect(engine.getGameState().enemyHp).toBe(120);
     });
 
     test('消行后检查胜利条件', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.enemyTakeDamage(200); // 模拟消行造成 200 伤害
       expect(engine.isEnemyDead()).toBe(true);
       expect(engine.getGameState().battleState).toBe('won');
@@ -391,7 +391,7 @@ describe('GameEngine', () => {
 
   describe('战斗系统 - 敌人 AI', () => {
     test('每 10 秒触发攻击', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       const startTime = Date.now();
       
       // 第一次攻击（10 秒后）
@@ -408,7 +408,7 @@ describe('GameEngine', () => {
     });
 
     test('垃圾行从底部生成', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       const initialBoard = JSON.parse(JSON.stringify(engine.getGameState().board));
       
       engine['addGarbageRow'](1); // 调用私有方法
@@ -421,7 +421,7 @@ describe('GameEngine', () => {
     });
 
     test('玩家血量归零触发失败', () => {
-      engine.initBattle(200);
+      engine.initBattle('slime');
       engine.takeDamage(100); // 直接击败玩家
       expect(engine.isPlayerDead()).toBe(true);
       expect(engine.getGameState().battleState).toBe(BattleState.LOST);

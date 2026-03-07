@@ -147,3 +147,6 @@ export { DEFAULT_DECK_CONFIG } from './deck';
 
 // 导出 DeckManager 类
 export { DeckManager } from '../engine/DeckManager';
+
+// 导出敌人系统类型
+export type { EnemyType, EnemyInstance } from './enemy';
