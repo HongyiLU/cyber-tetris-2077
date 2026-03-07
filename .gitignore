@@ -18,19 +18,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# ==================== 本地报告文件 ====================
-# 本地生成的检查报告、测试报告等
-# 所有报告文件应放在 memory/ 目录或项目外
-TEST_REPORT.md
-CODE_REVIEW.md
-FEATURE_CHECK.md
-DECK_FEATURE_STATUS.md
-LEVEL_SYSTEM_CHECK.md
-*_REPORT.md
-*_CHECK.md
-*_STATUS.md
-*_NOTES.md
-RELEASE_NOTES*.md
+# ==================== 报告文件（保留最新的） ====================
+# 只保留 reports/ 目录中的报告
+reports/
+!reports/*.md
 
 # ==================== 非必要文档 ====================
 # 所有嵌套目录中的 README 和其他说明文件
