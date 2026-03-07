@@ -1,0 +1,126 @@
+/* ==================== 伤害数字动画样式 ==================== */
+
+.damage-number {
+  position: absolute;
+  font-size: 24px;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 1000;
+  animation: damage-float-up 1s ease-out forwards;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
+/* 普通伤害 - 红色 */
+.damage-normal {
+  color: #ff4444;
+  animation-name: damage-float-up;
+}
+
+/* 治疗 - 绿色 */
+.damage-heal {
+  color: #4caf50;
+  animation-name: heal-float-up;
+}
+
+/* 暴击伤害 - 金色 + 放大 */
+.damage-critical {
+  color: #ffd700;
+  font-size: 36px;
+  animation-name: critical-pop;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* 连击数 - 蓝色 */
+.damage-combo {
+  color: #2196f3;
+  font-size: 28px;
+  animation-name: combo-shake;
+  text-shadow: 0 0 10px rgba(33, 150, 243, 0.6), 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* 普通伤害上浮动画 */
+@keyframes damage-float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px) scale(1.2);
+  }
+}
+
+/* 治疗上浮动画 */
+@keyframes heal-float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px) scale(1);
+  }
+}
+
+/* 暴击弹出动画 */
+@keyframes critical-pop {
+  0% {
+    opacity: 1;
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(1);
+  }
+}
+
+/* 连击震动动画 */
+@keyframes combo-shake {
+  0%, 100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .damage-number {
+    font-size: 20px;
+  }
+
+  .damage-critical {
+    font-size: 28px;
+  }
+
+  .damage-combo {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .damage-number {
+    font-size: 18px;
+  }
+
+  .damage-critical {
+    font-size: 24px;
+  }
+}

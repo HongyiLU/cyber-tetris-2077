@@ -1,0 +1,166 @@
+/* ==================== 连击计数器样式 ==================== */
+
+.combo-counter {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  text-align: center;
+  pointer-events: none;
+  animation: combo-pulse 0.5s ease-in-out infinite;
+}
+
+.combo-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 40, 0.9));
+  border: 3px solid;
+  border-radius: 15px;
+  padding: 10px 30px;
+  box-shadow: 0 0 20px currentColor, inset 0 0 20px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.combo-label {
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 5px;
+}
+
+.combo-value {
+  font-size: 48px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+  line-height: 1;
+}
+
+.combo-max {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.combo-max-label {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.combo-max-value {
+  font-weight: bold;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+/* 连击等级颜色 */
+.combo-counter.common {
+  color: #888;
+  border-color: #888;
+}
+
+.combo-counter.uncommon {
+  color: #4caf50;
+  border-color: #4caf50;
+}
+
+.combo-counter.rare {
+  color: #2196f3;
+  border-color: #2196f3;
+}
+
+.combo-counter.epic {
+  color: #9c27b0;
+  border-color: #9c27b0;
+}
+
+.combo-counter.legendary {
+  color: #ff9800;
+  border-color: #ff9800;
+  animation: legendary-glow 0.3s ease-in-out infinite alternate;
+}
+
+/* 特效层 */
+.combo-effect {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    transparent 30%,
+    currentColor 31%,
+    transparent 32%
+  );
+  background-size: 20px 20px;
+  opacity: 0.1;
+  animation: combo-rotate 10s linear infinite;
+  pointer-events: none;
+}
+
+/* 动画 */
+@keyframes combo-pulse {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.05);
+  }
+}
+
+@keyframes legendary-glow {
+  0% {
+    box-shadow: 0 0 20px #ff9800, 0 0 40px #ff9800;
+  }
+  100% {
+    box-shadow: 0 0 40px #ff9800, 0 0 80px #ff9800;
+  }
+}
+
+@keyframes combo-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .combo-counter {
+    top: 70px;
+  }
+
+  .combo-value {
+    font-size: 40px;
+  }
+
+  .combo-main {
+    padding: 8px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .combo-counter {
+    top: 60px;
+  }
+
+  .combo-value {
+    font-size: 32px;
+  }
+
+  .combo-label {
+    font-size: 12px;
+  }
+}

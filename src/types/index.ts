@@ -46,6 +46,9 @@ export interface GameState {
   enemyHp: number;
   enemyMaxHp: number;
   battleState: BattleState;
+  // 连击系统
+  combo: number;
+  maxCombo: number;
 }
 
 /**

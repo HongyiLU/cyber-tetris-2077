@@ -41,6 +41,12 @@ export class GameEngine {
   private battleState: BattleState = BattleState.IDLE;
   private currentEnemyType: EnemyType | null = null; // 当前敌人类型
   
+  // 连击系统
+  private combo: number = 0;
+  private maxCombo: number = 0;
+  private lastClearTime: number = 0;
+  private comboTimeout: number = 5000; // 5 秒内消行维持连击
+  
   // 敌人 AI 计时器属性
   private enemyAttackInterval: number = 10000; // 10 秒（毫秒）
   private lastEnemyAttackTime: number = 0;
@@ -303,9 +309,31 @@ export class GameEngine {
       }
     }
 
+    // 连击系统：更新连击数
+    if (clearedLines > 0) {
+      const currentTime = Date.now();
+      if (currentTime - this.lastClearTime <= this.comboTimeout) {
+        // 在连击时间内，增加连击数
+        this.combo++;
+      } else {
+        // 超出连击时间，重置连击
+        this.combo = 1;
+      }
+      this.lastClearTime = currentTime;
+      
+      // 更新最大连击
+      if (this.combo > this.maxCombo) {
+        this.maxCombo = this.combo;
+      }
+    }
+
     // 战斗系统：消行时触发伤害
     if (clearedLines > 0 && this.battleState === BattleState.FIGHTING) {
-      const damage = this.calculateDamage(clearedLines);
+      // 计算连击加成
+      const comboMultiplier = 1 + (this.combo - 1) * 0.1; // 每连击 +10% 伤害
+      const baseDamage = this.calculateDamage(clearedLines);
+      const damage = Math.floor(baseDamage * comboMultiplier);
+      
       this.enemyTakeDamage(damage);
       
       // 检查胜利
@@ -366,6 +394,9 @@ export class GameEngine {
       enemyHp: this.enemyHp,
       enemyMaxHp: this.enemyMaxHp,
       battleState: this.battleState,
+      // 连击系统
+      combo: this.combo,
+      maxCombo: this.maxCombo,
     };
   }
 
@@ -467,6 +498,31 @@ export class GameEngine {
   public getAllEnemyTypes(): EnemyType[] {
     const { getAllEnemies } = require('../config/enemy-config');
     return getAllEnemies();
+  }
+
+  /**
+   * 获取当前连击数
+   * @returns 连击数
+   */
+  public getCombo(): number {
+    return this.combo;
+  }
+
+  /**
+   * 获取最大连击数
+   * @returns 最大连击数
+   */
+  public getMaxCombo(): number {
+    return this.maxCombo;
+  }
+
+  /**
+   * 重置连击数
+   */
+  public resetCombo(): void {
+    this.combo = 0;
+    this.maxCombo = 0;
+    this.lastClearTime = 0;
   }
 
   /**
