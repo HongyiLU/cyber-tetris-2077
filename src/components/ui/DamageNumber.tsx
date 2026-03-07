@@ -3,9 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import './DamageNumber.css';
 
+export type DamageType = 'damage' | 'heal' | 'critical' | 'combo';
+
 interface DamageNumberProps {
   value: number;
-  type: 'damage' | 'heal' | 'critical' | 'combo';
+  type: DamageType;
   position?: { x: number; y: number };
   onComplete?: () => void;
 }

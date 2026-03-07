@@ -4,11 +4,20 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { GameEngine } from './engine/GameEngine';
 import { DeckManager } from './engine/DeckManager';
 import { GameCanvas, GameInfo } from './components/game';
-import { CardDeck, MobileControls, ResponsiveLayout, BattleUI } from './components/ui';
+import { CardDeck, MobileControls, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter } from './components/ui';
 import { useGameLoop, useKeyboardControl } from './hooks';
 import { GAME_CONFIG } from './config/game-config';
 import type { GameState } from './types';
 import { BattleState } from './types';
+import type { DamageType } from './components/ui/DamageNumber';
+
+interface DamageNumberData {
+  id: number;
+  value: number;
+  type: DamageType;
+  x: number;
+  y: number;
+}
 
 const App: React.FC = () => {
   const [deckManager] = useState(() => new DeckManager());
@@ -16,6 +25,9 @@ const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [showDeck, setShowDeck] = useState(false);
+  const [showEnemySelect, setShowEnemySelect] = useState(false);
+  const [selectedEnemy, setSelectedEnemy] = useState('slime');
+  const [damageNumbers, setDamageNumbers] = useState<DamageNumberData[]>([]);
 
   // 使用游戏循环 Hook
   useGameLoop({
@@ -30,6 +42,20 @@ const App: React.FC = () => {
     },
   });
 
+  // 移除伤害数字
+  const removeDamageNumber = useCallback((id: number) => {
+    setDamageNumbers(prev => prev.filter(d => d.id !== id));
+  }, []);
+
+  // 显示伤害数字（示例：敌人受伤时）
+  const showDamageNumber = useCallback((value: number, type: DamageType) => {
+    const id = Date.now() + Math.random();
+    // 居中显示
+    const x = window.innerWidth / 2 - 50 + (Math.random() - 0.5) * 100;
+    const y = window.innerHeight / 3;
+    setDamageNumbers(prev => [...prev, { id, value, type, x, y }]);
+  }, []);
+
   // 使用键盘控制 Hook（桌面端）
   useKeyboardControl({
     gameStarted,
@@ -39,10 +65,21 @@ const App: React.FC = () => {
   });
 
   const startGame = useCallback(() => {
+    // 显示敌人选择界面
+    setShowEnemySelect(true);
+  }, [gameEngine]);
+
+  const handleEnemySelect = useCallback((enemyId: string) => {
+    setSelectedEnemy(enemyId);
+  }, []);
+
+  const handleStartBattle = useCallback(() => {
+    gameEngine.initBattle(selectedEnemy);
     gameEngine.init();
     setGameState(gameEngine.getGameState());
     setGameStarted(true);
-  }, [gameEngine]);
+    setShowEnemySelect(false);
+  }, [gameEngine, selectedEnemy]);
 
   // 移动端控制回调 - 让 GameEngine 自己检查状态
   const handleMoveLeft = useCallback(() => {
@@ -172,6 +209,7 @@ const App: React.FC = () => {
         <>
           {/* 游戏主区域：棋盘 + 信息面板 */}
           <div style={{ 
+            position: 'relative',
             display: 'flex', 
             gap: '20px', 
             alignItems: 'flex-start', 
@@ -181,6 +219,26 @@ const App: React.FC = () => {
           }}>
             <GameCanvas gameState={gameState} />
             <GameInfo gameState={gameState} />
+            
+            {/* 连击计数器 */}
+            {gameState && gameState.combo > 1 && (
+              <ComboCounter
+                combo={gameState.combo}
+                maxCombo={gameState.maxCombo}
+                visible={true}
+              />
+            )}
+            
+            {/* 伤害数字 */}
+            {damageNumbers.map(dn => (
+              <DamageNumber
+                key={dn.id}
+                value={dn.value}
+                type={dn.type}
+                position={{ x: dn.x, y: dn.y }}
+                onComplete={() => removeDamageNumber(dn.id)}
+              />
+            ))}
           </div>
           
           {/* 战斗 UI - 放在棋盘下方，不遮挡 */}
@@ -200,13 +258,10 @@ const App: React.FC = () => {
             </div>
           )}
           
-          {/* 开始战斗按钮 */}
+          {/* 开始战斗按钮 - 修改为使用敌人选择 */}
           <button
             className="start-battle-btn"
-            onClick={() => {
-              gameEngine.initBattle('slime');
-              setGameState(gameEngine.getGameState());
-            }}
+            onClick={handleStartBattle}
             style={{
               marginTop: '15px',
               padding: 'clamp(10px, 3vw, 12px) clamp(25px, 6vw, 30px)',
@@ -229,7 +284,7 @@ const App: React.FC = () => {
               e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 68, 68, 0.3)';
             }}
           >
-            ⚔️ 开始战斗
+            ⚔️ 选择敌人开始战斗
           </button>
           
           <div style={{
@@ -260,6 +315,80 @@ const App: React.FC = () => {
           deckManager={deckManager}
           onClose={() => setShowDeck(false)}
         />
+      )}
+
+      {/* 敌人选择界面 */}
+      {showEnemySelect && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.9)',
+          zIndex: 2000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: '900px',
+            maxHeight: '90vh',
+            overflow: 'auto',
+          }}>
+            <EnemySelect
+              onEnemySelect={handleEnemySelect}
+              selectedEnemyId={selectedEnemy}
+            />
+            <button
+              onClick={handleStartBattle}
+              style={{
+                display: 'block',
+                margin: '20px auto 0',
+                padding: '15px 40px',
+                fontSize: '18px',
+                background: 'rgba(0, 255, 255, 0.2)',
+                border: '2px solid #00ffff',
+                borderRadius: '8px',
+                color: '#00ffff',
+                cursor: 'pointer',
+                fontFamily: 'Orbitron, monospace',
+                boxShadow: '0 0 20px rgba(0, 255, 255, 0.5)',
+                transition: 'all 0.3s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 255, 255, 0.3)';
+                e.currentTarget.style.boxShadow = '0 0 40px rgba(0, 255, 255, 0.8)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 255, 255, 0.2)';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
+              }}
+            >
+              开始战斗
+            </button>
+            <button
+              onClick={() => setShowEnemySelect(false)}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                padding: '10px 20px',
+                fontSize: '14px',
+                background: 'rgba(255, 68, 68, 0.2)',
+                border: '2px solid #ff4444',
+                borderRadius: '8px',
+                color: '#ff4444',
+                cursor: 'pointer',
+                fontFamily: 'Orbitron, monospace',
+              }}
+            >
+              ✕ 关闭
+            </button>
+          </div>
+        </div>
       )}
     </ResponsiveLayout>
   );

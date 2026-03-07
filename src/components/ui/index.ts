@@ -5,5 +5,9 @@ export { default as CardDeck } from './CardDeck';
 export { default as MobileControls } from './MobileControls';
 export { default as ResponsiveLayout } from './ResponsiveLayout';
 export { BattleUI } from './BattleUI';
+export { EnemySelect } from './EnemySelect';
+export { DamageNumber } from './DamageNumber';
+export { ComboCounter } from './ComboCounter';
 
 // 这里可以放置纯 UI 展示组件
+export type { DamageType } from './DamageNumber';

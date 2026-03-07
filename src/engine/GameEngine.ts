@@ -421,6 +421,9 @@ export class GameEngine {
    * @param enemyType 敌人类型 ID（可选，默认为史莱姆）
    */
   public initBattle(enemyType: string = 'slime'): void {
+    // 重置连击数
+    this.resetCombo();
+    
     const enemy = getEnemyType(enemyType);
     
     if (enemy) {
