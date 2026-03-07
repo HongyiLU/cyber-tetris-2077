@@ -40,31 +40,9 @@ RELEASE_NOTES*.md
 
 # ==================== OpenClaw 配置（本地使用） ====================
 .openclaw/
-AGENTS.md
-SOUL.md
-USER.md
-TOOLS.md
-IDENTITY.md
-HEARTBEAT.md
-AGENT_*.md
-MULTI_*.md
-TEAM_*.md
-GATEWAY_*.md
-SCHEDULED_*.md
-QUICK_INSTALL.md
-configure-wake-option.ps1
-heartbeat-check.ps1
-install-heartbeat-task.bat
-gateway-*.bat
-gateway-tray/
 memory/
-
-# ==================== 旧游戏项目（已废弃） ====================
-cyber-shopkeeper/
-fishing-game/
-garden-world/
-multi-agent-chatroom/
-openclaw-plugin-agent-mention/
+*.ps1
+*.bat
 
 # ==================== 系统文件 ====================
 # OS files
