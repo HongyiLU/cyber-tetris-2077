@@ -153,3 +153,39 @@ export { DeckManager } from '../engine/DeckManager';
 
 // 导出敌人系统类型
 export type { EnemyType, EnemyInstance } from './enemy';
+
+// 导出装备系统类型
+export type {
+  Equipment,
+  EquipmentRarity,
+  EquipmentType,
+  EquipmentEffect,
+  EquipmentEffectType,
+  EquipmentSlot,
+  EquipmentState,
+  AppliedEquipmentEffects,
+} from './equipment';
+export { RARITY_COLORS, RARITY_WEIGHTS } from './equipment';
+
+// 导出成就系统类型
+export type {
+  Achievement,
+  AchievementDifficulty,
+  AchievementCategory,
+  AchievementCondition,
+  AchievementConditionType,
+  AchievementReward,
+  AchievementProgress,
+  AchievementState,
+} from './achievement';
+export { DIFFICULTY_WEIGHTS, CATEGORY_NAMES } from './achievement';
+
+// 导出排行榜系统类型
+export type {
+  Leaderboard,
+  LeaderboardEntry,
+  LeaderboardType,
+  LeaderboardState,
+  LeaderboardConfig,
+} from './leaderboard';
+export { LEADERBOARD_NAMES, LEADERBOARD_ICONS, DEFAULT_LEADERBOARD_CONFIG } from './leaderboard';

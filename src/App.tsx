@@ -3,8 +3,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { GameEngine } from './engine/GameEngine';
 import { DeckManager } from './engine/DeckManager';
+import { EquipmentSystem } from './systems/EquipmentSystem';
+import { AchievementSystem } from './systems/AchievementSystem';
+import { LeaderboardSystem } from './systems/LeaderboardSystem';
 import { GameCanvas, GameInfo } from './components/game';
-import { CardDeck, MobileControls, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter } from './components/ui';
+import { CardDeck, MobileControls, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel } from './components/ui';
 import { useGameLoop, useKeyboardControl } from './hooks';
 import { GAME_CONFIG } from './config/game-config';
 import type { GameState } from './types';
@@ -22,10 +25,28 @@ interface DamageNumberData {
 const App: React.FC = () => {
   const [deckManager] = useState(() => new DeckManager());
   const [gameEngine] = useState(() => new GameEngine(GAME_CONFIG.GAME.COLS, GAME_CONFIG.GAME.ROWS, deckManager));
+  const [equipmentSystem] = useState(() => {
+    // 从 localStorage 加载装备状态
+    const saved = EquipmentSystem.loadFromStorage();
+    return saved || new EquipmentSystem();
+  });
+  const [achievementSystem] = useState(() => {
+    // 从 localStorage 加载成就状态
+    const saved = AchievementSystem.loadFromStorage();
+    return saved || new AchievementSystem();
+  });
+  const [leaderboardSystem] = useState(() => {
+    // 从 localStorage 加载排行榜状态
+    const saved = LeaderboardSystem.loadFromStorage();
+    return saved || new LeaderboardSystem();
+  });
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [showDeck, setShowDeck] = useState(false);
   const [showEnemySelect, setShowEnemySelect] = useState(false);
+  const [showEquipment, setShowEquipment] = useState(false);
+  const [showAchievement, setShowAchievement] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [selectedEnemy, setSelectedEnemy] = useState('slime');
   const [damageNumbers, setDamageNumbers] = useState<DamageNumberData[]>([]);
 
@@ -55,6 +76,15 @@ const App: React.FC = () => {
     const y = window.innerHeight / 3;
     setDamageNumbers(prev => [...prev, { id, value, type, x, y }]);
   }, []);
+
+  // 保存系统状态
+  useEffect(() => {
+    if (gameStarted) {
+      equipmentSystem.saveToStorage();
+      achievementSystem.saveToStorage();
+      leaderboardSystem.saveToStorage();
+    }
+  }, [gameStarted, equipmentSystem, achievementSystem, leaderboardSystem]);
 
   // 使用键盘控制 Hook（桌面端）
   useKeyboardControl({
@@ -176,6 +206,99 @@ const App: React.FC = () => {
           >
             开始游戏
           </button>
+          
+          <div style={{
+            display: 'flex',
+            gap: '10px',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            width: '100%',
+            maxWidth: '500px',
+          }}>
+            <button
+              onClick={() => setShowEquipment(true)}
+              style={{
+                padding: 'clamp(8px, 2vw, 10px) clamp(20px, 5vw, 25px)',
+                fontSize: 'clamp(12px, 3vw, 14px)',
+                background: 'rgba(243, 156, 18, 0.1)',
+                border: '2px solid #f39c12',
+                borderRadius: '8px',
+                color: '#f39c12',
+                cursor: 'pointer',
+                fontFamily: 'Orbitron, monospace',
+                boxShadow: '0 0 10px rgba(243, 156, 18, 0.3)',
+                transition: 'all 0.3s',
+                flex: '1',
+                minWidth: '120px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(243, 156, 18, 0.2)';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(243, 156, 18, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(243, 156, 18, 0.1)';
+                e.currentTarget.style.boxShadow = '0 0 10px rgba(243, 156, 18, 0.3)';
+              }}
+            >
+              🎒 装备
+            </button>
+            
+            <button
+              onClick={() => setShowAchievement(true)}
+              style={{
+                padding: 'clamp(8px, 2vw, 10px) clamp(20px, 5vw, 25px)',
+                fontSize: 'clamp(12px, 3vw, 14px)',
+                background: 'rgba(155, 89, 182, 0.1)',
+                border: '2px solid #9b59b6',
+                borderRadius: '8px',
+                color: '#9b59b6',
+                cursor: 'pointer',
+                fontFamily: 'Orbitron, monospace',
+                boxShadow: '0 0 10px rgba(155, 89, 182, 0.3)',
+                transition: 'all 0.3s',
+                flex: '1',
+                minWidth: '120px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(155, 89, 182, 0.2)';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(155, 89, 182, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(155, 89, 182, 0.1)';
+                e.currentTarget.style.boxShadow = '0 0 10px rgba(155, 89, 182, 0.3)';
+              }}
+            >
+              🏆 成就
+            </button>
+            
+            <button
+              onClick={() => setShowLeaderboard(true)}
+              style={{
+                padding: 'clamp(8px, 2vw, 10px) clamp(20px, 5vw, 25px)',
+                fontSize: 'clamp(12px, 3vw, 14px)',
+                background: 'rgba(52, 152, 219, 0.1)',
+                border: '2px solid #3498db',
+                borderRadius: '8px',
+                color: '#3498db',
+                cursor: 'pointer',
+                fontFamily: 'Orbitron, monospace',
+                boxShadow: '0 0 10px rgba(52, 152, 219, 0.3)',
+                transition: 'all 0.3s',
+                flex: '1',
+                minWidth: '120px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(52, 152, 219, 0.2)';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(52, 152, 219, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(52, 152, 219, 0.1)';
+                e.currentTarget.style.boxShadow = '0 0 10px rgba(52, 152, 219, 0.3)';
+              }}
+            >
+              📊 排行榜
+            </button>
+          </div>
           
           <button
             onClick={() => setShowDeck(true)}
@@ -306,7 +429,7 @@ const App: React.FC = () => {
         fontSize: 'clamp(9px, 2.5vw, 10px)',
         color: '#666',
       }}>
-        v2.1.0 - 移动端适配版
+        v1.6.0 - 游戏内容扩展版
       </div>
 
       {/* 卡组管理界面 */}
@@ -314,6 +437,39 @@ const App: React.FC = () => {
         <CardDeck 
           deckManager={deckManager}
           onClose={() => setShowDeck(false)}
+        />
+      )}
+
+      {/* 装备选择界面 */}
+      {showEquipment && (
+        <EquipmentSelect
+          onSelect={(equipmentId) => {
+            equipmentSystem.equipEquipment(equipmentId);
+          }}
+          onClose={() => setShowEquipment(false)}
+          selectedEquipment={{
+            head: equipmentSystem.getEquipmentSlots().head?.id || null,
+            body: equipmentSystem.getEquipmentSlots().body?.id || null,
+            accessory: equipmentSystem.getEquipmentSlots().accessory?.id || null,
+          }}
+          unlockedEquipment={equipmentSystem.getUnlockedEquipment().map(e => e.id)}
+        />
+      )}
+
+      {/* 成就面板 */}
+      {showAchievement && (
+        <AchievementPanel
+          progress={achievementSystem.getAllProgress()}
+          totalGold={achievementSystem.getTotalGold()}
+          onClose={() => setShowAchievement(false)}
+        />
+      )}
+
+      {/* 排行榜面板 */}
+      {showLeaderboard && (
+        <LeaderboardPanel
+          leaderboards={leaderboardSystem.getAllLeaderboards()}
+          onClose={() => setShowLeaderboard(false)}
         />
       )}
 
