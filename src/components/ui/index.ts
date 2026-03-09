@@ -11,6 +11,7 @@ export { ComboCounter } from './ComboCounter';
 export { EquipmentSelect } from './EquipmentSelect';
 export { AchievementPanel } from './AchievementPanel';
 export { LeaderboardPanel } from './LeaderboardPanel';
+export { AchievementNotification } from './AchievementNotification';
 
 // 这里可以放置纯 UI 展示组件
 export type { DamageType } from './DamageNumber';

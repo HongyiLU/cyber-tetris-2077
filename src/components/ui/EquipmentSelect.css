@@ -231,6 +231,115 @@
   box-shadow: 0 2px 8px rgba(0, 212, 255, 0.4);
 }
 
+/* 装备对比提示 */
+.equipment-comparison {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(243, 156, 18, 0.5);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comparison-title {
+  color: #f39c12;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(243, 156, 18, 0.5);
+}
+
+.comparison-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.comparison-column {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.comparison-label {
+  color: #94a3b8;
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.comparison-item-name {
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.comparison-effect {
+  font-size: 12px;
+  color: #e2e8f0;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  margin-bottom: 4px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.comparison-effect[style*="#2ecc71"] {
+  background: rgba(46, 204, 113, 0.15);
+  border-left: 3px solid #2ecc71;
+}
+
+.comparison-effect[style*="#e74c3c"] {
+  background: rgba(231, 76, 60, 0.15);
+  border-left: 3px solid #e74c3c;
+}
+
+.comparison-effect[style*="#95a5a6"] {
+  background: rgba(149, 165, 166, 0.15);
+  border-left: 3px solid #95a5a6;
+}
+
+.comparison-empty {
+  color: #666;
+  font-size: 13px;
+  font-style: italic;
+  text-align: center;
+  padding: 12px;
+}
+
+.comparison-arrow {
+  color: #f39c12;
+  font-size: 24px;
+  font-weight: bold;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 /* 底部提示 */
 .equipment-select-footer {
   margin-top: 16px;
@@ -264,22 +373,176 @@
   background: rgba(0, 212, 255, 0.7);
 }
 
-/* 响应式设计 */
+/* 响应式设计 - 移动端抽屉式布局 */
 @media (max-width: 768px) {
+  .equipment-select-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
   .equipment-select-modal {
-    width: 95%;
+    width: 100%;
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 16px 16px 0 0;
     padding: 16px;
+    position: relative;
+    bottom: 0;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   .equipment-list {
     grid-template-columns: 1fr;
+    max-height: 50vh;
+    -webkit-overflow-scrolling: touch;
   }
 
   .equipment-tabs {
-    flex-direction: column;
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .tab {
-    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .equipment-card {
+    min-height: 180px;
+    min-width: 44px;
+  }
+
+  .equipment-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 28px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .equipment-name {
+    font-size: 14px;
+  }
+
+  .equipment-rarity {
+    font-size: 11px;
+  }
+
+  .equipment-description {
+    font-size: 12px;
+  }
+
+  .effect-text {
+    font-size: 11px;
+  }
+
+  /* 移动端对比提示优化 */
+  .equipment-comparison {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .comparison-title {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .comparison-content {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .comparison-column {
+    padding: 10px;
+  }
+
+  .comparison-arrow {
+    transform: rotate(90deg);
+    margin: 8px 0;
+    font-size: 20px;
+  }
+
+  .comparison-item-name {
+    font-size: 13px;
+  }
+
+  .comparison-effect {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+
+  .close-btn {
+    padding: 12px 16px;
+    font-size: 28px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+  }
+}
+
+/* 触摸设备优化 - WCAG 可访问性标准 */
+@media (hover: none) and (pointer: coarse) {
+  .equipment-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .equipment-card:active {
+    transform: scale(0.98);
+    background: rgba(0, 212, 255, 0.2);
+  }
+
+  .tab:hover {
+    transform: none;
+  }
+
+  .tab:active {
+    transform: scale(0.98);
+    background: rgba(0, 212, 255, 0.25);
+  }
+
+  .close-btn:hover {
+    transform: none;
+  }
+
+  .close-btn:active {
+    transform: scale(0.9);
+    background: rgba(255, 107, 107, 0.3);
+  }
+
+  /* 确保所有交互元素最小点击区域 44x44px (WCAG 标准) */
+  .tab,
+  .close-btn,
+  .equipment-card,
+  .equipment-card * {
+    min-height: 44px;
+  }
+
+  /* 优化触摸反馈 */
+  * {
+    -webkit-tap-highlight-color: rgba(0, 212, 255, 0.3);
+    touch-action: manipulation;
   }
 }

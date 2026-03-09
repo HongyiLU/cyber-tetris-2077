@@ -7,7 +7,7 @@ import { EquipmentSystem } from './systems/EquipmentSystem';
 import { AchievementSystem } from './systems/AchievementSystem';
 import { LeaderboardSystem } from './systems/LeaderboardSystem';
 import { GameCanvas, GameInfo } from './components/game';
-import { CardDeck, MobileControls, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel } from './components/ui';
+import { CardDeck, MobileControls, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification } from './components/ui';
 import { useGameLoop, useKeyboardControl } from './hooks';
 import { GAME_CONFIG } from './config/game-config';
 import type { GameState } from './types';
@@ -49,6 +49,14 @@ const App: React.FC = () => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [selectedEnemy, setSelectedEnemy] = useState('slime');
   const [damageNumbers, setDamageNumbers] = useState<DamageNumberData[]>([]);
+  const [notificationAchievement, setNotificationAchievement] = useState<{
+    id: string;
+    name: string;
+    description: string;
+    goldReward: number;
+    icon?: string;
+  } | null>(null);
+  const [showNotification, setShowNotification] = useState(false);
 
   // 使用游戏循环 Hook
   useGameLoop({
@@ -76,6 +84,20 @@ const App: React.FC = () => {
     const y = window.innerHeight / 3;
     setDamageNumbers(prev => [...prev, { id, value, type, x, y }]);
   }, []);
+
+  // 设置成就解锁回调
+  useEffect(() => {
+    achievementSystem.setOnAchievementUnlocked((achievement) => {
+      setNotificationAchievement({
+        id: achievement.id,
+        name: achievement.name,
+        description: achievement.description,
+        goldReward: achievement.reward.value as number,
+        icon: achievement.icon,
+      });
+      setShowNotification(true);
+    });
+  }, [achievementSystem]);
 
   // 保存系统状态
   useEffect(() => {
@@ -179,6 +201,38 @@ const App: React.FC = () => {
           alignItems: 'center',
           width: '100%',
         }}>
+          {/* 金币显示 */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '10px 20px',
+            background: 'rgba(243, 156, 18, 0.15)',
+            border: '2px solid rgba(243, 156, 18, 0.5)',
+            borderRadius: '12px',
+            boxShadow: '0 0 15px rgba(243, 156, 18, 0.3)',
+            marginBottom: '10px',
+          }}>
+            <span style={{ fontSize: '24px' }}>💰</span>
+            <span style={{
+              fontFamily: 'Orbitron, monospace',
+              fontSize: 'clamp(18px, 5vw, 24px)',
+              color: '#f39c12',
+              fontWeight: 'bold',
+              textShadow: '0 0 10px rgba(243, 156, 18, 0.5)',
+            }}>
+              {achievementSystem.getTotalGold().toLocaleString()}
+            </span>
+            <span style={{
+              fontFamily: 'Orbitron, monospace',
+              fontSize: 'clamp(12px, 3vw, 14px)',
+              color: '#f39c12',
+              opacity: 0.8,
+            }}>
+              金币
+            </span>
+          </div>
+
           <button
             onClick={startGame}
             style={{
@@ -297,6 +351,32 @@ const App: React.FC = () => {
               }}
             >
               📊 排行榜
+            </button>
+
+            <button
+              disabled
+              style={{
+                padding: 'clamp(8px, 2vw, 10px) clamp(20px, 5vw, 25px)',
+                fontSize: 'clamp(12px, 3vw, 14px)',
+                background: 'rgba(100, 100, 100, 0.1)',
+                border: '2px solid #666',
+                borderRadius: '8px',
+                color: '#666',
+                cursor: 'not-allowed',
+                fontFamily: 'Orbitron, monospace',
+                opacity: 0.6,
+                flex: '1',
+                minWidth: '120px',
+              }}
+              title="商店系统开发中，敬请期待！"
+            >
+              🛒 商店
+              <span style={{
+                display: 'block',
+                fontSize: '9px',
+                marginTop: '2px',
+                opacity: 0.7,
+              }}>开发中</span>
             </button>
           </div>
           
@@ -546,6 +626,13 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 成就解锁通知 */}
+      <AchievementNotification
+        achievement={notificationAchievement}
+        visible={showNotification}
+        onClose={() => setShowNotification(false)}
+      />
     </ResponsiveLayout>
   );
 };
