@@ -6,6 +6,8 @@ import { DeckManager } from './engine/DeckManager';
 import { EquipmentSystem } from './systems/EquipmentSystem';
 import { AchievementSystem } from './systems/AchievementSystem';
 import { LeaderboardSystem } from './systems/LeaderboardSystem';
+import { AudioManager } from './systems/AudioManager';
+import { SoundId } from './config/audio-config';
 import { GameCanvas, GameInfo } from './components/game';
 import { CardDeck, MobileControls, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification } from './components/ui';
 import { useGameLoop, useKeyboardControl } from './hooks';
@@ -24,7 +26,8 @@ interface DamageNumberData {
 
 const App: React.FC = () => {
   const [deckManager] = useState(() => new DeckManager());
-  const [gameEngine] = useState(() => new GameEngine(GAME_CONFIG.GAME.COLS, GAME_CONFIG.GAME.ROWS, deckManager));
+  const [audioManager] = useState(() => new AudioManager());
+  const [gameEngine] = useState(() => new GameEngine(GAME_CONFIG.GAME.COLS, GAME_CONFIG.GAME.ROWS, deckManager, audioManager));
   const [equipmentSystem] = useState(() => {
     // 从 localStorage 加载装备状态
     const saved = EquipmentSystem.loadFromStorage();
@@ -47,6 +50,7 @@ const App: React.FC = () => {
   const [showEquipment, setShowEquipment] = useState(false);
   const [showAchievement, setShowAchievement] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [selectedEnemy, setSelectedEnemy] = useState('slime');
   const [damageNumbers, setDamageNumbers] = useState<DamageNumberData[]>([]);
   const [notificationAchievement, setNotificationAchievement] = useState<{
@@ -57,6 +61,11 @@ const App: React.FC = () => {
     icon?: string;
   } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
+  
+  // 音频状态
+  const [masterVolume, setMasterVolume] = useState(audioManager.getMasterVolume());
+  const [gameVolume, setGameVolume] = useState(audioManager.getGameVolume());
+  const [isMuted, setIsMuted] = useState(audioManager.isMuted());
 
   // 使用游戏循环 Hook
   useGameLoop({
@@ -85,6 +94,16 @@ const App: React.FC = () => {
     setDamageNumbers(prev => [...prev, { id, value, type, x, y }]);
   }, []);
 
+  // 初始化音频管理器
+  useEffect(() => {
+    audioManager.initialize().catch(console.warn);
+    
+    // 组件卸载时清理
+    return () => {
+      audioManager.dispose();
+    };
+  }, [audioManager]);
+
   // 设置成就解锁回调
   useEffect(() => {
     achievementSystem.setOnAchievementUnlocked((achievement) => {
@@ -96,8 +115,10 @@ const App: React.FC = () => {
         icon: achievement.icon,
       });
       setShowNotification(true);
+      // 播放成就解锁音效
+      audioManager.playSound(SoundId.ACHIEVEMENT);
     });
-  }, [achievementSystem]);
+  }, [achievementSystem, audioManager]);
 
   // 保存系统状态
   useEffect(() => {
@@ -165,6 +186,22 @@ const App: React.FC = () => {
     gameEngine.togglePause();
     setGameState(gameEngine.getGameState());
   }, [gameEngine]);
+
+  // 音频控制回调
+  const handleSetMasterVolume = useCallback((volume: number) => {
+    setMasterVolume(volume);
+    audioManager.setMasterVolume(volume);
+  }, [audioManager]);
+
+  const handleSetGameVolume = useCallback((volume: number) => {
+    setGameVolume(volume);
+    audioManager.setGameVolume(volume);
+  }, [audioManager]);
+
+  const handleToggleMute = useCallback(() => {
+    const muted = audioManager.toggleMute();
+    setIsMuted(muted);
+  }, [audioManager]);
 
   return (
     <ResponsiveLayout
@@ -269,6 +306,34 @@ const App: React.FC = () => {
             width: '100%',
             maxWidth: '500px',
           }}>
+            <button
+              onClick={() => setShowSettings(true)}
+              style={{
+                padding: 'clamp(8px, 2vw, 10px) clamp(20px, 5vw, 25px)',
+                fontSize: 'clamp(12px, 3vw, 14px)',
+                background: 'rgba(46, 204, 113, 0.1)',
+                border: '2px solid #2ecc71',
+                borderRadius: '8px',
+                color: '#2ecc71',
+                cursor: 'pointer',
+                fontFamily: 'Orbitron, monospace',
+                boxShadow: '0 0 10px rgba(46, 204, 113, 0.3)',
+                transition: 'all 0.3s',
+                flex: '1',
+                minWidth: '120px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(46, 204, 113, 0.2)';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(46, 204, 113, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(46, 204, 113, 0.1)';
+                e.currentTarget.style.boxShadow = '0 0 10px rgba(46, 204, 113, 0.3)';
+              }}
+            >
+              ⚙️ 设置
+            </button>
+            
             <button
               onClick={() => setShowEquipment(true)}
               style={{
@@ -633,6 +698,216 @@ const App: React.FC = () => {
         visible={showNotification}
         onClose={() => setShowNotification(false)}
       />
+
+      {/* 设置面板 */}
+      {showSettings && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.85)',
+          zIndex: 2000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            background: 'rgba(0, 20, 40, 0.95)',
+            border: '2px solid var(--neon-cyan, #00ffff)',
+            borderRadius: '16px',
+            padding: '30px',
+            width: '90%',
+            maxWidth: '500px',
+            boxShadow: '0 0 40px rgba(0, 255, 255, 0.3)',
+          }}>
+            <h2 style={{
+              fontSize: '24px',
+              color: 'var(--neon-cyan, #00ffff)',
+              fontFamily: 'Orbitron, monospace',
+              marginBottom: '25px',
+              textAlign: 'center',
+              textShadow: '0 0 10px var(--neon-cyan, #00ffff)',
+            }}>
+              🔊 音效设置
+            </h2>
+            
+            {/* 主音量 */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                color: '#fff',
+                fontFamily: 'Orbitron, monospace',
+                marginBottom: '8px',
+                fontSize: '14px',
+              }}>
+                主音量：{masterVolume}%
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={masterVolume}
+                onChange={(e) => handleSetMasterVolume(Number(e.target.value))}
+                style={{
+                  width: '100%',
+                  height: '8px',
+                  borderRadius: '4px',
+                  background: 'rgba(0, 255, 255, 0.2)',
+                  outline: 'none',
+                  cursor: 'pointer',
+                }}
+              />
+            </div>
+            
+            {/* 游戏音效音量 */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                color: '#fff',
+                fontFamily: 'Orbitron, monospace',
+                marginBottom: '8px',
+                fontSize: '14px',
+              }}>
+                游戏音效：{gameVolume}%
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={gameVolume}
+                onChange={(e) => handleSetGameVolume(Number(e.target.value))}
+                style={{
+                  width: '100%',
+                  height: '8px',
+                  borderRadius: '4px',
+                  background: 'rgba(0, 255, 255, 0.2)',
+                  outline: 'none',
+                  cursor: 'pointer',
+                }}
+              />
+            </div>
+            
+            {/* 静音开关 */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '25px',
+              padding: '15px',
+              background: 'rgba(0, 255, 255, 0.1)',
+              borderRadius: '8px',
+            }}>
+              <span style={{
+                color: '#fff',
+                fontFamily: 'Orbitron, monospace',
+                fontSize: '14px',
+              }}>
+                🔇 静音
+              </span>
+              <button
+                onClick={handleToggleMute}
+                style={{
+                  padding: '8px 20px',
+                  fontSize: '14px',
+                  background: isMuted ? 'rgba(255, 68, 68, 0.3)' : 'rgba(46, 204, 113, 0.3)',
+                  border: `2px solid ${isMuted ? '#ff4444' : '#2ecc71'}`,
+                  borderRadius: '8px',
+                  color: isMuted ? '#ff4444' : '#2ecc71',
+                  cursor: 'pointer',
+                  fontFamily: 'Orbitron, monospace',
+                  transition: 'all 0.3s',
+                }}
+              >
+                {isMuted ? '已静音' : '开启'}
+              </button>
+            </div>
+            
+            {/* 测试音效按钮 */}
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              flexWrap: 'wrap',
+              marginBottom: '25px',
+            }}>
+              <button
+                onClick={() => audioManager.playSound(SoundId.MOVE)}
+                style={{
+                  padding: '8px 15px',
+                  fontSize: '12px',
+                  background: 'rgba(0, 255, 255, 0.1)',
+                  border: '1px solid var(--neon-cyan, #00ffff)',
+                  borderRadius: '6px',
+                  color: 'var(--neon-cyan, #00ffff)',
+                  cursor: 'pointer',
+                  fontFamily: 'Orbitron, monospace',
+                }}
+              >
+                测试移动
+              </button>
+              <button
+                onClick={() => audioManager.playSound(SoundId.ROTATE)}
+                style={{
+                  padding: '8px 15px',
+                  fontSize: '12px',
+                  background: 'rgba(0, 255, 255, 0.1)',
+                  border: '1px solid var(--neon-cyan, #00ffff)',
+                  borderRadius: '6px',
+                  color: 'var(--neon-cyan, #00ffff)',
+                  cursor: 'pointer',
+                  fontFamily: 'Orbitron, monospace',
+                }}
+              >
+                测试旋转
+              </button>
+              <button
+                onClick={() => audioManager.playClearSound(1)}
+                style={{
+                  padding: '8px 15px',
+                  fontSize: '12px',
+                  background: 'rgba(0, 255, 255, 0.1)',
+                  border: '1px solid var(--neon-cyan, #00ffff)',
+                  borderRadius: '6px',
+                  color: 'var(--neon-cyan, #00ffff)',
+                  cursor: 'pointer',
+                  fontFamily: 'Orbitron, monospace',
+                }}
+              >
+                测试消行
+              </button>
+            </div>
+            
+            {/* 关闭按钮 */}
+            <button
+              onClick={() => setShowSettings(false)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '16px',
+                background: 'rgba(0, 255, 255, 0.2)',
+                border: '2px solid var(--neon-cyan, #00ffff)',
+                borderRadius: '8px',
+                color: 'var(--neon-cyan, #00ffff)',
+                cursor: 'pointer',
+                fontFamily: 'Orbitron, monospace',
+                boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)',
+                transition: 'all 0.3s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 255, 255, 0.3)';
+                e.currentTarget.style.boxShadow = '0 0 40px rgba(0, 255, 255, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 255, 255, 0.2)';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.3)';
+              }}
+            >
+              关闭
+            </button>
+          </div>
+        </div>
+      )}
     </ResponsiveLayout>
   );
 };

@@ -1,0 +1,41 @@
+/* ==================== 粒子画布样式 ==================== */
+
+.particle-canvas {
+  /* 绝对定位，覆盖在游戏棋盘上方 */
+  position: absolute;
+  top: 0;
+  left: 0;
+  
+  /* 透明背景 */
+  background: transparent;
+  
+  /* 确保在棋盘上层 */
+  z-index: 10;
+  
+  /* 指针事件穿透（不影响游戏操作） */
+  pointer-events: none;
+  
+  /* 平滑渲染 */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  
+  /* 使用 CSS transform 进行硬件加速 */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .particle-canvas {
+    /* 移动端可以适当降低粒子质量以提升性能 */
+    image-rendering: auto;
+  }
+}
+
+/* 高 DPI 屏幕优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .particle-canvas {
+    /* 高 DPI 屏幕保持清晰 */
+    image-rendering: -webkit-optimize-contrast;
+  }
+}

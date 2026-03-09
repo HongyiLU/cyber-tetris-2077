@@ -2,12 +2,15 @@
 
 import { GAME_CONFIG, PIECE_SIZE_MULTIPLIER } from '../config/game-config';
 import { DeckManager } from './DeckManager';
+import { AudioManager } from '../systems/AudioManager';
+import { SoundId } from '../config/audio-config';
 import type { Piece, Position, GameState } from '../types';
 import { BattleState } from '../types';
 import type { Deck, DrawResult } from '../types/deck';
 import type { EnemyType } from '../types/enemy';
 import { getEnemyType } from '../config/enemy-config';
 import { createEmptyBoard, checkCollision, rotateShape, copyBoard, copyShape } from '../utils/game-utils';
+import { ParticleEffect } from '../system/ParticleEffect';
 
 /**
  * 游戏引擎类
@@ -50,17 +53,28 @@ export class GameEngine {
   // 敌人 AI 计时器属性
   private enemyAttackInterval: number = 10000; // 10 秒（毫秒）
   private lastEnemyAttackTime: number = 0;
+  
+  // 粒子特效系统
+  private particleEffect: ParticleEffect | null = null;
+  private onParticleSpawn?: (x: number, y: number, color: string, lines: number) => void;
+  
+  // 音频管理器
+  private audioManager: AudioManager;
 
   constructor(
     cols: number = GAME_CONFIG.GAME.COLS,
     rows: number = GAME_CONFIG.GAME.ROWS,
-    deckManager?: DeckManager
+    deckManager?: DeckManager,
+    audioManager?: AudioManager
   ) {
     this.cols = cols;
     this.rows = rows;
     this.board = createEmptyBoard(cols, rows);
     this.deckManager = deckManager || new DeckManager();
     this.pieceLocked = false;
+    this.audioManager = audioManager || new AudioManager();
+    // 初始化音频管理器（不等待）
+    this.audioManager.initialize().catch(console.warn);
   }
 
   /**
@@ -76,6 +90,22 @@ export class GameEngine {
    */
   public getDeckManager(): DeckManager {
     return this.deckManager;
+  }
+
+  /**
+   * 设置粒子特效回调
+   * @param callback 粒子生成回调函数
+   */
+  public setParticleSpawnCallback(callback: (x: number, y: number, color: string, lines: number) => void): void {
+    this.onParticleSpawn = callback;
+  }
+
+  /**
+   * 设置粒子系统实例
+   * @param system 粒子系统实例
+   */
+  public setParticleSystem(system: ParticleEffect): void {
+    this.particleEffect = system;
   }
 
   /**
@@ -199,6 +229,10 @@ export class GameEngine {
 
     if (!checkCollision(this.currentPiece.shape, newPosition, this.board, this.cols, this.rows)) {
       this.currentPiece.position = newPosition;
+      // 播放移动音效（仅左右移动）
+      if (dx !== 0) {
+        this.audioManager.playSound(SoundId.MOVE);
+      }
       return true;
     }
     return false;
@@ -232,6 +266,8 @@ export class GameEngine {
       if (!checkCollision(rotated, kickPosition, this.board, this.cols, this.rows)) {
         this.currentPiece.shape = rotated;
         this.currentPiece.position = kickPosition;
+        // 播放旋转音效
+        this.audioManager.playSound(SoundId.ROTATE);
         return true;
       }
     }
@@ -264,6 +300,9 @@ export class GameEngine {
       }
     }
     
+    // 播放硬降音效
+    this.audioManager.playSound(SoundId.HARD_DROP);
+    
     // 硬降后锁定方块
     this.lockPiece();
     
@@ -292,8 +331,8 @@ export class GameEngine {
       }
     }
 
-    // 计算消除行数和分数
-    const clearedLines = this.clearLines();
+    // 计算消除行数和分数（传入方块信息以触发粒子特效）
+    const clearedLines = this.clearLines(type, position);
     const pieceSize = shape.flat().filter(cell => cell !== 0 && cell !== undefined).length;
     const sizeMultiplier = PIECE_SIZE_MULTIPLIER[pieceSize] || 1.0;
     
@@ -325,6 +364,14 @@ export class GameEngine {
       if (this.combo > this.maxCombo) {
         this.maxCombo = this.combo;
       }
+      
+      // 播放消行音效
+      this.audioManager.playClearSound(clearedLines);
+      
+      // 播放连击音效（连击数 > 1 时）
+      if (this.combo > 1) {
+        this.audioManager.playSound(SoundId.COMBO);
+      }
     }
 
     // 战斗系统：消行时触发伤害
@@ -339,6 +386,8 @@ export class GameEngine {
       // 检查胜利
       if (this.isEnemyDead()) {
         this.battleState = BattleState.WON;
+        // 播放胜利音效
+        this.audioManager.playSound(SoundId.VICTORY);
       }
     }
 
@@ -352,6 +401,8 @@ export class GameEngine {
     // 检查游戏结束
     if (this.currentPiece && checkCollision(this.currentPiece.shape, this.currentPiece.position, this.board, this.cols, this.rows)) {
       this.gameOver = true;
+      // 播放游戏结束音效
+      this.audioManager.playSound(SoundId.GAME_OVER);
     }
 
     return clearedLines;
@@ -359,20 +410,62 @@ export class GameEngine {
 
   /**
    * 消除完整行
+   * @param pieceType 当前方块类型（用于获取颜色）
+   * @param piecePosition 当前方块位置（用于确定特效位置）
    */
-  private clearLines(): number {
+  private clearLines(pieceType?: string, piecePosition?: Position): number {
     let cleared = 0;
+    const clearedRows: number[] = [];
 
     for (let row = this.rows - 1; row >= 0; row--) {
       if (this.board[row].every(cell => cell !== 0)) {
         this.board.splice(row, 1);
         this.board.unshift(Array(this.cols).fill(0));
         cleared++;
+        clearedRows.push(row);
         row++; // 重新检查当前行
       }
     }
 
+    // 触发粒子特效
+    if (cleared > 0 && pieceType && piecePosition) {
+      this.triggerParticleEffect(cleared, pieceType, piecePosition, clearedRows);
+    }
+
     return cleared;
+  }
+
+  /**
+   * 触发粒子特效
+   * @param lines 消除行数
+   * @param pieceType 方块类型
+   * @param position 方块位置
+   * @param clearedRows 消除的行号数组
+   */
+  private triggerParticleEffect(
+    lines: number,
+    pieceType: string,
+    position: Position,
+    clearedRows: number[]
+  ): void {
+    // 获取方块颜色
+    const color = GAME_CONFIG.COLORS[pieceType as keyof typeof GAME_CONFIG.COLORS] || '#ffffff';
+    
+    // 计算特效中心位置（棋盘中间）
+    const centerX = (this.cols / 2) * 30; // 假设每个格子 30px
+    const centerY = clearedRows.length > 0 
+      ? (clearedRows[0] / this.rows) * 600 // 假设棋盘高度 600px
+      : 300;
+
+    // 使用回调通知 UI 层生成粒子
+    if (this.onParticleSpawn) {
+      this.onParticleSpawn(centerX, centerY, color, lines);
+    }
+
+    // 如果有直接引用的粒子系统，也可以使用
+    if (this.particleEffect) {
+      this.particleEffect.spawnForLines(centerX, centerY, color, lines);
+    }
   }
 
   /**
