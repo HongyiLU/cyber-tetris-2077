@@ -6,10 +6,11 @@ import { DeckManager } from './engine/DeckManager';
 import { EquipmentSystem } from './systems/EquipmentSystem';
 import { AchievementSystem } from './systems/AchievementSystem';
 import { LeaderboardSystem } from './systems/LeaderboardSystem';
-import { AudioManager } from './systems/AudioManager';
-import { SoundId } from './config/audio-config';
+import { AudioManager } from './systems/AudioManagerSynth';
+import { SoundId } from './systems/AudioManagerSynth';
 import { GameCanvas, GameInfo } from './components/game';
-import { CardDeck, MobileControls, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification } from './components/ui';
+import { CardDeck, MobileControls, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification, ParticleCanvas } from './components/ui';
+import { ParticleEffect } from './system/ParticleEffect';
 import { useGameLoop, useKeyboardControl } from './hooks';
 import { GAME_CONFIG } from './config/game-config';
 import type { GameState } from './types';
@@ -62,6 +63,9 @@ const App: React.FC = () => {
   } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
   
+  // 粒子系统状态
+  const [particleSystem, setParticleSystem] = useState<ParticleEffect | null>(null);
+  
   // 音频状态
   const [masterVolume, setMasterVolume] = useState(audioManager.getMasterVolume());
   const [gameVolume, setGameVolume] = useState(audioManager.getGameVolume());
@@ -93,6 +97,13 @@ const App: React.FC = () => {
     const y = window.innerHeight / 3;
     setDamageNumbers(prev => [...prev, { id, value, type, x, y }]);
   }, []);
+
+  // 获取粒子系统实例的回调
+  const handleGetParticleSystem = useCallback((system: ParticleEffect) => {
+    setParticleSystem(system);
+    // 将粒子系统传递给 GameEngine
+    gameEngine.setParticleSystem(system);
+  }, [gameEngine]);
 
   // 初始化音频管理器
   useEffect(() => {
@@ -485,7 +496,23 @@ const App: React.FC = () => {
             justifyContent: 'center',
             marginBottom: '10px',
           }}>
-            <GameCanvas gameState={gameState} />
+            {/* 棋盘容器：GameCanvas + ParticleCanvas 叠加 */}
+            <div style={{ position: 'relative' }}>
+              <GameCanvas gameState={gameState} />
+              {/* 粒子画布覆盖在棋盘上方 */}
+              <ParticleCanvas
+                width={GAME_CONFIG.GAME.COLS * GAME_CONFIG.GAME.BLOCK_SIZE}
+                height={GAME_CONFIG.GAME.ROWS * GAME_CONFIG.GAME.BLOCK_SIZE}
+                visible={gameStarted}
+                onGetParticleSystem={handleGetParticleSystem}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  pointerEvents: 'none', // 让点击穿透到下层
+                }}
+              />
+            </div>
             <GameInfo gameState={gameState} />
             
             {/* 连击计数器 */}

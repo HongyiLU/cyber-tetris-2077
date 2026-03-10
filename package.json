@@ -1,7 +1,7 @@
 {
   "name": "cyber-tetris-2077",
-  "version": "1.3.0",
-  "description": "赛博方块 2077 - Cyberpunk Tetris with Card Deck System",
+  "version": "1.6.1",
+  "description": "赛博方块 2077 - Cyberpunk Tetris with Particle Effects & Audio System",
   "private": true,
   "type": "module",
   "scripts": {

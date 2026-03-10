@@ -13,6 +13,8 @@ interface ParticleCanvasProps {
   visible?: boolean;
   /** 获取粒子系统实例的回调 */
   onGetParticleSystem?: (system: ParticleEffect) => void;
+  /** 自定义样式 */
+  style?: React.CSSProperties;
 }
 
 /**
@@ -31,6 +33,7 @@ export const ParticleCanvas: React.FC<ParticleCanvasProps> = ({
   height = 600,
   visible = true,
   onGetParticleSystem,
+  style,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particleSystemRef = useRef<ParticleEffect | null>(null);
@@ -129,6 +132,7 @@ export const ParticleCanvas: React.FC<ParticleCanvasProps> = ({
       style={{
         width: `${width}px`,
         height: `${height}px`,
+        ...style,
       }}
     />
   );

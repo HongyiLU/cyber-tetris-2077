@@ -2,8 +2,8 @@
 
 import { GAME_CONFIG, PIECE_SIZE_MULTIPLIER } from '../config/game-config';
 import { DeckManager } from './DeckManager';
-import { AudioManager } from '../systems/AudioManager';
-import { SoundId } from '../config/audio-config';
+import { AudioManager } from '../systems/AudioManagerSynth';
+import { SoundId } from '../systems/AudioManagerSynth';
 import type { Piece, Position, GameState } from '../types';
 import { BattleState } from '../types';
 import type { Deck, DrawResult } from '../types/deck';

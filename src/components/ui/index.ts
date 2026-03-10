@@ -12,6 +12,8 @@ export { EquipmentSelect } from './EquipmentSelect';
 export { AchievementPanel } from './AchievementPanel';
 export { LeaderboardPanel } from './LeaderboardPanel';
 export { AchievementNotification } from './AchievementNotification';
+export { ParticleCanvas } from './ParticleCanvas';
+export { default as ParticleCanvasDefault } from './ParticleCanvas';
 
 // 这里可以放置纯 UI 展示组件
 export type { DamageType } from './DamageNumber';
