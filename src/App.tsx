@@ -81,6 +81,11 @@ const App: React.FC = () => {
       const state = gameEngine.getGameState();
       setGameState(state);
       // battleState 直接从 state.battleState 读取，无需单独状态
+      
+      // 游戏结束或战斗胜利时停止 BGM
+      if ((state.gameOver || state.battleState === BattleState.WON) && audioManager.isBGMPlaying()) {
+        audioManager.stopBGM();
+      }
     },
   });
 
@@ -103,6 +108,15 @@ const App: React.FC = () => {
     setParticleSystem(system);
     // 将粒子系统传递给 GameEngine
     gameEngine.setParticleSystem(system);
+    
+    // 设置粒子生成回调（从 ParticleCanvas 获取 spawnEffect 方法）
+    setTimeout(() => {
+      const canvas = document.querySelector('.particle-canvas') as any;
+      if (canvas?.spawnEffect) {
+        gameEngine.setParticleSpawnCallback(canvas.spawnEffect);
+        console.log('[App] 粒子特效回调已设置');
+      }
+    }, 100);
   }, [gameEngine]);
 
   // 初始化音频管理器
@@ -163,7 +177,12 @@ const App: React.FC = () => {
     setGameState(gameEngine.getGameState());
     setGameStarted(true);
     setShowEnemySelect(false);
-  }, [gameEngine, selectedEnemy]);
+    // 开始播放 BGM（需要用户交互后才能播放）
+    setTimeout(() => {
+      audioManager.playBGM();
+      console.log('[App] BGM 开始播放');
+    }, 500);
+  }, [gameEngine, selectedEnemy, audioManager]);
 
   // 移动端控制回调 - 让 GameEngine 自己检查状态
   const handleMoveLeft = useCallback(() => {
@@ -497,7 +516,7 @@ const App: React.FC = () => {
             marginBottom: '10px',
           }}>
             {/* 棋盘容器：GameCanvas + ParticleCanvas 叠加 */}
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
               <GameCanvas gameState={gameState} />
               {/* 粒子画布覆盖在棋盘上方 */}
               <ParticleCanvas
@@ -509,6 +528,7 @@ const App: React.FC = () => {
                   position: 'absolute',
                   top: 0,
                   left: 0,
+                  zIndex: 10, // 确保在 GameCanvas 上方
                   pointerEvents: 'none', // 让点击穿透到下层
                 }}
               />

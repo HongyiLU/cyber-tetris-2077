@@ -46,10 +46,11 @@ export const DEFAULT_AUDIO_CONFIG: AudioConfig = {
 
 /**
  * 音频管理器
- * 使用 Web Audio API 生成合成音效，无需外部音频文件
+ * 使用 Web Audio API 生成合成音效和 BGM，无需外部音频文件
  * 
  * 特性：
  * - 使用振荡器生成音效
+ * - BGM 使用多振荡器和弦
  * - 音量控制（0-100%）
  * - 静音开关
  * - 零外部依赖
@@ -58,6 +59,10 @@ export class AudioManager {
   private audioContext: AudioContext | null = null;
   private config: AudioConfig;
   private initialized: boolean = false;
+  private bgmOscillators: OscillatorNode[] = [];
+  private bgmGain: GainNode | null = null;
+  private bgmLFO: OscillatorNode | null = null;
+  private bgmPlaying: boolean = false;
 
   constructor() {
     this.audioContext = null;
@@ -286,9 +291,108 @@ export class AudioManager {
   }
 
   /**
+   * 播放背景音乐（BGM）
+   * 使用多振荡器和弦生成赛博朋克风格的循环 BGM
+   */
+  public playBGM(): void {
+    if (this.config.muted || !this.audioContext) {
+      return;
+    }
+
+    // 如果已经在播放，先停止
+    this.stopBGM();
+
+    // 恢复 AudioContext
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(console.warn);
+    }
+
+    const now = this.audioContext.currentTime;
+    const volume = (this.config.gameVolume * this.config.masterVolume / 10000) * 0.15; // BGM 音量较小
+
+    // 创建 BGM 和弦（赛博朋克风格：Cm7 和弦）
+    const frequencies = [130.81, 155.56, 196.00, 233.08]; // C3, Eb3, G3, Bb3
+    
+    this.bgmGain = this.audioContext.createGain();
+    this.bgmGain.gain.setValueAtTime(volume * 0.5, now);
+    this.bgmGain.gain.linearRampToValueAtTime(volume, now + 2); // 2 秒淡入
+    this.bgmGain.connect(this.audioContext.destination);
+    
+    this.bgmOscillators = frequencies.map(freq => {
+      const osc = this.audioContext!.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+      osc.connect(this.bgmGain!);
+      osc.start(now);
+      return osc;
+    });
+
+    // 创建 LFO 调制（制造脉动效果）
+    const lfo = this.audioContext.createOscillator();
+    lfo.frequency.setValueAtTime(0.5, now); // 0.5Hz 慢速调制
+    const lfoGain = this.audioContext.createGain();
+    lfoGain.gain.setValueAtTime(volume * 0.3, now);
+    lfo.connect(lfoGain);
+    lfoGain.connect(this.bgmGain.gain);
+    lfo.start(now);
+    
+    this.bgmLFO = lfo;
+    this.bgmPlaying = true;
+
+    console.log('[AudioManager] BGM 开始播放');
+  }
+
+  /**
+   * 停止背景音乐
+   */
+  public stopBGM(): void {
+    if (!this.bgmPlaying) return;
+
+    const now = this.audioContext?.currentTime ?? 0;
+    
+    // 淡出
+    if (this.bgmGain && this.audioContext) {
+      this.bgmGain.gain.linearRampToValueAtTime(0, now + 0.5);
+    }
+
+    // 停止振荡器
+    this.bgmOscillators.forEach(osc => {
+      try {
+        osc.stop(now + 0.5);
+        osc.disconnect();
+      } catch (e) {
+        // 忽略已停止的振荡器
+      }
+    });
+
+    if (this.bgmLFO) {
+      try {
+        this.bgmLFO.stop(now + 0.5);
+        this.bgmLFO.disconnect();
+      } catch (e) {}
+    }
+
+    // 清理
+    this.bgmOscillators = [];
+    this.bgmLFO = null;
+    this.bgmGain = null;
+    this.bgmPlaying = false;
+
+    console.log('[AudioManager] BGM 停止播放');
+  }
+
+  /**
+   * 检查 BGM 是否正在播放
+   */
+  public isBGMPlaying(): boolean {
+    return this.bgmPlaying;
+  }
+
+  /**
    * 清理资源
    */
   public dispose(): void {
+    this.stopBGM();
     if (this.audioContext) {
       this.audioContext.close().catch(console.warn);
       this.audioContext = null;
