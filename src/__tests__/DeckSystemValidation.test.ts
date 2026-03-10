@@ -399,15 +399,7 @@ describe('卡组系统综合验证测试', () => {
       expect(typeof deckManager.getRarityWeights).toBe('function');
     });
 
-    test('向后兼容 API 可用', () => {
-      // 验证旧 API 仍然可用
-      expect(typeof deckManager.getCollectedCards).toBe('function');
-      expect(typeof deckManager.getCurrentDeck).toBe('function');
-      expect(typeof deckManager.addToDeck).toBe('function');
-      expect(typeof deckManager.removeFromDeck).toBe('function');
-      expect(typeof deckManager.autoFillDeck).toBe('function');
-      expect(typeof deckManager.getDeckStats).toBe('function');
-    });
+
   });
 
   // ==================== 6. 回归测试 ====================

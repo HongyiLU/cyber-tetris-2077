@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Card from './Card';
-import type { CardData, Deck, DeckManager } from '../../types';
+import type { CardData, Deck } from '../../types';
+import type { DeckManager } from '../../engine/DeckManager';
 import './CardDeck.css';
 
 interface CardDeckProps {
@@ -16,6 +17,12 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
   const [rarityFilter, setRarityFilter] = useState<string>('all');
   const [decks, setDecks] = useState<Deck[]>([]);
   const [activeDeckId, setActiveDeckId] = useState<string | null>(null);
+  const [showNewDeckModal, setShowNewDeckModal] = useState(false);
+  const [newDeckName, setNewDeckName] = useState('');
+  const [newDeckDescription, setNewDeckDescription] = useState('');
+
+  // 所有可用卡牌
+  const allCards = deckManager.getAllCards();
 
   // 加载卡组列表
   useEffect(() => {
@@ -28,37 +35,10 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
     loadDecks();
   }, [deckManager]);
 
-  const collectedCards = deckManager.getCollectedCards();
-  const uncollectedCards = deckManager.getUncollectedCards();
-  const currentDeck = deckManager.getCurrentDeck();
-  const activeDeck = deckManager.getActiveDeck();
-
   // 过滤卡牌
   const filterCards = (cards: CardData[]): CardData[] => {
     if (rarityFilter === 'all') return cards;
     return cards.filter(card => card.rarity === rarityFilter);
-  };
-
-  const handleAddToDeck = (cardId: string) => {
-    deckManager.addToDeck(cardId);
-    setSelectedCard(null);
-    // 刷新卡组列表
-    setDecks(deckManager.listDecks());
-  };
-
-  const handleRemoveFromDeck = (cardId: string) => {
-    deckManager.removeFromDeck(cardId);
-    setDecks(deckManager.listDecks());
-  };
-
-  const handleAutoFill = () => {
-    deckManager.autoFillDeck();
-    setDecks(deckManager.listDecks());
-  };
-
-  const handleClearDeck = () => {
-    deckManager.clearDeck();
-    setDecks(deckManager.listDecks());
   };
 
   // 设置激活卡组
@@ -72,7 +52,152 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
     }
   };
 
-  const stats = deckManager.getDeckStats();
+  // 创建新卡组
+  const handleCreateDeck = () => {
+    if (!newDeckName.trim()) {
+      alert('请输入卡组名称');
+      return;
+    }
+
+    try {
+      deckManager.createDeck(newDeckName.trim(), [], newDeckDescription.trim());
+      setShowNewDeckModal(false);
+      setNewDeckName('');
+      setNewDeckDescription('');
+      setDecks(deckManager.listDecks());
+    } catch (error) {
+      console.error('创建卡组失败:', error);
+      if (error instanceof Error) {
+        alert(`创建失败：${error.message}`);
+      }
+    }
+  };
+
+  // 删除卡组
+  const handleDeleteDeck = (deckId: string) => {
+    if (!confirm('确定要删除这个卡组吗？')) return;
+    
+    try {
+      deckManager.deleteDeck(deckId);
+      setDecks(deckManager.listDecks());
+      if (activeDeckId === deckId) {
+        setActiveDeckId(null);
+      }
+    } catch (error) {
+      console.error('删除卡组失败:', error);
+      if (error instanceof Error) {
+        alert(`删除失败：${error.message}`);
+      }
+    }
+  };
+
+  // 复制卡组
+  const handleCopyDeck = (deckId: string) => {
+    try {
+      deckManager.copyDeck(deckId);
+      setDecks(deckManager.listDecks());
+    } catch (error) {
+      console.error('复制卡组失败:', error);
+      if (error instanceof Error) {
+        alert(`复制失败：${error.message}`);
+      }
+    }
+  };
+
+  // 导出卡组
+  const handleExportDeck = (deckId: string) => {
+    try {
+      const jsonString = deckManager.exportDeck(deckId);
+      const deck = deckManager.getDeck(deckId);
+      const filename = `${deck?.name || 'deck'}.json`;
+      
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('导出卡组失败:', error);
+      if (error instanceof Error) {
+        alert(`导出失败：${error.message}`);
+      }
+    }
+  };
+
+  // 导入卡组
+  const handleImportDeck = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const jsonString = event.target?.result as string;
+          deckManager.importDeck(jsonString, true);
+          setDecks(deckManager.listDecks());
+          alert('卡组导入成功！');
+        } catch (error) {
+          console.error('导入卡组失败:', error);
+          if (error instanceof Error) {
+            alert(`导入失败：${error.message}`);
+          }
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
+  // 从收藏添加卡牌到卡组（用于编辑模式）
+  const handleAddCardToDeck = (cardId: string, targetDeckId: string) => {
+    try {
+      const deck = deckManager.getDeck(targetDeckId);
+      if (!deck) return;
+
+      if (deck.cards.includes(cardId)) {
+        alert('该卡牌已在卡组中');
+        return;
+      }
+
+      if (deck.cards.length >= 7) {
+        alert('卡组已满（7/7）');
+        return;
+      }
+
+      deckManager.updateDeck(targetDeckId, {
+        cards: [...deck.cards, cardId],
+      });
+      setDecks(deckManager.listDecks());
+    } catch (error) {
+      console.error('添加卡牌失败:', error);
+      if (error instanceof Error) {
+        alert(`添加失败：${error.message}`);
+      }
+    }
+  };
+
+  // 从卡组移除卡牌
+  const handleRemoveCardFromDeck = (cardId: string, deckId: string) => {
+    try {
+      const deck = deckManager.getDeck(deckId);
+      if (!deck) return;
+
+      deckManager.updateDeck(deckId, {
+        cards: deck.cards.filter(id => id !== cardId),
+      });
+      setDecks(deckManager.listDecks());
+    } catch (error) {
+      console.error('移除卡牌失败:', error);
+    }
+  };
 
   const getRarityClass = (rarity: string): string => {
     switch (rarity) {
@@ -89,8 +214,10 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
       case 'I': return '📏';
       case 'O': return '⬜';
       case 'T': return '⏲️';
-      case 'BOMB': return '💣';
-      case 'STAR': return '⭐';
+      case 'S': return '📐';
+      case 'Z': return '⚡';
+      case 'L': return '🔨';
+      case 'J': return '🎯';
       default: return '🎴';
     }
   };
@@ -113,32 +240,27 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
         </div>
 
         {/* 当前激活状态提示 */}
-        {activeDeck && (
+        {activeDeckId && (
           <div className="active-deck-banner">
             <span className="active-deck-label">✅ 当前使用：</span>
-            <span className="active-deck-name">{activeDeck.name}</span>
-            <span className="active-deck-count">({activeDeck.cards.length} 张)</span>
+            <span className="active-deck-name">
+              {decks.find(d => d.id === activeDeckId)?.name || '未知卡组'}
+            </span>
           </div>
         )}
 
         {/* 统计信息 */}
         <div className="card-deck-stats">
           <div className="card-deck-stat-item">
-            <div className="card-deck-stat-label">已收集</div>
+            <div className="card-deck-stat-label">卡组数量</div>
             <div className="card-deck-stat-value collected">
-              {stats.collectedCount} / {stats.totalCards}
+              {decks.length}
             </div>
           </div>
           <div className="card-deck-stat-item">
-            <div className="card-deck-stat-label">卡组大小</div>
+            <div className="card-deck-stat-label">卡牌总数</div>
             <div className="card-deck-stat-value deck-size">
-              {stats.deckSize} / 10
-            </div>
-          </div>
-          <div className="card-deck-stat-item">
-            <div className="card-deck-stat-label">未收集</div>
-            <div className="card-deck-stat-value uncollected">
-              {stats.totalCollected - stats.collectedCount}
+              {allCards.length}
             </div>
           </div>
         </div>
@@ -180,7 +302,7 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                     <h4 className="preset-deck-name">{preset.name}</h4>
                     <p className="preset-deck-desc">{preset.description}</p>
                     <div className="preset-deck-cards">
-                      包含：{preset.cards.join(' · ')}
+                      包含：{preset.cards.map(id => getCardIcon(id)).join(' · ')}
                     </div>
                   </div>
                   <button
@@ -201,16 +323,16 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
             {/* 卡组操作按钮 */}
             <div className="card-deck-actions">
               <button
-                onClick={handleAutoFill}
-                className="card-deck-action-btn auto-fill"
+                onClick={() => setShowNewDeckModal(true)}
+                className="card-deck-action-btn new-deck"
               >
-                自动填充
+                ➕ 新建卡组
               </button>
               <button
-                onClick={handleClearDeck}
-                className="card-deck-action-btn clear"
+                onClick={handleImportDeck}
+                className="card-deck-action-btn import"
               >
-                清空卡组
+                📥 导入卡组
               </button>
             </div>
 
@@ -226,58 +348,61 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                     >
                       <div className="deck-info">
                         <h4 className="deck-name">{deck.name}</h4>
+                        {deck.description && (
+                          <p className="deck-description">{deck.description}</p>
+                        )}
                         <div className="deck-meta">
-                          <span>{deck.cards.length} 张卡</span>
+                          <span>{deck.cards.length}/7 张卡</span>
                           {isActive && <span className="active-badge">● 当前使用</span>}
                         </div>
                         <div className="deck-cards-preview">
-                          {deck.cards.slice(0, 7).join(' · ')}
-                          {deck.cards.length > 7 && ` ... (+${deck.cards.length - 7})`}
+                          {deck.cards.length > 0 ? (
+                            deck.cards.slice(0, 7).map(id => getCardIcon(id)).join(' · ')
+                          ) : (
+                            <span className="empty-deck">空卡组</span>
+                          )}
                         </div>
                       </div>
                       <div className="deck-actions">
                         <button
                           onClick={() => handleSetActiveDeck(deck.id)}
-                          className={`deck-action-btn ${isActive ? 'active' : ''}`}
+                          className={`deck-action-btn use ${isActive ? 'active' : ''}`}
+                          title={isActive ? '当前使用' : '使用此卡组'}
                         >
-                          {isActive ? '✓ 使用中' : '使用'}
+                          {isActive ? '✓' : '使用'}
                         </button>
+                        <button
+                          onClick={() => handleCopyDeck(deck.id)}
+                          className="deck-action-btn copy"
+                          title="复制卡组"
+                        >
+                          📋
+                        </button>
+                        <button
+                          onClick={() => handleExportDeck(deck.id)}
+                          className="deck-action-btn export"
+                          title="导出卡组"
+                        >
+                          📤
+                        </button>
+                        {!deck.id.startsWith('preset-') && (
+                          <button
+                            onClick={() => handleDeleteDeck(deck.id)}
+                            className="deck-action-btn delete"
+                            title="删除卡组"
+                          >
+                            🗑️
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
                 })
               ) : (
                 <div className="card-deck-empty-message">
-                  暂无卡组，请从预设卡组中选择或创建新卡组
+                  暂无卡组，点击"新建卡组"创建你的第一个卡组
                 </div>
               )}
-            </div>
-
-            {/* 当前卡组（旧 API 兼容） */}
-            <div className="current-deck-section">
-              <h3 className="section-title">当前编辑卡组（旧版）</h3>
-              <div className="card-deck-grid">
-                {currentDeck.length > 0 ? (
-                  currentDeck.map(cardId => {
-                    const card = deckManager.getAllCards().find(c => c.id === cardId);
-                    if (!card) return null;
-                    
-                    return (
-                      <Card
-                        key={cardId}
-                        card={card}
-                        collected={true}
-                        onClick={() => handleRemoveFromDeck(cardId)}
-                        selected={selectedCard?.id === card.id}
-                      />
-                    );
-                  })
-                ) : (
-                  <div className="card-deck-empty-message">
-                    卡组为空，点击"自动填充"或从收藏中添加卡牌
-                  </div>
-                )}
-              </div>
             </div>
           </>
         )}
@@ -301,24 +426,13 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
         {/* 卡牌网格（收藏标签页） */}
         {activeTab === 'collection' && (
           <div className="card-deck-grid">
-            {/* 已收集的卡牌 */}
-            {filterCards(collectedCards).map(card => (
+            {filterCards(allCards).map(card => (
               <Card
                 key={card.id}
                 card={card}
                 collected={true}
                 onClick={() => setSelectedCard(card)}
                 selected={selectedCard?.id === card.id}
-              />
-            ))}
-            
-            {/* 未收集的卡牌 */}
-            {filterCards(uncollectedCards).map(card => (
-              <Card
-                key={card.id}
-                card={card}
-                collected={false}
-                small={false}
               />
             ))}
           </div>
@@ -349,23 +463,95 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                 {selectedCard.desc}
               </p>
               
+              {/* 添加到卡组选择 */}
               <div className="card-deck-modal-actions">
-                <button
-                  onClick={() => {
-                    handleAddToDeck(selectedCard.id);
-                    setSelectedCard(null);
-                  }}
-                  disabled={currentDeck.length >= 10}
-                  className={`card-deck-modal-btn add ${currentDeck.length >= 10 ? 'disabled' : ''}`}
-                >
-                  {currentDeck.length >= 10 ? '卡组已满' : '添加到卡组'}
-                </button>
+                <div className="add-to-deck-section">
+                  <label className="add-to-deck-label">添加到卡组：</label>
+                  <select
+                    className="add-to-deck-select"
+                    onChange={(e) => {
+                      const deckId = e.target.value;
+                      if (deckId) {
+                        handleAddCardToDeck(selectedCard.id, deckId);
+                      }
+                    }}
+                    defaultValue=""
+                  >
+                    <option value="" disabled>选择卡组</option>
+                    {decks.filter(d => d.cards.length < 7).map(deck => (
+                      <option key={deck.id} value={deck.id}>
+                        {deck.name} ({deck.cards.length}/7)
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 
                 <button
                   onClick={() => setSelectedCard(null)}
                   className="card-deck-modal-btn close"
                 >
                   关闭
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 新建卡组弹窗 */}
+        {showNewDeckModal && (
+          <div
+            onClick={() => setShowNewDeckModal(false)}
+            className="card-deck-modal-overlay"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="card-deck-modal-content common"
+            >
+              <h3 className="card-deck-modal-title">新建卡组</h3>
+              
+              <div className="form-group">
+                <label htmlFor="deck-name">卡组名称 *</label>
+                <input
+                  id="deck-name"
+                  type="text"
+                  value={newDeckName}
+                  onChange={(e) => setNewDeckName(e.target.value)}
+                  placeholder="输入卡组名称"
+                  maxLength={30}
+                  autoFocus
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="deck-description">卡组描述（可选）</label>
+                <textarea
+                  id="deck-description"
+                  value={newDeckDescription}
+                  onChange={(e) => setNewDeckDescription(e.target.value)}
+                  placeholder="描述卡组的策略或用途"
+                  maxLength={200}
+                  rows={3}
+                />
+              </div>
+              
+              <div className="card-deck-modal-actions">
+                <button
+                  onClick={handleCreateDeck}
+                  className="card-deck-modal-btn add"
+                  disabled={!newDeckName.trim()}
+                >
+                  创建
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setShowNewDeckModal(false);
+                    setNewDeckName('');
+                    setNewDeckDescription('');
+                  }}
+                  className="card-deck-modal-btn close"
+                >
+                  取消
                 </button>
               </div>
             </div>

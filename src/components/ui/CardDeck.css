@@ -182,6 +182,18 @@
   font-family: Orbitron, monospace;
 }
 
+.card-deck-action-btn.new-deck {
+  background: rgba(0, 255, 128, 0.2);
+  border: 2px solid #00ff80;
+  color: #00ff80;
+}
+
+.card-deck-action-btn.import {
+  background: rgba(0, 255, 255, 0.2);
+  border: 2px solid #00ffff;
+  color: #00ffff;
+}
+
 .card-deck-action-btn.auto-fill {
   background: rgba(0, 255, 128, 0.2);
   border: 2px solid #00ff80;
@@ -208,6 +220,267 @@
   padding: 60px;
   color: #666;
   font-size: 18px;
+}
+
+/* 预设卡组列表 */
+.preset-decks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.preset-deck-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.preset-deck-item.active {
+  background: rgba(0, 255, 255, 0.1);
+  border: 2px solid #00ffff;
+}
+
+.preset-deck-info {
+  flex: 1;
+}
+
+.preset-deck-name {
+  font-size: 18px;
+  color: #00ffff;
+  margin: 0 0 8px 0;
+}
+
+.preset-deck-desc {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 10px 0;
+}
+
+.preset-deck-cards {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.preset-deck-select-btn {
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: Orbitron, monospace;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #666;
+  color: #888;
+  transition: all 0.3s;
+}
+
+.preset-deck-select-btn.active {
+  background: rgba(0, 255, 128, 0.2);
+  border: 2px solid #00ff80;
+  color: #00ff80;
+}
+
+/* 卡组列表 */
+.decks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.deck-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.deck-item.active {
+  background: rgba(0, 255, 255, 0.1);
+  border: 2px solid #00ffff;
+}
+
+.deck-info {
+  flex: 1;
+}
+
+.deck-name {
+  font-size: 18px;
+  color: #00ffff;
+  margin: 0 0 8px 0;
+}
+
+.deck-description {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 10px 0;
+}
+
+.deck-meta {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.active-badge {
+  color: #00ff80;
+  font-size: 12px;
+}
+
+.deck-cards-preview {
+  font-size: 14px;
+  color: #aaa;
+}
+
+.empty-deck {
+  color: #666;
+  font-style: italic;
+}
+
+.deck-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.deck-action-btn {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: Orbitron, monospace;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #666;
+  color: #888;
+  transition: all 0.3s;
+}
+
+.deck-action-btn.use {
+  background: rgba(0, 255, 128, 0.2);
+  border: 2px solid #00ff80;
+  color: #00ff80;
+}
+
+.deck-action-btn.use.active {
+  background: rgba(0, 255, 128, 0.3);
+}
+
+.deck-action-btn.copy:hover {
+  background: rgba(0, 255, 255, 0.2);
+  border-color: #00ffff;
+  color: #00ffff;
+}
+
+.deck-action-btn.export:hover {
+  background: rgba(255, 255, 0, 0.2);
+  border-color: #ffd700;
+  color: #ffd700;
+}
+
+.deck-action-btn.delete:hover {
+  background: rgba(255, 0, 64, 0.2);
+  border-color: #ff0040;
+  color: #ff0040;
+}
+
+/* 表单样式 */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: #00ffff;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  font-family: Orbitron, monospace;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #00ffff;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+/* 添加到卡组选择器 */
+.add-to-deck-section {
+  margin-bottom: 15px;
+}
+
+.add-to-deck-label {
+  display: block;
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.add-to-deck-select {
+  width: 100%;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  font-family: Orbitron, monospace;
+  cursor: pointer;
+}
+
+.add-to-deck-select:focus {
+  outline: none;
+  border-color: #00ffff;
+}
+
+/* 当前激活卡组横幅 */
+.active-deck-banner {
+  background: rgba(0, 255, 128, 0.1);
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.active-deck-label {
+  color: #00ff80;
+  font-size: 14px;
+}
+
+.active-deck-name {
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.active-deck-count {
+  color: #888;
+  font-size: 13px;
 }
 
 /* 卡牌详情弹窗 */

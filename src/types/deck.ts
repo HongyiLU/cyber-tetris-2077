@@ -9,10 +9,18 @@ export interface Deck {
   id: string;
   /** 卡组名称 */
   name: string;
+  /** 卡组描述（可选） */
+  description?: string;
   /** 方块 ID 列表 */
   cards: string[];
   /** 创建时间戳 */
   createdAt: number;
+  /** 最后更新时间戳 */
+  updatedAt: number;
+  /** 是否为模板（可选） */
+  isTemplate?: boolean;
+  /** 标签列表（可选） */
+  tags?: string[];
 }
 
 /**
@@ -54,7 +62,7 @@ export interface DeckValidationResult {
  */
 export const DEFAULT_DECK_CONFIG: DeckConfig = {
   minDeckSize: 3,
-  maxDeckSize: 15,
+  maxDeckSize: 7,  // 匹配现有 7 种基础方块
   rarityWeights: {
     common: 50,
     uncommon: 30,

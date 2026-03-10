@@ -83,6 +83,7 @@ describe('DeckManager', () => {
         name: '有效卡组',
         cards: ['I', 'O', 'T'],
         createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
 
       const result = deckManager.validateDeck(deck);
@@ -97,6 +98,7 @@ describe('DeckManager', () => {
         name: '',
         cards: ['I', 'O', 'T'],
         createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
 
       const result = deckManager.validateDeck(deck);
@@ -111,6 +113,7 @@ describe('DeckManager', () => {
         name: '太小的卡组',
         cards: ['I'],
         createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
 
       const result = deckManager.validateDeck(deck);
@@ -125,6 +128,7 @@ describe('DeckManager', () => {
         name: '太大的卡组',
         cards: Array(20).fill('I'),
         createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
 
       const result = deckManager.validateDeck(deck);
@@ -139,6 +143,7 @@ describe('DeckManager', () => {
         name: '重复卡组',
         cards: ['I', 'I', 'O'],
         createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
 
       const result = deckManager.validateDeck(deck);
@@ -153,6 +158,7 @@ describe('DeckManager', () => {
         name: '无效卡牌',
         cards: ['I', 'O', 'INVALID_ID'],
         createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
 
       const result = deckManager.validateDeck(deck);
