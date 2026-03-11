@@ -718,7 +718,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* 敌人选择界面 */}
+      {/* 敌人选择界面 - 优化布局 */}
       {showEnemySelect && (
         <div style={{
           position: 'fixed',
@@ -731,63 +731,82 @@ const App: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          padding: '20px',
         }}>
           <div style={{
             position: 'relative',
             width: '100%',
-            maxWidth: '900px',
-            maxHeight: '90vh',
-            overflow: 'auto',
+            maxWidth: '500px',
+            maxHeight: '85vh',
+            display: 'flex',
+            flexDirection: 'column',
           }}>
-            <EnemySelect
-              onEnemySelect={handleEnemySelect}
-              selectedEnemyId={selectedEnemy}
-            />
-            <button
-              onClick={handleStartBattle}
-              style={{
-                display: 'block',
-                margin: '20px auto 0',
-                padding: '15px 40px',
-                fontSize: '18px',
-                background: 'rgba(0, 255, 255, 0.2)',
-                border: '2px solid #00ffff',
-                borderRadius: '8px',
-                color: '#00ffff',
-                cursor: 'pointer',
-                fontFamily: 'Orbitron, monospace',
-                boxShadow: '0 0 20px rgba(0, 255, 255, 0.5)',
-                transition: 'all 0.3s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 255, 255, 0.3)';
-                e.currentTarget.style.boxShadow = '0 0 40px rgba(0, 255, 255, 0.8)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 255, 255, 0.2)';
-                e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
-              }}
-            >
-              开始战斗
-            </button>
-            <button
-              onClick={() => setShowEnemySelect(false)}
-              style={{
-                position: 'absolute',
-                top: '10px',
-                right: '10px',
-                padding: '10px 20px',
-                fontSize: '14px',
-                background: 'rgba(255, 68, 68, 0.2)',
-                border: '2px solid #ff4444',
-                borderRadius: '8px',
-                color: '#ff4444',
-                cursor: 'pointer',
-                fontFamily: 'Orbitron, monospace',
-              }}
-            >
-              ✕ 关闭
-            </button>
+            {/* 顶部操作栏 - 固定 */}
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              marginBottom: '15px',
+              flexShrink: '0',
+            }}>
+              <button
+                onClick={handleStartBattle}
+                style={{
+                  flex: '1',
+                  padding: '15px 30px',
+                  fontSize: '16px',
+                  background: 'rgba(0, 255, 255, 0.2)',
+                  border: '2px solid #00ffff',
+                  borderRadius: '8px',
+                  color: '#00ffff',
+                  cursor: 'pointer',
+                  fontFamily: 'Orbitron, monospace',
+                  boxShadow: '0 0 20px rgba(0, 255, 255, 0.5)',
+                  transition: 'all 0.3s',
+                  fontWeight: 'bold',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(0, 255, 255, 0.3)';
+                  e.currentTarget.style.boxShadow = '0 0 40px rgba(0, 255, 255, 0.8)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(0, 255, 255, 0.2)';
+                  e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
+                }}
+              >
+                ⚔️ 开始战斗
+              </button>
+              <button
+                onClick={() => setShowEnemySelect(false)}
+                style={{
+                  padding: '15px 25px',
+                  fontSize: '14px',
+                  background: 'rgba(255, 68, 68, 0.2)',
+                  border: '2px solid #ff4444',
+                  borderRadius: '8px',
+                  color: '#ff4444',
+                  cursor: 'pointer',
+                  fontFamily: 'Orbitron, monospace',
+                  fontWeight: 'bold',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            
+            {/* 敌人选择内容 - 可滚动 */}
+            <div style={{
+              flex: '1',
+              overflow: 'auto',
+              padding: '10px',
+              background: 'rgba(255, 255, 255, 0.02)',
+              borderRadius: '8px',
+              border: '1px solid rgba(0, 255, 255, 0.2)',
+            }}>
+              <EnemySelect
+                onEnemySelect={handleEnemySelect}
+                selectedEnemyId={selectedEnemy}
+              />
+            </div>
           </div>
         </div>
       )}
