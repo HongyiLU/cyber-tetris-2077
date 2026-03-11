@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
-  gameCanvas: React.ReactNode;
-  gameInfo: React.ReactNode;
+  gameCanvas?: React.ReactNode;
+  gameInfo?: React.ReactNode;
   mobileControls?: React.ReactNode;
+  showGameArea?: boolean;  // 控制是否显示游戏区域
 }
 
 const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
@@ -14,6 +15,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
   gameCanvas,
   gameInfo,
   mobileControls,
+  showGameArea = false,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -65,30 +67,32 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
           {children}
         </div>
 
-        {/* 游戏区域 */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '10px',
-          width: '100%',
-          maxWidth: '400px',
-        }}>
-          {/* 游戏画布 - 移动端不缩放，自适应宽度 */}
+        {/* 游戏区域 - 仅在游戏开始后显示 */}
+        {showGameArea && (
           <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '10px',
             width: '100%',
-            maxWidth: '320px',
+            maxWidth: '400px',
           }}>
-            {gameCanvas}
-          </div>
+            {/* 游戏画布 - 移动端不缩放，自适应宽度 */}
+            <div style={{
+              width: '100%',
+              maxWidth: '320px',
+            }}>
+              {gameCanvas}
+            </div>
 
-          {/* 游戏信息 */}
-          <div style={{
-            width: '100%',
-          }}>
-            {gameInfo}
+            {/* 游戏信息 */}
+            <div style={{
+              width: '100%',
+            }}>
+              {gameInfo}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 移动端控制 - 放在最底部 */}
         {mobileControls && (

@@ -257,6 +257,7 @@ const App: React.FC = () => {
     <ResponsiveLayout
       gameCanvas={<GameCanvas gameState={gameState} />}
       gameInfo={<GameInfo gameState={gameState} />}
+      showGameArea={gameStarted}
       mobileControls={gameStarted ? (
         <MobileControls
           onMoveLeft={handleMoveLeft}
