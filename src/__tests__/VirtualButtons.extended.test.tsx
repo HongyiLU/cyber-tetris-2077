@@ -127,7 +127,7 @@ describe('VirtualButtons - 扩展测试', () => {
       expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(1);
     });
 
-    it('超过 300ms 不触发双击', () => {
+    it('超过 400ms 不触发双击', () => {
       render(<VirtualButtons {...mockHandlers} />);
       
       const touchArea = screen.getByText('滑动控制 | 双击硬降').parentElement;
@@ -137,7 +137,7 @@ describe('VirtualButtons - 扩展测试', () => {
       });
       
       act(() => {
-        jest.advanceTimersByTime(350);
+        jest.advanceTimersByTime(450);
         fireEvent.click(touchArea!);
       });
       

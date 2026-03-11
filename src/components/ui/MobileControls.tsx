@@ -33,6 +33,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
   const longPressTimerRef = useRef<number | null>(null);
   const repeatIntervalRef = useRef<number | null>(null);
   const lastTapRef = useRef<number>(0);
+  const tapTimerRef = useRef<number | null>(null);
 
   // 触觉反馈
   const vibrate = useCallback((pattern: number | number[] = 10) => {
@@ -45,7 +46,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
     }
   }, []);
 
-  // 清理定时器
+  // 清理定时器（包括点击定时器）
   const clearTimers = useCallback(() => {
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
@@ -54,6 +55,10 @@ const MobileControls: React.FC<MobileControlsProps> = ({
     if (repeatIntervalRef.current) {
       clearInterval(repeatIntervalRef.current);
       repeatIntervalRef.current = null;
+    }
+    if (tapTimerRef.current) {
+      clearTimeout(tapTimerRef.current);
+      tapTimerRef.current = null;
     }
   }, []);
 
@@ -123,15 +128,38 @@ const MobileControls: React.FC<MobileControlsProps> = ({
     touchStartRef.current = null;
   }, []);
 
-  // 双击硬降落
+  // 双击时间窗口：400ms（行业标准，平衡响应速度和误触率）
+  const DOUBLE_TAP_DELAY = 400;
+
+  // 双击硬降落（优化：延迟执行单击动作，避免双击时误触发）
   const handleTap = useCallback(() => {
     const now = Date.now();
-    if (now - lastTapRef.current < 300) {
+    const timeSinceLastTap = now - lastTapRef.current;
+    
+    // 清理之前的定时器
+    if (tapTimerRef.current) {
+      clearTimeout(tapTimerRef.current);
+      tapTimerRef.current = null;
+    }
+    
+    // 双击 - 硬降（400ms 内第二次点击）
+    if (timeSinceLastTap < DOUBLE_TAP_DELAY) {
+      // 检测到双击，立即执行硬降
       vibrate([20, 10, 20]);
       onHardDrop();
+      lastTapRef.current = 0;
+    } else {
+      // 第一次点击，延迟执行旋转，等待可能的第二次点击
+      lastTapRef.current = now;
+      tapTimerRef.current = window.setTimeout(() => {
+        // 延迟后没有第二次点击，执行单击旋转
+        vibrate(10);
+        onRotate();
+        lastTapRef.current = 0;
+        tapTimerRef.current = null;
+      }, DOUBLE_TAP_DELAY);
     }
-    lastTapRef.current = now;
-  }, [vibrate, onHardDrop]);
+  }, [vibrate, onHardDrop, onRotate]);
 
   // 组件卸载时清理
   useEffect(() => {

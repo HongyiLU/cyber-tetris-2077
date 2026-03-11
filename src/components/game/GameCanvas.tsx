@@ -45,11 +45,20 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const gameStateRef = useRef<GameState | null>(null);
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const lastTapRef = useRef<number>(0);
+  const tapTimerRef = useRef<number | null>(null);
 
   // 更新 gameStateRef
   useEffect(() => {
     gameStateRef.current = gameState;
   }, [gameState]);
+
+  // 清理点击定时器
+  const clearTapTimer = useCallback(() => {
+    if (tapTimerRef.current) {
+      clearTimeout(tapTimerRef.current);
+      tapTimerRef.current = null;
+    }
+  }, []);
 
   // 触摸手势处理
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -102,22 +111,45 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     touchStartRef.current = null;
   }, []);
 
+  // 双击时间窗口：400ms（行业标准，平衡响应速度和误触率）
+  const DOUBLE_TAP_DELAY = 400;
+
   const handleTap = useCallback(() => {
     if (!gameState || gameState.gameOver || gameState.paused) return;
     
     const now = Date.now();
-    // 双击 - 硬降
-    if (now - lastTapRef.current < 300 && onHardDrop) {
-      onHardDrop();
+    const timeSinceLastTap = now - lastTapRef.current;
+    
+    // 清理之前的定时器
+    clearTapTimer();
+    
+    // 双击 - 硬降（400ms 内第二次点击）
+    if (timeSinceLastTap < DOUBLE_TAP_DELAY) {
+      // 检测到双击，立即执行硬降
+      if (onHardDrop) {
+        onHardDrop();
+      }
       lastTapRef.current = 0;
     } else {
-      // 单击 - 旋转
-      if (onRotate) {
-        onRotate();
-      }
+      // 第一次点击，延迟执行旋转，等待可能的第二次点击
       lastTapRef.current = now;
+      tapTimerRef.current = window.setTimeout(() => {
+        // 延迟后没有第二次点击，执行单击旋转
+        if (onRotate) {
+          onRotate();
+        }
+        lastTapRef.current = 0;
+        tapTimerRef.current = null;
+      }, DOUBLE_TAP_DELAY);
     }
-  }, [gameState, onRotate, onHardDrop]);
+  }, [gameState, onRotate, onHardDrop, clearTapTimer]);
+
+  // 组件卸载时清理定时器
+  useEffect(() => {
+    return () => {
+      clearTapTimer();
+    };
+  }, [clearTapTimer]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

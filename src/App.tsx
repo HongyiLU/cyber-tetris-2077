@@ -219,9 +219,8 @@ const App: React.FC = () => {
   }, [gameEngine]);
 
   const handleHardDrop = useCallback(() => {
-    // 硬降：直接到底部并锁定
+    // 硬降：直接到底部并锁定（hardDrop 内部已调用 lockPiece，无需重复调用）
     gameEngine.hardDrop();
-    gameEngine.lockPiece();
     setGameState(gameEngine.getGameState());
   }, [gameEngine]);
 
@@ -690,7 +689,7 @@ const App: React.FC = () => {
         fontSize: 'clamp(9px, 2.5vw, 10px)',
         color: '#666',
       }}>
-        v1.9.1 - 精简版虚拟按键
+        v1.9.2 - 触摸手势修复
       </div>
 
       {/* 卡组管理界面 */}
