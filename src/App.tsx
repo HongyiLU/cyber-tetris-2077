@@ -9,7 +9,7 @@ import { LeaderboardSystem } from './systems/LeaderboardSystem';
 import { AudioManager } from './systems/AudioManagerSynth';
 import { SoundId } from './systems/AudioManagerSynth';
 import { GameCanvas, GameInfo } from './components/game';
-import { CardDeck, MobileControls, MobileControlsSettings, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification, ParticleCanvas, loadMobileControlsSettings, type MobileControlsSettings as MobileControlsSettingsType } from './components/ui';
+import { CardDeck, MobileControls, MobileControlsSettings, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification, ParticleCanvas, loadMobileControlsSettings, MobileControlsSettingsType } from './components/ui';
 import { useMobileLayout } from './hooks';
 import { ParticleEffect } from './system/ParticleEffect';
 import { useGameLoop, useKeyboardControl } from './hooks';
