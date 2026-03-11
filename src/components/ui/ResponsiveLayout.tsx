@@ -54,18 +54,20 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
         gap: '10px',
         overflowX: 'hidden',
       }}>
-        {/* 子内容（如战斗 UI、开始按钮等）- 放在最前面 */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          alignItems: 'center',
-          width: '100%',
-          maxWidth: '400px',
-          zIndex: 10,
-        }}>
-          {children}
-        </div>
+        {/* 子内容（如战斗 UI、开始按钮等）- 仅在游戏未开始时显示 */}
+        {!showGameArea && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            alignItems: 'center',
+            width: '100%',
+            maxWidth: '400px',
+            zIndex: 10,
+          }}>
+            {children}
+          </div>
+        )}
 
         {/* 游戏区域 - 仅在游戏开始后显示 */}
         {showGameArea && (
@@ -73,14 +75,16 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '10px',
+            gap: '8px',
             width: '100%',
             maxWidth: '400px',
           }}>
-            {/* 游戏画布 - 移动端不缩放，自适应宽度 */}
+            {/* 游戏画布 - 移动端缩小显示，确保虚拟按键可见 */}
             <div style={{
               width: '100%',
-              maxWidth: '320px',
+              maxWidth: '280px',
+              transform: 'scale(0.9)',
+              transformOrigin: 'top center',
             }}>
               {gameCanvas}
             </div>
@@ -88,6 +92,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
             {/* 游戏信息 */}
             <div style={{
               width: '100%',
+              maxWidth: '280px',
             }}>
               {gameInfo}
             </div>
