@@ -255,24 +255,17 @@ const App: React.FC = () => {
 
   return (
     <ResponsiveLayout
-      gameCanvas={<GameCanvas gameState={gameState} />}
+      gameCanvas={<GameCanvas 
+        gameState={gameState} 
+        onMoveLeft={handleMoveLeft}
+        onMoveRight={handleMoveRight}
+        onRotate={handleRotate}
+        onSoftDrop={handleSoftDrop}
+        onHardDrop={handleHardDrop}
+        onPause={handlePause}
+      />}
       gameInfo={<GameInfo gameState={gameState} />}
       showGameArea={gameStarted}
-      mobileControls={gameStarted ? (
-        <MobileControls
-          onMoveLeft={handleMoveLeft}
-          onMoveRight={handleMoveRight}
-          onRotate={handleRotate}
-          onSoftDrop={handleSoftDrop}
-          onHardDrop={handleHardDrop}
-          onPause={handlePause}
-          onRestart={handleRestart}
-          disabled={!gameStarted || gameState?.gameOver === true || gameState?.paused === true || controlsDisabled}
-          layout={mobileLayout.isLandscape ? 'landscape' : 'portrait'}
-          controlsSize={mobileLayout.controlsSize}
-          hapticFeedback={true}
-        />
-      ) : null}
     >
       <h1 style={{
         fontSize: 'clamp(24px, 8vw, 48px)',

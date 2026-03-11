@@ -1,6 +1,6 @@
 // ==================== 游戏画布组件 ====================
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { GAME_CONFIG } from '../../config/game-config';
 import { clearCanvas, drawGrid, drawBlock, drawGhostBlock } from '../../utils/render-utils';
 import { checkCollisionGhost } from '../../utils/game-utils';
@@ -9,6 +9,12 @@ import type { GameState } from '../../types';
 interface GameCanvasProps {
   gameState: GameState | null;
   blockSize?: number;
+  onMoveLeft?: () => void;
+  onMoveRight?: () => void;
+  onRotate?: () => void;
+  onSoftDrop?: () => void;
+  onHardDrop?: () => void;
+  onPause?: () => void;
 }
 
 // 创建 typeId 到颜色的反向映射
@@ -22,19 +28,96 @@ Object.entries(GAME_CONFIG.PIECE_TYPE_MAP).forEach(([type, id]) => {
 
 const GameCanvas: React.FC<GameCanvasProps> = ({ 
   gameState, 
-  blockSize
+  blockSize,
+  onMoveLeft,
+  onMoveRight,
+  onRotate,
+  onSoftDrop,
+  onHardDrop,
+  onPause,
 }) => {
   // 移动端使用更小的 blockSize
   const actualBlockSize = blockSize ?? (typeof window !== 'undefined' && window.innerWidth < 768 
     ? 20  // 移动端 20px
     : GAME_CONFIG.GAME.BLOCK_SIZE);  // 桌面端 30px
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameStateRef = useRef<GameState | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const lastTapRef = useRef<number>(0);
 
   // 更新 gameStateRef
   useEffect(() => {
     gameStateRef.current = gameState;
   }, [gameState]);
+
+  // 触摸手势处理
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!gameState || gameState.gameOver || gameState.paused) return;
+    
+    const touch = e.touches[0];
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      time: Date.now(),
+    };
+  }, [gameState]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current || !gameState || gameState.gameOver || gameState.paused) return;
+    
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = touch.clientY - touchStartRef.current.y;
+    
+    // 防止默认滚动
+    e.preventDefault();
+    
+    // 水平滑动 - 移动方块
+    if (Math.abs(deltaX) > 30) {
+      if (deltaX > 0 && onMoveRight) {
+        onMoveRight();
+      } else if (deltaX < 0 && onMoveLeft) {
+        onMoveLeft();
+      }
+      touchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        time: Date.now(),
+      };
+    }
+    
+    // 垂直向下滑动 - 软降
+    if (deltaY > 30 && onSoftDrop) {
+      onSoftDrop();
+      touchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        time: Date.now(),
+      };
+    }
+  }, [gameState, onMoveLeft, onMoveRight, onSoftDrop]);
+
+  const handleTouchEnd = useCallback(() => {
+    touchStartRef.current = null;
+  }, []);
+
+  const handleTap = useCallback(() => {
+    if (!gameState || gameState.gameOver || gameState.paused) return;
+    
+    const now = Date.now();
+    // 双击 - 硬降
+    if (now - lastTapRef.current < 300 && onHardDrop) {
+      onHardDrop();
+      lastTapRef.current = 0;
+    } else {
+      // 单击 - 旋转
+      if (onRotate) {
+        onRotate();
+      }
+      lastTapRef.current = now;
+    }
+  }, [gameState, onRotate, onHardDrop]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -62,7 +145,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         currentState.board.forEach((row, y) => {
           row.forEach((cell, x) => {
             if (cell !== 0) {
-              // 使用 PIECE_TYPE_MAP 反向查找方块类型，然后获取颜色
               const pieceType = Object.keys(GAME_CONFIG.PIECE_TYPE_MAP).find(
                 key => GAME_CONFIG.PIECE_TYPE_MAP[key as keyof typeof GAME_CONFIG.PIECE_TYPE_MAP] === cell
               );
@@ -120,16 +202,41 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   }, [actualBlockSize]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={GAME_CONFIG.GAME.COLS * actualBlockSize}
-      height={GAME_CONFIG.GAME.ROWS * actualBlockSize}
-      style={{
-        border: `2px solid var(--neon-cyan)`,
-        borderRadius: '4px',
-        boxShadow: '0 0 20px rgba(0, 255, 255, 0.4), inset 0 0 30px rgba(0, 255, 255, 0.05)',
-      }}
-    />
+    <div style={{ position: 'relative' }}>
+      <canvas
+        ref={canvasRef}
+        width={GAME_CONFIG.GAME.COLS * actualBlockSize}
+        height={GAME_CONFIG.GAME.ROWS * actualBlockSize}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClick={handleTap}
+        style={{
+          border: `2px solid var(--neon-cyan)`,
+          borderRadius: '4px',
+          boxShadow: '0 0 20px rgba(0, 255, 255, 0.4), inset 0 0 30px rgba(0, 255, 255, 0.05)',
+          touchAction: 'none',
+          display: 'block',
+        }}
+      />
+      {/* 移动端触摸提示 */}
+      {typeof window !== 'undefined' && window.innerWidth < 768 && !gameState?.gameOver && !gameState?.paused && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          color: 'rgba(0, 255, 255, 0.3)',
+          fontSize: '12px',
+          fontFamily: 'Orbitron, monospace',
+          textAlign: 'center',
+          pointerEvents: 'none',
+          textShadow: '0 0 5px rgba(0, 255, 255, 0.5)',
+        }}>
+          👆 滑动控制<br/>双击硬降
+        </div>
+      )}
+    </div>
   );
 };
 
