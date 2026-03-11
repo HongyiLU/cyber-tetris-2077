@@ -22,8 +22,12 @@ Object.entries(GAME_CONFIG.PIECE_TYPE_MAP).forEach(([type, id]) => {
 
 const GameCanvas: React.FC<GameCanvasProps> = ({ 
   gameState, 
-  blockSize = GAME_CONFIG.GAME.BLOCK_SIZE 
+  blockSize
 }) => {
+  // 移动端使用更小的 blockSize
+  const actualBlockSize = blockSize ?? (typeof window !== 'undefined' && window.innerWidth < 768 
+    ? 20  // 移动端 20px
+    : GAME_CONFIG.GAME.BLOCK_SIZE);  // 桌面端 30px
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameStateRef = useRef<GameState | null>(null);
 
@@ -51,7 +55,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       clearCanvas(ctx, canvas.width, canvas.height);
 
       // 绘制棋盘网格
-      drawGrid(ctx, GAME_CONFIG.GAME.COLS, GAME_CONFIG.GAME.ROWS, blockSize);
+      drawGrid(ctx, GAME_CONFIG.GAME.COLS, GAME_CONFIG.GAME.ROWS, actualBlockSize);
 
       // 绘制已固定的方块
       if (currentState?.board) {
@@ -63,7 +67,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
                 key => GAME_CONFIG.PIECE_TYPE_MAP[key as keyof typeof GAME_CONFIG.PIECE_TYPE_MAP] === cell
               );
               const color = pieceType ? GAME_CONFIG.COLORS[pieceType as keyof typeof GAME_CONFIG.COLORS] : '#ffffff';
-              drawBlock(ctx, x, y, blockSize, color);
+              drawBlock(ctx, x, y, actualBlockSize, color);
             }
           });
         });
@@ -84,7 +88,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
           shape.forEach((row, dy) => {
             row.forEach((cell, dx) => {
               if (cell) {
-                drawGhostBlock(ctx, position.x + dx, ghostY + dy, blockSize, color);
+                drawGhostBlock(ctx, position.x + dx, ghostY + dy, actualBlockSize, color);
               }
             });
           });
@@ -94,7 +98,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         shape.forEach((row, dy) => {
           row.forEach((cell, dx) => {
             if (cell) {
-              drawBlock(ctx, position.x + dx, position.y + dy, blockSize, color);
+              drawBlock(ctx, position.x + dx, position.y + dy, actualBlockSize, color);
             }
           });
         });
@@ -113,13 +117,13 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         cancelAnimationFrame(animationId);
       }
     };
-  }, [blockSize]);
+  }, [actualBlockSize]);
 
   return (
     <canvas
       ref={canvasRef}
-      width={GAME_CONFIG.GAME.COLS * blockSize}
-      height={GAME_CONFIG.GAME.ROWS * blockSize}
+      width={GAME_CONFIG.GAME.COLS * actualBlockSize}
+      height={GAME_CONFIG.GAME.ROWS * actualBlockSize}
       style={{
         border: `2px solid var(--neon-cyan)`,
         borderRadius: '4px',

@@ -75,27 +75,37 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '8px',
+            gap: '5px',
             width: '100%',
             maxWidth: '400px',
           }}>
-            {/* 游戏画布 - 移动端缩小显示，确保虚拟按键可见 */}
+            {/* 游戏画布 - 移动端大幅缩小，确保虚拟按键可见 */}
             <div style={{
               width: '100%',
-              maxWidth: '280px',
-              transform: 'scale(0.9)',
-              transformOrigin: 'top center',
+              maxWidth: '240px',
             }}>
               {gameCanvas}
             </div>
 
-            {/* 游戏信息 */}
+            {/* 游戏信息 - 紧凑布局 */}
             <div style={{
               width: '100%',
-              maxWidth: '280px',
+              maxWidth: '240px',
+              fontSize: '12px',
             }}>
               {gameInfo}
             </div>
+          </div>
+        )}
+
+        {/* 移动端控制 - 放在最底部 */}
+        {mobileControls && (
+          <div style={{
+            width: '100%',
+            maxWidth: '400px',
+            marginTop: '5px',
+          }}>
+            {mobileControls}
           </div>
         )}
 
