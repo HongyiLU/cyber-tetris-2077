@@ -11,57 +11,142 @@ interface GameInfoProps {
 const GameInfo: React.FC<GameInfoProps> = ({ gameState }) => {
   if (!gameState) return null;
 
-  // 渲染下一个方块预览
-  const renderNextPiece = () => {
-    if (!gameState.nextPiece) return null;
+  // 检测移动端
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    const { shape, color } = gameState.nextPiece;
-    const previewSize = 20;
-
+  // 移动端紧凑布局
+  if (isMobile) {
     return (
-      <div style={{
-        background: 'rgba(0, 0, 0, 0.6)',
-        border: '1px solid var(--neon-cyan)',
-        borderRadius: '4px',
-        padding: '15px',
-        boxShadow: '0 0 10px rgba(0, 255, 255, 0.3)',
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: '8px',
+        width: '100%',
       }}>
-        <div style={{ fontSize: '12px', color: 'var(--neon-cyan)', marginBottom: '10px' }}>
-          下一个
-        </div>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center',
-          minHeight: '60px'
+        {/* 下一个方块 - 小尺寸 */}
+        {gameState.nextPiece && (
+          <div style={{
+            background: 'rgba(0, 0, 0, 0.6)',
+            border: '1px solid var(--neon-cyan)',
+            borderRadius: '4px',
+            padding: '8px',
+            boxShadow: '0 0 5px rgba(0, 255, 255, 0.2)',
+            minWidth: '60px',
+          }}>
+            <div style={{ fontSize: '10px', color: 'var(--neon-cyan)', marginBottom: '5px', textAlign: 'center' }}>
+              下一个
+            </div>
+            <div style={{ 
+              display: 'grid',
+              gridTemplateColumns: `repeat(${gameState.nextPiece.shape[0].length}, 15px)`,
+              gap: '1px',
+              justifyContent: 'center',
+            }}>
+              {gameState.nextPiece.shape.map((row, rowIndex) =>
+                row.map((cell, colIndex) => (
+                  <div
+                    key={`${rowIndex}-${colIndex}`}
+                    style={{
+                      width: '15px',
+                      height: '15px',
+                      background: cell ? gameState.nextPiece!.color : 'transparent',
+                      borderRadius: '1px',
+                    }}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 分数 */}
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.6)',
+          border: '1px solid var(--neon-cyan)',
+          borderRadius: '4px',
+          padding: '8px 12px',
+          boxShadow: '0 0 5px rgba(0, 255, 255, 0.2)',
+          minWidth: '70px',
         }}>
-          <svg width="80" height="60" style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '4px' }}>
-            {shape.map((row, rowIndex) => (
-              row.map((cell, colIndex) => {
-                if (cell) {
-                  return (
-                    <rect
-                      key={`${rowIndex}-${colIndex}`}
-                      x={colIndex * previewSize + (80 - shape[0].length * previewSize) / 2}
-                      y={rowIndex * previewSize + (60 - shape.length * previewSize) / 2}
-                      width={previewSize - 2}
-                      height={previewSize - 2}
-                      fill={color}
-                      style={{
-                        filter: `drop-shadow(0 0 3px ${color})`,
-                      }}
-                    />
-                  );
-                }
-                return null;
-              })
-            ))}
-          </svg>
+          <div style={{ fontSize: '10px', color: 'var(--neon-cyan)', marginBottom: '3px' }}>
+            分数
+          </div>
+          <div style={{ fontSize: '14px', color: 'var(--neon-yellow)', fontWeight: 'bold' }}>
+            {gameState.score.toLocaleString()}
+          </div>
         </div>
+
+        {/* 消除行数 */}
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.6)',
+          border: '1px solid var(--neon-cyan)',
+          borderRadius: '4px',
+          padding: '8px 12px',
+          boxShadow: '0 0 5px rgba(0, 255, 255, 0.2)',
+          minWidth: '50px',
+        }}>
+          <div style={{ fontSize: '10px', color: 'var(--neon-cyan)', marginBottom: '3px' }}>
+            消除
+          </div>
+          <div style={{ fontSize: '14px', color: 'var(--neon-yellow)', fontWeight: 'bold' }}>
+            {gameState.lines}
+          </div>
+        </div>
+
+        {/* 等级 */}
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.6)',
+          border: '1px solid var(--neon-cyan)',
+          borderRadius: '4px',
+          padding: '8px 12px',
+          boxShadow: '0 0 5px rgba(0, 255, 255, 0.2)',
+          minWidth: '40px',
+        }}>
+          <div style={{ fontSize: '10px', color: 'var(--neon-cyan)', marginBottom: '3px' }}>
+            等级
+          </div>
+          <div style={{ fontSize: '14px', color: 'var(--neon-yellow)', fontWeight: 'bold' }}>
+            {gameState.level}
+          </div>
+        </div>
+
+        {/* 游戏结束/暂停提示 */}
+        {gameState.gameOver && (
+          <div style={{
+            background: 'rgba(255, 0, 0, 0.2)',
+            border: '2px solid var(--neon-pink)',
+            borderRadius: '4px',
+            padding: '8px',
+            textAlign: 'center',
+            width: '100%',
+          }}>
+            <div style={{ fontSize: '14px', color: 'var(--neon-pink)', fontWeight: 'bold' }}>
+              游戏结束
+            </div>
+          </div>
+        )}
+
+        {gameState.paused && !gameState.gameOver && (
+          <div style={{
+            background: 'rgba(255, 255, 0, 0.2)',
+            border: '2px solid var(--neon-yellow)',
+            borderRadius: '4px',
+            padding: '8px',
+            textAlign: 'center',
+            width: '100%',
+          }}>
+            <div style={{ fontSize: '14px', color: 'var(--neon-yellow)', fontWeight: 'bold' }}>
+              已暂停
+            </div>
+          </div>
+        )}
       </div>
     );
-  };
+  }
 
+  // 桌面端布局（保持不变）
   return (
     <div style={{ 
       display: 'flex', 
@@ -69,7 +154,50 @@ const GameInfo: React.FC<GameInfoProps> = ({ gameState }) => {
       gap: '20px',
       minWidth: '150px'
     }}>
-      {renderNextPiece()}
+      {/* 下一个方块 - SVG 预览 */}
+      {gameState.nextPiece && (
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.6)',
+          border: '1px solid var(--neon-cyan)',
+          borderRadius: '4px',
+          padding: '15px',
+          boxShadow: '0 0 10px rgba(0, 255, 255, 0.3)',
+        }}>
+          <div style={{ fontSize: '12px', color: 'var(--neon-cyan)', marginBottom: '10px' }}>
+            下一个
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            minHeight: '60px'
+          }}>
+            <svg width="80" height="60" style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '4px' }}>
+              {gameState.nextPiece.shape.map((row, rowIndex) => (
+                row.map((cell, colIndex) => {
+                  if (cell) {
+                    const previewSize = 20;
+                    return (
+                      <rect
+                        key={`${rowIndex}-${colIndex}`}
+                        x={colIndex * previewSize + (80 - gameState.nextPiece!.shape[0].length * previewSize) / 2}
+                        y={rowIndex * previewSize + (60 - gameState.nextPiece!.shape.length * previewSize) / 2}
+                        width={previewSize - 2}
+                        height={previewSize - 2}
+                        fill={gameState.nextPiece!.color}
+                        style={{
+                          filter: `drop-shadow(0 0 3px ${gameState.nextPiece!.color})`,
+                        }}
+                      />
+                    );
+                  }
+                  return null;
+                })
+              ))}
+            </svg>
+          </div>
+        </div>
+      )}
 
       <div style={{
         background: 'rgba(0, 0, 0, 0.6)',
@@ -115,42 +243,6 @@ const GameInfo: React.FC<GameInfoProps> = ({ gameState }) => {
           {gameState.level}
         </div>
       </div>
-
-      {/* 下一个方块提示 */}
-      {gameState.nextPiece && (
-        <div style={{
-          background: 'rgba(0, 0, 0, 0.6)',
-          border: '1px solid var(--neon-cyan)',
-          borderRadius: '4px',
-          padding: '15px',
-          boxShadow: '0 0 10px rgba(0, 255, 255, 0.3)',
-        }}>
-          <div style={{ fontSize: '12px', color: 'var(--neon-cyan)', marginBottom: '10px' }}>
-            下一个
-          </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${gameState.nextPiece.shape[0].length}, 20px)`,
-            gap: '2px',
-            justifyContent: 'center',
-          }}>
-            {gameState.nextPiece.shape.map((row, rowIndex) =>
-              row.map((cell, colIndex) => (
-                <div
-                  key={`${rowIndex}-${colIndex}`}
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    background: cell ? gameState.nextPiece!.color : 'transparent',
-                    borderRadius: '2px',
-                    boxShadow: cell ? 'inset 1px 1px 2px rgba(255,255,255,0.3), inset -1px -1px 2px rgba(0,0,0,0.3)' : 'none',
-                  }}
-                />
-              ))
-            )}
-          </div>
-        </div>
-      )}
 
       {gameState.gameOver && (
         <div style={{
