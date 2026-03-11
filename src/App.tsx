@@ -9,7 +9,8 @@ import { LeaderboardSystem } from './systems/LeaderboardSystem';
 import { AudioManager } from './systems/AudioManagerSynth';
 import { SoundId } from './systems/AudioManagerSynth';
 import { GameCanvas, GameInfo } from './components/game';
-import { CardDeck, MobileControls, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification, ParticleCanvas } from './components/ui';
+import { CardDeck, MobileControls, MobileControlsSettings, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification, ParticleCanvas } from './components/ui';
+import { useMobileLayout } from './hooks';
 import { ParticleEffect } from './system/ParticleEffect';
 import { useGameLoop, useKeyboardControl } from './hooks';
 import { GAME_CONFIG } from './config/game-config';
@@ -70,6 +71,13 @@ const App: React.FC = () => {
   const [masterVolume, setMasterVolume] = useState(audioManager.getMasterVolume());
   const [gameVolume, setGameVolume] = useState(audioManager.getGameVolume());
   const [isMuted, setIsMuted] = useState(audioManager.isMuted());
+  
+  // 移动端控制设置
+  const [showMobileSettings, setShowMobileSettings] = useState(false);
+  const mobileLayout = useMobileLayout();
+  
+  // P0-003: 游戏开始时防误触保护
+  const [controlsDisabled, setControlsDisabled] = useState(false);
 
   // 使用游戏循环 Hook
   useGameLoop({
@@ -172,6 +180,10 @@ const App: React.FC = () => {
   }, []);
 
   const handleStartBattle = useCallback(() => {
+    // P0-003: 游戏开始后 500ms 内禁用虚拟按键，防止误触
+    setControlsDisabled(true);
+    setTimeout(() => setControlsDisabled(false), 500);
+    
     gameEngine.initBattle(selectedEnemy);
     gameEngine.init();
     setGameState(gameEngine.getGameState());
@@ -217,6 +229,14 @@ const App: React.FC = () => {
     setGameState(gameEngine.getGameState());
   }, [gameEngine]);
 
+  const handleRestart = useCallback(() => {
+    // 重新开始游戏：重置引擎并初始化
+    gameEngine.init();
+    setGameState(gameEngine.getGameState());
+    // 播放旋转音效作为反馈
+    audioManager.playSound(SoundId.ROTATE);
+  }, [gameEngine, audioManager]);
+
   // 音频控制回调
   const handleSetMasterVolume = useCallback((volume: number) => {
     setMasterVolume(volume);
@@ -245,7 +265,11 @@ const App: React.FC = () => {
           onSoftDrop={handleSoftDrop}
           onHardDrop={handleHardDrop}
           onPause={handlePause}
-          disabled={!gameStarted || gameState?.gameOver === true || gameState?.paused === true}
+          onRestart={handleRestart}
+          disabled={!gameStarted || gameState?.gameOver === true || gameState?.paused === true || controlsDisabled}
+          layout={mobileLayout.isLandscape ? 'landscape' : 'portrait'}
+          controlsSize={mobileLayout.controlsSize}
+          hapticFeedback={true}
         />
       ) : null}
     >
@@ -362,6 +386,34 @@ const App: React.FC = () => {
               }}
             >
               ⚙️ 设置
+            </button>
+            
+            <button
+              onClick={() => setShowMobileSettings(true)}
+              style={{
+                padding: 'clamp(8px, 2vw, 10px) clamp(20px, 5vw, 25px)',
+                fontSize: 'clamp(12px, 3vw, 14px)',
+                background: 'rgba(0, 255, 255, 0.1)',
+                border: '2px solid #00ffff',
+                borderRadius: '8px',
+                color: '#00ffff',
+                cursor: 'pointer',
+                fontFamily: 'Orbitron, monospace',
+                boxShadow: '0 0 10px rgba(0, 255, 255, 0.3)',
+                transition: 'all 0.3s',
+                flex: '1',
+                minWidth: '120px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 255, 255, 0.2)';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 255, 255, 0.1)';
+                e.currentTarget.style.boxShadow = '0 0 10px rgba(0, 255, 255, 0.3)';
+              }}
+            >
+              📱 按键
             </button>
             
             <button
@@ -745,6 +797,34 @@ const App: React.FC = () => {
         visible={showNotification}
         onClose={() => setShowNotification(false)}
       />
+
+      {/* 移动端控制设置面板 */}
+      {showMobileSettings && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.85)',
+          zIndex: 2000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            position: 'relative',
+            width: '90%',
+            maxWidth: '500px',
+            maxHeight: '90vh',
+            overflow: 'auto',
+          }}>
+            <MobileControlsSettings
+              onClose={() => setShowMobileSettings(false)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* 设置面板 */}
       {showSettings && (

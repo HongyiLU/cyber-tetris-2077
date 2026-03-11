@@ -8,7 +8,12 @@ export default {
   },
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
-  testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx'],
+  testMatch: [
+    '**/__tests__/**/*.test.ts',
+    '**/__tests__/**/*.test.tsx',
+    '**/*.test.ts',
+    '**/*.test.tsx',
+  ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
