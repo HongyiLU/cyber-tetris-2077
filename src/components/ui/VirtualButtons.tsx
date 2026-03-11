@@ -1,29 +1,35 @@
-// ==================== v1.9.1 精简版移动端控制组件 ====================
+// ==================== v1.9.1 精简版虚拟按键组件 ====================
+// 轻量级移动端控制组件 - 专注于核心功能
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import './MobileControls.css';
+import './VirtualButtons.css';
 
-export interface MobileControlsProps {
+export interface VirtualButtonsProps {
   onMoveLeft: () => void;
   onMoveRight: () => void;
   onRotate: () => void;
   onSoftDrop: () => void;
   onHardDrop: () => void;
-  onPause: () => void;
-  onRestart?: () => void;
   disabled?: boolean;
   size?: 'small' | 'medium' | 'large';
   opacity?: number;
 }
 
-const MobileControls: React.FC<MobileControlsProps> = ({
+interface ButtonConfig {
+  id: string;
+  label: string;
+  icon: string;
+  action: () => void;
+  color: 'cyan' | 'pink' | 'green' | 'orange';
+  span?: number;
+}
+
+const VirtualButtons: React.FC<VirtualButtonsProps> = ({
   onMoveLeft,
   onMoveRight,
   onRotate,
   onSoftDrop,
   onHardDrop,
-  onPause,
-  onRestart,
   disabled = false,
   size = 'medium',
   opacity = 0.9,
@@ -32,7 +38,6 @@ const MobileControls: React.FC<MobileControlsProps> = ({
   const [activeButton, setActiveButton] = useState<string | null>(null);
   const longPressTimerRef = useRef<number | null>(null);
   const repeatIntervalRef = useRef<number | null>(null);
-  const lastTapRef = useRef<number>(0);
 
   // 触觉反馈
   const vibrate = useCallback((pattern: number | number[] = 10) => {
@@ -65,6 +70,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
     vibrate(10);
     action();
 
+    // 长按后开始连发
     longPressTimerRef.current = window.setTimeout(() => {
       action();
       repeatIntervalRef.current = window.setInterval(action, 100);
@@ -90,7 +96,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
     }
   }, [disabled, startLongPress, vibrate]);
 
-  // 触摸滑动处理
+  // 触摸滑动处理（游戏区域）
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (disabled) return;
     const touch = e.touches[0];
@@ -124,6 +130,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
   }, []);
 
   // 双击硬降落
+  const lastTapRef = useRef<number>(0);
   const handleTap = useCallback(() => {
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
@@ -138,9 +145,25 @@ const MobileControls: React.FC<MobileControlsProps> = ({
     return () => clearTimers();
   }, [clearTimers]);
 
+  // 按钮配置
+  const buttons: ButtonConfig[] = [
+    { id: 'left', label: '左移', icon: '⬅️', action: onMoveLeft, color: 'cyan', span: 1 },
+    { id: 'rotate', label: '旋转', icon: '🔄', action: onRotate, color: 'pink', span: 1 },
+    { id: 'right', label: '右移', icon: '➡️', action: onMoveRight, color: 'cyan', span: 1 },
+    { id: 'softDrop', label: '软降', icon: '⬇️', action: onSoftDrop, color: 'green', span: 1 },
+    { id: 'hardDrop', label: '硬降', icon: '💥', action: onHardDrop, color: 'orange', span: 1 },
+  ];
+
+  const colorClasses = {
+    cyan: 'btn-cyan',
+    pink: 'btn-pink',
+    green: 'btn-green',
+    orange: 'btn-orange',
+  };
+
   return (
     <div 
-      className={`mobile-controls size-${size}`}
+      className={`virtual-buttons size-${size}`}
       style={{ opacity }}
     >
       {/* 游戏区域触摸层 */}
@@ -154,100 +177,43 @@ const MobileControls: React.FC<MobileControlsProps> = ({
         <div className="touch-hint">滑动控制 | 双击硬降</div>
       </div>
 
-      {/* 第一行：方向控制 ⬅️ 🔄 ➡️ */}
-      <div className="button-row direction-row">
-        <button
-          className={`btn btn-cyan ${activeButton === 'left' ? 'active' : ''}`}
-          onTouchStart={() => handlePressStart(onMoveLeft, 'left', true)}
-          onTouchEnd={endPress}
-          onMouseDown={() => handlePressStart(onMoveLeft, 'left', true)}
-          onMouseUp={endPress}
-          onMouseLeave={endPress}
-          disabled={disabled}
-        >
-          ⬅️
-        </button>
-        <button
-          className={`btn btn-pink ${activeButton === 'rotate' ? 'active' : ''}`}
-          onTouchStart={() => handlePressStart(onRotate, 'rotate')}
-          onTouchEnd={endPress}
-          onMouseDown={() => handlePressStart(onRotate, 'rotate')}
-          onMouseUp={endPress}
-          onMouseLeave={endPress}
-          disabled={disabled}
-        >
-          🔄
-        </button>
-        <button
-          className={`btn btn-cyan ${activeButton === 'right' ? 'active' : ''}`}
-          onTouchStart={() => handlePressStart(onMoveRight, 'right', true)}
-          onTouchEnd={endPress}
-          onMouseDown={() => handlePressStart(onMoveRight, 'right', true)}
-          onMouseUp={endPress}
-          onMouseLeave={endPress}
-          disabled={disabled}
-        >
-          ➡️
-        </button>
-      </div>
-
-      {/* 第二行：降落 ⬇️软降 💥硬降 */}
-      <div className="button-row drop-row">
-        <button
-          className={`btn btn-green ${activeButton === 'softDrop' ? 'active' : ''}`}
-          onTouchStart={() => handlePressStart(onSoftDrop, 'softDrop')}
-          onTouchEnd={endPress}
-          onMouseDown={() => handlePressStart(onSoftDrop, 'softDrop')}
-          onMouseUp={endPress}
-          onMouseLeave={endPress}
-          disabled={disabled}
-        >
-          ⬇️ 软降
-        </button>
-        <button
-          className={`btn btn-orange ${activeButton === 'hardDrop' ? 'active' : ''}`}
-          onTouchStart={() => handlePressStart(onHardDrop, 'hardDrop')}
-          onTouchEnd={endPress}
-          onMouseDown={() => handlePressStart(onHardDrop, 'hardDrop')}
-          onMouseUp={endPress}
-          onMouseLeave={endPress}
-          disabled={disabled}
-        >
-          💥 硬降
-        </button>
-      </div>
-
-      {/* 第三行：暂停/重开 */}
-      <div className="button-row utility-row">
-        <button
-          className={`btn btn-red utility-btn ${activeButton === 'pause' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveButton('pause');
-            vibrate(15);
-            onPause();
-            setTimeout(() => setActiveButton(null), 100);
-          }}
-          disabled={disabled}
-        >
-          ⏸️ 暂停
-        </button>
-        {onRestart && (
+      {/* 方向控制 */}
+      <div className="button-row">
+        {buttons.slice(0, 3).map(btn => (
           <button
-            className={`btn btn-pink utility-btn ${activeButton === 'restart' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveButton('restart');
-              vibrate([15, 10, 15]);
-              onRestart();
-              setTimeout(() => setActiveButton(null), 100);
-            }}
+            key={btn.id}
+            className={`btn ${colorClasses[btn.color]} ${activeButton === btn.id ? 'active' : ''}`}
+            onTouchStart={() => handlePressStart(btn.action, btn.id, btn.id === 'left' || btn.id === 'right')}
+            onTouchEnd={endPress}
+            onMouseDown={() => handlePressStart(btn.action, btn.id, btn.id === 'left' || btn.id === 'right')}
+            onMouseUp={endPress}
+            onMouseLeave={endPress}
             disabled={disabled}
           >
-            🔄 重开
+            {btn.icon}
           </button>
-        )}
+        ))}
+      </div>
+
+      {/* 功能按钮 */}
+      <div className="button-row">
+        {buttons.slice(3).map(btn => (
+          <button
+            key={btn.id}
+            className={`btn ${colorClasses[btn.color]} ${activeButton === btn.id ? 'active' : ''}`}
+            onTouchStart={() => handlePressStart(btn.action, btn.id)}
+            onTouchEnd={endPress}
+            onMouseDown={() => handlePressStart(btn.action, btn.id)}
+            onMouseUp={endPress}
+            onMouseLeave={endPress}
+            disabled={disabled}
+          >
+            {btn.icon}
+          </button>
+        ))}
       </div>
     </div>
   );
 };
 
-export default MobileControls;
+export default VirtualButtons;

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VirtualButtons v1.9.1 - 演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #00ffff;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 14px;
+    }
+
+    .demo-section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .demo-title {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #ff00ff;
+    }
+
+    .log-area {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(0, 255, 128, 0.3);
+      border-radius: 8px;
+      padding: 15px;
+      min-height: 150px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      overflow-y: auto;
+      margin-top: 15px;
+    }
+
+    .log-entry {
+      margin-bottom: 5px;
+      color: #00ff80;
+    }
+
+    .log-time {
+      color: #666;
+      margin-right: 10px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      padding: 8px 16px;
+      background: rgba(0, 255, 255, 0.1);
+      border: 1px solid #00ffff;
+      color: #00ffff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .control-btn:hover {
+      background: rgba(0, 255, 255, 0.3);
+    }
+
+    .control-btn.active {
+      background: rgba(0, 255, 255, 0.5);
+    }
+
+    .info-box {
+      background: rgba(255, 166, 0, 0.1);
+      border: 1px solid rgba(255, 166, 0, 0.3);
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+
+    .info-title {
+      color: #ffa600;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .info-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .info-list li {
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #ccc;
+    }
+
+    .info-list li:before {
+      content: '▸ ';
+      color: #ffa600;
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 22px;
+      }
+
+      .demo-section {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎮 VirtualButtons v1.9.1</h1>
+      <p class="subtitle">精简版虚拟按键组件演示</p>
+    </header>
+
+    <div class="demo-section">
+      <h2 class="demo-title">📱 组件演示区</h2>
+      <p style="color: #888; font-size: 13px; margin-bottom: 15px;">
+        点击下方按钮或触摸区域，查看操作日志
+      </p>
+      
+      <div id="virtual-buttons-container">
+        <!-- VirtualButtons 组件将渲染在这里 -->
+      </div>
+
+      <div class="controls">
+        <button class="control-btn" onclick="setSize('small')">小尺寸</button>
+        <button class="control-btn" onclick="setSize('medium')">中尺寸</button>
+        <button class="control-btn" onclick="setSize('large')">大尺寸</button>
+        <button class="control-btn" onclick="toggleDisabled()">禁用/启用</button>
+        <button class="control-btn" onclick="setOpacity(0.5)">50% 透明度</button>
+        <button class="control-btn" onclick="setOpacity(1.0)">100% 透明度</button>
+      </div>
+
+      <div class="log-area" id="log-area">
+        <div class="log-entry">
+          <span class="log-time">[00:00:00]</span>
+          等待操作...
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <h3 class="info-title">💡 功能说明</h3>
+      <ul class="info-list">
+        <li><strong>按钮操作</strong>: 点击按钮触发对应动作</li>
+        <li><strong>长按连发</strong>: 长按左右键实现连续移动</li>
+        <li><strong>触摸滑动</strong>: 在触摸区域滑动控制方向</li>
+        <li><strong>双击硬降</strong>: 快速双击触摸区域触发硬降落</li>
+        <li><strong>触觉反馈</strong>: 支持设备震动反馈（如可用）</li>
+      </ul>
+    </div>
+
+    <div class="info-box" style="margin-top: 15px; border-color: rgba(0, 255, 255, 0.3); background: rgba(0, 255, 255, 0.05);">
+      <h3 class="info-title" style="color: #00ffff;">📚 相关文档</h3>
+      <ul class="info-list">
+        <li><a href="./VIRTUAL_BUTTONS_v1.9.1.md" style="color: #00ffff;">完整使用文档</a></li>
+        <li><a href="./VIRTUAL_BUTTONS_QUICKSTART.md" style="color: #00ffff;">快速开始指南</a></li>
+        <li><a href="../RELEASE_v1.9.1.md" style="color: #00ffff;">发布说明</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    let currentSize = 'medium';
+    let isDisabled = false;
+    let currentOpacity = 0.9;
+
+    function log(message) {
+      const logArea = document.getElementById('log-area');
+      const now = new Date();
+      const time = now.toTimeString().split(' ')[0];
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span class="log-time">[${time}]</span>${message}`;
+      logArea.insertBefore(entry, logArea.firstChild);
+      
+      // 保持最多 50 条日志
+      while (logArea.children.length > 50) {
+        logArea.removeChild(logArea.lastChild);
+      }
+    }
+
+    function handleMoveLeft() {
+      log('⬅️ 左移');
+    }
+
+    function handleMoveRight() {
+      log('➡️ 右移');
+    }
+
+    function handleRotate() {
+      log('🔄 旋转');
+    }
+
+    function handleSoftDrop() {
+      log('⬇️ 软降');
+    }
+
+    function handleHardDrop() {
+      log('💥 硬降');
+    }
+
+    function setSize(size) {
+      currentSize = size;
+      log(`📏 尺寸设置为：${size}`);
+      renderButtons();
+    }
+
+    function toggleDisabled() {
+      isDisabled = !isDisabled;
+      log(`🚫 状态：${isDisabled ? '已禁用' : '已启用'}`);
+      renderButtons();
+    }
+
+    function setOpacity(value) {
+      currentOpacity = value;
+      log(`🌫️ 透明度设置为：${value * 100}%`);
+      renderButtons();
+    }
+
+    function renderButtons() {
+      // 这里应该使用 React 渲染 VirtualButtons 组件
+      // 由于是演示页面，我们用简化的 HTML 模拟
+      const container = document.getElementById('virtual-buttons-container');
+      container.innerHTML = `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          padding: 12px;
+          max-width: 360px;
+          margin: 0 auto;
+          opacity: ${currentOpacity};
+          pointer-events: ${isDisabled ? 'none' : 'auto'};
+        ">
+          <!-- 触摸区域 -->
+          <div style="
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            color: rgba(0, 255, 255, 0.6);
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+          " onclick="handleHardDrop()">
+            👆 滑动控制 | 双击硬降
+          </div>
+
+          <!-- 方向按钮 -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <button onclick="handleMoveLeft()" style="
+              padding: 18px;
+              font-size: 22px;
+              border: 2px solid #00ffff;
+              border-radius: 10px;
+              background: rgba(0, 255, 255, 0.1);
+              color: #00ffff;
+              cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+              opacity: ${isDisabled ? 0.5 : 1};
+            ">⬅️</button>
+            <button onclick="handleRotate()" style="
+              padding: 18px;
+              font-size: 22px;
+              border: 2px solid #ff00ff;
+              border-radius: 10px;
+              background: rgba(255, 0, 255, 0.1);
+              color: #ff00ff;
+              cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+              opacity: ${isDisabled ? 0.5 : 1};
+            ">🔄</button>
+            <button onclick="handleMoveRight()" style="
+              padding: 18px;
+              font-size: 22px;
+              border: 2px solid #00ffff;
+              border-radius: 10px;
+              background: rgba(0, 255, 255, 0.1);
+              color: #00ffff;
+              cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+              opacity: ${isDisabled ? 0.5 : 1};
+            ">➡️</button>
+          </div>
+
+          <!-- 功能按钮 -->
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            <button onclick="handleSoftDrop()" style="
+              padding: 18px;
+              font-size: 22px;
+              border: 2px solid #00ff80;
+              border-radius: 10px;
+              background: rgba(0, 255, 128, 0.1);
+              color: #00ff80;
+              cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+              opacity: ${isDisabled ? 0.5 : 1};
+            ">⬇️</button>
+            <button onclick="handleHardDrop()" style="
+              padding: 18px;
+              font-size: 22px;
+              border: 2px solid #ffa600;
+              border-radius: 10px;
+              background: rgba(255, 166, 0, 0.1);
+              color: #ffa600;
+              cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+              opacity: ${isDisabled ? 0.5 : 1};
+            ">💥</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // 初始化
+    renderButtons();
+    log('🎮 演示页面已加载');
+    log('📱 当前尺寸：' + currentSize);
+    log('🌫️ 当前透明度：' + (currentOpacity * 100) + '%');
+  </script>
+</body>
+</html>

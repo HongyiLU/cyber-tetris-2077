@@ -1,121 +1,126 @@
 // ==================== 移动端控制设置面板 ====================
 
-import React, { useState, useEffect } from 'react';
-import { loadMobileSettings, saveMobileSettings, type MobileSettings } from './MobileControls';
+import React, { useState, useEffect, useCallback } from 'react';
 
-interface MobileControlsSettingsProps {
-  onClose?: () => void;
-  onSettingsChange?: (settings: MobileSettings) => void;
+export interface MobileControlsSettings {
+  enabled: boolean;
+  size: 'small' | 'medium' | 'large';
+  opacity: number;
 }
 
-const MobileControlsSettings: React.FC<MobileControlsSettingsProps> = ({
+const STORAGE_KEY = 'mobileControlsSettings';
+
+const defaultSettings: MobileControlsSettings = {
+  enabled: true,
+  size: 'medium',
+  opacity: 0.9,
+};
+
+interface MobileControlsSettingsPanelProps {
+  onClose: () => void;
+  onSettingsChange?: (settings: MobileControlsSettings) => void;
+}
+
+const MobileControlsSettingsPanel: React.FC<MobileControlsSettingsPanelProps> = ({
   onClose,
   onSettingsChange,
 }) => {
-  const [settings, setSettings] = useState<MobileSettings>(() => loadMobileSettings());
+  const [settings, setSettings] = useState<MobileControlsSettings>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        return { ...defaultSettings, ...JSON.parse(saved) };
+      }
+    } catch (e) {
+      console.warn('Failed to load mobile controls settings:', e);
+    }
+    return defaultSettings;
+  });
 
-  const updateSetting = <K extends keyof MobileSettings>(
+  // 保存设置到 localStorage
+  const saveSettings = useCallback((newSettings: MobileControlsSettings) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
+      onSettingsChange?.(newSettings);
+    } catch (e) {
+      console.warn('Failed to save mobile controls settings:', e);
+    }
+  }, [onSettingsChange]);
+
+  // 更新设置
+  const updateSetting = useCallback(<K extends keyof MobileControlsSettings>(
     key: K,
-    value: MobileSettings[K]
+    value: MobileControlsSettings[K]
   ) => {
-    const updated = { ...settings, [key]: value };
-    setSettings(updated);
-    saveMobileSettings({ [key]: value });
-    onSettingsChange?.(updated);
-    
-    // 触发自定义事件通知其他组件
-    const event = new CustomEvent('mobileControlsSettingsUpdate', { detail: { [key]: value } });
-    window.dispatchEvent(event);
-  };
+    setSettings(prev => {
+      const updated = { ...prev, [key]: value };
+      saveSettings(updated);
+      return updated;
+    });
+  }, [saveSettings]);
 
-  const handleReset = () => {
-    const defaultSettings: MobileSettings = {
-      layout: 'portrait',
-      opacity: 0.9,
-      showTouchArea: true,
-      hapticFeedback: true,
-      controlsSize: 'medium',
-    };
+  // 切换启用状态
+  const handleToggleEnabled = useCallback(() => {
+    updateSetting('enabled', !settings.enabled);
+  }, [settings.enabled, updateSetting]);
+
+  // 更新尺寸
+  const handleSizeChange = useCallback((size: 'small' | 'medium' | 'large') => {
+    updateSetting('size', size);
+  }, [updateSetting]);
+
+  // 更新透明度
+  const handleOpacityChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value) / 100;
+    updateSetting('opacity', value);
+  }, [updateSetting]);
+
+  // 重置为默认值
+  const handleReset = useCallback(() => {
     setSettings(defaultSettings);
-    saveMobileSettings(defaultSettings);
-    onSettingsChange?.(defaultSettings);
-  };
+    saveSettings(defaultSettings);
+  }, [saveSettings]);
 
   return (
-    <div style={{
-      background: 'rgba(0, 0, 0, 0.95)',
-      border: '2px solid rgba(0, 255, 255, 0.3)',
-      borderRadius: '12px',
-      padding: '20px',
-      maxWidth: '400px',
-      margin: '0 auto',
-      color: '#00ffff',
-      fontFamily: 'Orbitron, monospace',
-    }}>
-      <h2 style={{
-        margin: '0 0 20px 0',
-        fontSize: '20px',
-        textAlign: 'center',
-        color: '#00ffff',
-        textShadow: '0 0 10px rgba(0, 255, 255, 0.5)',
-      }}>
-        📱 虚拟按键设置
-      </h2>
+    <div style={styles.container}>
+      <h2 style={styles.title}>📱 虚拟按键设置</h2>
 
-      {/* 布局模式 */}
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>
-          布局模式
-        </label>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          {(['portrait', 'landscape', 'floating'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => updateSetting('layout', mode)}
-              style={{
-                flex: 1,
-                padding: '10px',
-                background: settings.layout === mode 
-                  ? 'rgba(0, 255, 255, 0.3)' 
-                  : 'rgba(0, 255, 255, 0.1)',
-                border: `2px solid ${settings.layout === mode ? '#00ffff' : 'rgba(0, 255, 255, 0.3)'}`,
-                borderRadius: '8px',
-                color: '#00ffff',
-                cursor: 'pointer',
-                fontSize: '12px',
-                transition: 'all 0.2s',
-              }}
-            >
-              {mode === 'portrait' && '📱 竖屏'}
-              {mode === 'landscape' && '📐 横屏'}
-              {mode === 'floating' && '🎈 浮动'}
-            </button>
-          ))}
+      {/* 开关 */}
+      <div style={styles.section}>
+        <div style={styles.row}>
+          <span style={styles.label}>启用虚拟按键</span>
+          <button
+            onClick={handleToggleEnabled}
+            style={{
+              ...styles.toggleButton,
+              background: settings.enabled ? 'rgba(46, 204, 113, 0.3)' : 'rgba(255, 68, 68, 0.3)',
+              borderColor: settings.enabled ? '#2ecc71' : '#ff4444',
+              color: settings.enabled ? '#2ecc71' : '#ff4444',
+            }}
+          >
+            {settings.enabled ? '已启用' : '已禁用'}
+          </button>
         </div>
+        <p style={styles.hint}>
+          {settings.enabled 
+            ? '游戏中将显示虚拟按键' 
+            : '仅使用触摸手势控制'}
+        </p>
       </div>
 
-      {/* 按键尺寸 */}
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>
-          按键尺寸
-        </label>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          {(['small', 'medium', 'large'] as const).map((size) => (
+      {/* 尺寸选择 */}
+      <div style={styles.section}>
+        <label style={styles.label}>按键尺寸</label>
+        <div style={styles.buttonGroup}>
+          {(['small', 'medium', 'large'] as const).map(size => (
             <button
               key={size}
-              onClick={() => updateSetting('controlsSize', size)}
+              onClick={() => handleSizeChange(size)}
               style={{
-                flex: 1,
-                padding: '10px',
-                background: settings.controlsSize === size 
-                  ? 'rgba(0, 255, 128, 0.3)' 
-                  : 'rgba(0, 255, 128, 0.1)',
-                border: `2px solid ${settings.controlsSize === size ? '#00ff80' : 'rgba(0, 255, 128, 0.3)'}`,
-                borderRadius: '8px',
-                color: '#00ff80',
-                cursor: 'pointer',
-                fontSize: '12px',
-                transition: 'all 0.2s',
+                ...styles.sizeButton,
+                background: settings.size === size ? 'rgba(0, 255, 255, 0.3)' : 'rgba(0, 255, 255, 0.1)',
+                borderColor: settings.size === size ? '#00ffff' : 'rgba(0, 255, 255, 0.3)',
+                color: settings.size === size ? '#00ffff' : '#888',
               }}
             >
               {size === 'small' && '小'}
@@ -124,145 +129,196 @@ const MobileControlsSettings: React.FC<MobileControlsSettingsProps> = ({
             </button>
           ))}
         </div>
+        <p style={styles.hint}>
+          {settings.size === 'small' && '小尺寸 (40px) - 适合小屏幕'}
+          {settings.size === 'medium' && '中尺寸 (50px) - 默认推荐'}
+          {settings.size === 'large' && '大尺寸 (60px) - 适合大屏幕'}
+        </p>
       </div>
 
-      {/* 透明度 */}
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>
+      {/* 透明度滑块 */}
+      <div style={styles.section}>
+        <label style={styles.label}>
           透明度：{Math.round(settings.opacity * 100)}%
         </label>
         <input
           type="range"
-          min="0.5"
-          max="1"
-          step="0.05"
-          value={settings.opacity}
-          onChange={(e) => updateSetting('opacity', parseFloat(e.target.value))}
-          style={{
-            width: '100%',
-            cursor: 'pointer',
-          }}
+          min="50"
+          max="100"
+          value={settings.opacity * 100}
+          onChange={handleOpacityChange}
+          style={styles.slider}
         />
-      </div>
-
-      {/* 触摸控制区 */}
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          cursor: 'pointer',
-        }}>
-          <span style={{ fontSize: '14px' }}>显示触摸控制区</span>
+        <div style={styles.opacityPreview}>
           <div style={{
-            width: '50px',
-            height: '26px',
-            background: settings.showTouchArea ? 'rgba(0, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.2)',
-            borderRadius: '13px',
-            position: 'relative',
-            transition: 'background 0.2s',
+            ...styles.previewBox,
+            opacity: settings.opacity,
           }}>
-            <div style={{
-              width: '22px',
-              height: '22px',
-              background: '#00ffff',
-              borderRadius: '50%',
-              position: 'absolute',
-              top: '2px',
-              left: settings.showTouchArea ? '26px' : '2px',
-              transition: 'left 0.2s',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-            }} />
+            预览
           </div>
-          <input
-            type="checkbox"
-            checked={settings.showTouchArea}
-            onChange={(e) => updateSetting('showTouchArea', e.target.checked)}
-            style={{ display: 'none' }}
-          />
-        </label>
-      </div>
-
-      {/* 触觉反馈 */}
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          cursor: 'pointer',
-        }}>
-          <span style={{ fontSize: '14px' }}>触觉反馈 (震动)</span>
-          <div style={{
-            width: '50px',
-            height: '26px',
-            background: settings.hapticFeedback ? 'rgba(255, 166, 0, 0.5)' : 'rgba(255, 255, 255, 0.2)',
-            borderRadius: '13px',
-            position: 'relative',
-            transition: 'background 0.2s',
-          }}>
-            <div style={{
-              width: '22px',
-              height: '22px',
-              background: '#ffa600',
-              borderRadius: '50%',
-              position: 'absolute',
-              top: '2px',
-              left: settings.hapticFeedback ? '26px' : '2px',
-              transition: 'left 0.2s',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-            }} />
-          </div>
-          <input
-            type="checkbox"
-            checked={settings.hapticFeedback}
-            onChange={(e) => updateSetting('hapticFeedback', e.target.checked)}
-            style={{ display: 'none' }}
-          />
-        </label>
+        </div>
+        <p style={styles.hint}>
+          调节虚拟按键的透明度（50%-100%）
+        </p>
       </div>
 
       {/* 重置按钮 */}
-      <button
-        onClick={handleReset}
-        style={{
-          width: '100%',
-          padding: '12px',
-          background: 'rgba(255, 0, 64, 0.2)',
-          border: '2px solid #ff0040',
-          borderRadius: '8px',
-          color: '#ff0040',
-          cursor: 'pointer',
-          fontSize: '14px',
-          fontFamily: 'Orbitron, monospace',
-          marginBottom: '10px',
-          transition: 'all 0.2s',
-        }}
-      >
-        🔄 恢复默认设置
-      </button>
+      <div style={styles.section}>
+        <button
+          onClick={handleReset}
+          style={styles.resetButton}
+        >
+          🔄 重置为默认值
+        </button>
+      </div>
 
       {/* 关闭按钮 */}
-      {onClose && (
-        <button
-          onClick={onClose}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: 'rgba(0, 255, 255, 0.2)',
-            border: '2px solid #00ffff',
-            borderRadius: '8px',
-            color: '#00ffff',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontFamily: 'Orbitron, monospace',
-            transition: 'all 0.2s',
-          }}
-        >
-          ✓ 完成
-        </button>
-      )}
+      <button
+        onClick={onClose}
+        style={styles.closeButton}
+      >
+        关闭
+      </button>
     </div>
   );
 };
 
-export default MobileControlsSettings;
+// 样式
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    background: 'rgba(0, 20, 40, 0.95)',
+    border: '2px solid #00ffff',
+    borderRadius: '16px',
+    padding: '25px',
+    boxShadow: '0 0 40px rgba(0, 255, 255, 0.3)',
+  },
+  title: {
+    fontSize: '20px',
+    color: '#00ffff',
+    fontFamily: 'Orbitron, monospace',
+    marginBottom: '20px',
+    textAlign: 'center',
+    textShadow: '0 0 10px rgba(0, 255, 255, 0.5)',
+  },
+  section: {
+    marginBottom: '20px',
+    padding: '15px',
+    background: 'rgba(0, 255, 255, 0.05)',
+    borderRadius: '8px',
+  },
+  row: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '10px',
+  },
+  label: {
+    display: 'block',
+    color: '#fff',
+    fontFamily: 'Orbitron, monospace',
+    fontSize: '14px',
+    marginBottom: '10px',
+  },
+  hint: {
+    color: '#888',
+    fontSize: '12px',
+    fontFamily: 'Orbitron, monospace',
+    marginTop: '8px',
+    lineHeight: '1.5',
+  },
+  toggleButton: {
+    padding: '8px 20px',
+    fontSize: '14px',
+    border: '2px solid',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontFamily: 'Orbitron, monospace',
+    transition: 'all 0.3s',
+  },
+  buttonGroup: {
+    display: 'flex',
+    gap: '10px',
+  },
+  sizeButton: {
+    flex: 1,
+    padding: '10px',
+    fontSize: '14px',
+    border: '2px solid',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontFamily: 'Orbitron, monospace',
+    transition: 'all 0.3s',
+  },
+  slider: {
+    width: '100%',
+    height: '8px',
+    borderRadius: '4px',
+    background: 'rgba(0, 255, 255, 0.2)',
+    outline: 'none',
+    cursor: 'pointer',
+    WebkitAppearance: 'none',
+  },
+  opacityPreview: {
+    marginTop: '15px',
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  previewBox: {
+    padding: '15px 30px',
+    background: 'rgba(0, 255, 255, 0.2)',
+    border: '2px solid #00ffff',
+    borderRadius: '8px',
+    color: '#00ffff',
+    fontFamily: 'Orbitron, monospace',
+    fontSize: '14px',
+  },
+  resetButton: {
+    width: '100%',
+    padding: '10px',
+    fontSize: '14px',
+    background: 'rgba(255, 166, 0, 0.2)',
+    border: '2px solid #ffa600',
+    borderRadius: '8px',
+    color: '#ffa600',
+    cursor: 'pointer',
+    fontFamily: 'Orbitron, monospace',
+    transition: 'all 0.3s',
+  },
+  closeButton: {
+    width: '100%',
+    padding: '12px',
+    fontSize: '16px',
+    background: 'rgba(0, 255, 255, 0.2)',
+    border: '2px solid #00ffff',
+    borderRadius: '8px',
+    color: '#00ffff',
+    cursor: 'pointer',
+    fontFamily: 'Orbitron, monospace',
+    boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)',
+    transition: 'all 0.3s',
+  },
+};
+
+// 工具函数：加载设置
+export const loadMobileControlsSettings = (): MobileControlsSettings => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return { ...defaultSettings, ...JSON.parse(saved) };
+    }
+  } catch (e) {
+    console.warn('Failed to load mobile controls settings:', e);
+  }
+  return defaultSettings;
+};
+
+// 工具函数：保存设置
+export const saveMobileControlsSettings = (settings: MobileControlsSettings): void => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  } catch (e) {
+    console.warn('Failed to save mobile controls settings:', e);
+  }
+};
+
+export default MobileControlsSettingsPanel;

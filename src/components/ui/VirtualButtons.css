@@ -1,12 +1,12 @@
-/* ==================== v1.9.1 精简版移动端控制样式 ==================== */
+/* ==================== v1.9.1 精简版虚拟按键样式 ==================== */
 
 /* 主容器 */
-.mobile-controls {
+.virtual-buttons {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  max-width: 320px;
+  gap: 12px;
+  padding: 12px;
+  max-width: 360px;
   margin: 0 auto;
   touch-action: none;
   user-select: none;
@@ -16,10 +16,11 @@
 
 /* 触摸区域 */
 .touch-area {
+  position: relative;
   background: rgba(0, 255, 255, 0.05);
   border: 2px solid rgba(0, 255, 255, 0.3);
   border-radius: 8px;
-  padding: 12px;
+  padding: 16px;
   touch-action: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -28,7 +29,7 @@
 .touch-hint {
   text-align: center;
   color: rgba(0, 255, 255, 0.6);
-  font-size: 11px;
+  font-size: 12px;
   font-family: 'Orbitron', monospace;
   pointer-events: none;
 }
@@ -36,39 +37,31 @@
 /* 按钮行 */
 .button-row {
   display: grid;
-  gap: 8px;
-}
-
-.direction-row {
   grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
-.drop-row {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.utility-row {
+.button-row:last-child {
   grid-template-columns: repeat(2, 1fr);
 }
 
 /* 通用按钮样式 */
 .btn {
-  padding: 14px;
-  font-size: 20px;
+  padding: 18px;
+  font-size: 22px;
   border: 2px solid;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.1s ease-out;
   touch-action: manipulation;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 52px;
+  min-height: 52px;
   position: relative;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.2);
-  font-family: 'Orbitron', monospace;
 }
 
 .btn:active,
@@ -149,87 +142,63 @@
   box-shadow: 0 0 15px #ffa600;
 }
 
-.btn-red {
-  border-color: #ff4444;
-  color: #ff4444;
-  box-shadow: 0 0 5px rgba(255, 68, 68, 0.2);
-}
-
-.btn-red:active,
-.btn-red.active {
-  background: rgba(255, 68, 68, 0.3);
-  box-shadow: 0 0 15px #ff4444;
-}
-
-/* 工具按钮 */
-.utility-btn {
-  font-size: 14px;
-  padding: 12px;
-}
-
 /* 尺寸变体 */
+.size-small {
+  padding: 8px;
+  gap: 8px;
+}
+
 .size-small .btn {
-  padding: 10px;
-  font-size: 16px;
-  min-width: 40px;
-  min-height: 40px;
+  padding: 14px;
+  font-size: 18px;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .size-small .touch-area {
-  padding: 10px;
-}
-
-.size-small .touch-hint {
-  font-size: 10px;
-}
-
-.size-medium .btn {
-  padding: 14px;
-  font-size: 20px;
-  min-width: 50px;
-  min-height: 50px;
-}
-
-.size-medium .touch-area {
   padding: 12px;
 }
 
-.size-medium .touch-hint {
-  font-size: 11px;
+.size-medium {
+  padding: 12px;
+  gap: 12px;
+}
+
+.size-medium .btn {
+  padding: 18px;
+  font-size: 22px;
+  min-width: 52px;
+  min-height: 52px;
+}
+
+.size-large {
+  padding: 16px;
+  gap: 14px;
 }
 
 .size-large .btn {
-  padding: 18px;
-  font-size: 24px;
+  padding: 22px;
+  font-size: 26px;
   min-width: 60px;
   min-height: 60px;
 }
 
 .size-large .touch-area {
-  padding: 14px;
-}
-
-.size-large .touch-hint {
-  font-size: 12px;
+  padding: 20px;
 }
 
 /* 横屏适配 */
 @media (orientation: landscape) and (max-height: 500px) {
-  .mobile-controls {
+  .virtual-buttons {
     flex-direction: row;
     justify-content: space-between;
     max-width: 100%;
-    gap: 12px;
+    gap: 16px;
   }
 
   .button-row {
-    gap: 6px;
-  }
-
-  .direction-row,
-  .drop-row,
-  .utility-row {
     grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
   }
 
   .touch-area {
@@ -237,40 +206,40 @@
   }
 
   .btn {
-    padding: 10px;
-    font-size: 16px;
-    min-width: 40px;
-    min-height: 40px;
+    padding: 14px;
+    font-size: 18px;
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 
 /* 小屏幕适配 */
 @media (max-width: 360px) {
-  .mobile-controls {
+  .virtual-buttons {
     padding: 8px;
     gap: 8px;
   }
 
   .button-row {
-    gap: 6px;
+    gap: 8px;
   }
 
   .btn {
-    padding: 10px;
-    font-size: 16px;
-    min-width: 40px;
-    min-height: 40px;
+    padding: 14px;
+    font-size: 18px;
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 
 /* 大屏幕适配 */
 @media (min-width: 768px) {
-  .mobile-controls {
-    max-width: 400px;
+  .virtual-buttons {
+    max-width: 500px;
   }
 
   .btn {
-    padding: 18px;
-    font-size: 24px;
+    padding: 22px;
+    font-size: 26px;
   }
 }

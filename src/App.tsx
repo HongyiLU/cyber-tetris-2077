@@ -9,7 +9,7 @@ import { LeaderboardSystem } from './systems/LeaderboardSystem';
 import { AudioManager } from './systems/AudioManagerSynth';
 import { SoundId } from './systems/AudioManagerSynth';
 import { GameCanvas, GameInfo } from './components/game';
-import { CardDeck, MobileControls, MobileControlsSettings, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification, ParticleCanvas } from './components/ui';
+import { CardDeck, MobileControls, MobileControlsSettings, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification, ParticleCanvas, loadMobileControlsSettings, type MobileControlsSettings as MobileControlsSettingsType } from './components/ui';
 import { useMobileLayout } from './hooks';
 import { ParticleEffect } from './system/ParticleEffect';
 import { useGameLoop, useKeyboardControl } from './hooks';
@@ -75,6 +75,7 @@ const App: React.FC = () => {
   // 移动端控制设置
   const [showMobileSettings, setShowMobileSettings] = useState(false);
   const mobileLayout = useMobileLayout();
+  const [mobileControlsSettings, setMobileControlsSettings] = useState<MobileControlsSettingsType>(() => loadMobileControlsSettings());
   
   // P0-003: 游戏开始时防误触保护
   const [controlsDisabled, setControlsDisabled] = useState(false);
@@ -659,6 +660,28 @@ const App: React.FC = () => {
             <div>← → 移动 | ↑ 旋转 | ↓ 加速 | 空格 落下 | P 暂停</div>
             <div style={{ marginTop: '5px' }}>📱 或滑动屏幕 / 点击按钮</div>
           </div>
+
+          {/* 移动端虚拟按键 - 仅移动端且启用时显示 */}
+          {mobileLayout && mobileControlsSettings.enabled && (
+            <div style={{
+              width: '100%',
+              maxWidth: '400px',
+              margin: '15px auto 0',
+            }}>
+              <MobileControls
+                onMoveLeft={handleMoveLeft}
+                onMoveRight={handleMoveRight}
+                onRotate={handleRotate}
+                onSoftDrop={handleSoftDrop}
+                onHardDrop={handleHardDrop}
+                onPause={handlePause}
+                onRestart={handleRestart}
+                disabled={controlsDisabled || gameState?.gameOver}
+                size={mobileControlsSettings.size}
+                opacity={mobileControlsSettings.opacity}
+              />
+            </div>
+          )}
         </>
       )}
 
@@ -667,7 +690,7 @@ const App: React.FC = () => {
         fontSize: 'clamp(9px, 2.5vw, 10px)',
         color: '#666',
       }}>
-        v1.6.0 - 游戏内容扩展版
+        v1.9.1 - 精简版虚拟按键
       </div>
 
       {/* 卡组管理界面 */}
