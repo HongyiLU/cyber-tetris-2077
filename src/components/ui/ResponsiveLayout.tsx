@@ -49,21 +49,35 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
         minHeight: '100vh',
         background: 'var(--dark-bg, linear-gradient(135deg, #0a0a0f 0%, #16213e 50%, #0f3460 100%))',
         padding: '10px',
-        gap: '15px',
+        gap: '10px',
+        overflowX: 'hidden',
       }}>
+        {/* 子内容（如战斗 UI、开始按钮等）- 放在最前面 */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          alignItems: 'center',
+          width: '100%',
+          maxWidth: '400px',
+          zIndex: 10,
+        }}>
+          {children}
+        </div>
+
         {/* 游戏区域 */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '15px',
+          gap: '10px',
           width: '100%',
           maxWidth: '400px',
         }}>
-          {/* 游戏画布 */}
+          {/* 游戏画布 - 移动端不缩放，自适应宽度 */}
           <div style={{
-            transform: 'scale(0.85)',
-            transformOrigin: 'top center',
+            width: '100%',
+            maxWidth: '320px',
           }}>
             {gameCanvas}
           </div>
@@ -76,27 +90,16 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
           </div>
         </div>
 
-        {/* 移动端控制 */}
+        {/* 移动端控制 - 放在最底部 */}
         {mobileControls && (
           <div style={{
             width: '100%',
             maxWidth: '400px',
+            marginTop: '10px',
           }}>
             {mobileControls}
           </div>
         )}
-
-        {/* 子内容（如战斗 UI、开始按钮等） */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          alignItems: 'center',
-          width: '100%',
-          maxWidth: '400px',
-        }}>
-          {children}
-        </div>
       </div>
     );
   }
