@@ -1,4 +1,4 @@
-// ==================== v1.9.1 精简版移动端控制组件 ====================
+// ==================== v1.9.3 长按硬降版移动端控制组件 ====================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './MobileControls.css';
@@ -14,6 +14,13 @@ export interface MobileControlsProps {
   disabled?: boolean;
   size?: 'small' | 'medium' | 'large';
   opacity?: number;
+  // v1.9.3 新增：长按硬降配置
+  longPressConfig?: {
+    enabled?: boolean;        // 是否启用长按硬降（默认 true）
+    triggerTime?: number;     // 长按触发时间 ms（默认 300）
+    repeatEnabled?: boolean;  // 是否启用连发（默认 true）
+    repeatInterval?: number;  // 连发间隔 ms（默认 200）
+  };
 }
 
 const MobileControls: React.FC<MobileControlsProps> = ({
@@ -27,13 +34,21 @@ const MobileControls: React.FC<MobileControlsProps> = ({
   disabled = false,
   size = 'medium',
   opacity = 0.9,
+  longPressConfig = {},
 }) => {
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [activeButton, setActiveButton] = useState<string | null>(null);
   const longPressTimerRef = useRef<number | null>(null);
   const repeatIntervalRef = useRef<number | null>(null);
-  const lastTapRef = useRef<number>(0);
-  const tapTimerRef = useRef<number | null>(null);
+  // v1.9.3 新增：长按硬降计时器
+  const longPressHardDropTimerRef = useRef<number | null>(null);
+  const hardDropRepeatTimerRef = useRef<number | null>(null);
+
+  // v1.9.3 长按硬降配置（必须在 callbacks 之前定义）
+  const LONG_PRESS_TRIGGER_TIME = longPressConfig.triggerTime ?? 300; // 默认 300ms
+  const LONG_PRESS_REPEAT_INTERVAL = longPressConfig.repeatInterval ?? 200; // 默认 200ms
+  const isLongPressEnabled = longPressConfig.enabled ?? true;
+  const isRepeatEnabled = longPressConfig.repeatEnabled ?? true;
 
   // 触觉反馈
   const vibrate = useCallback((pattern: number | number[] = 10) => {
@@ -46,7 +61,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
     }
   }, []);
 
-  // 清理定时器（包括点击定时器）
+  // 清理定时器（包括长按硬降定时器）
   const clearTimers = useCallback(() => {
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
@@ -56,9 +71,14 @@ const MobileControls: React.FC<MobileControlsProps> = ({
       clearInterval(repeatIntervalRef.current);
       repeatIntervalRef.current = null;
     }
-    if (tapTimerRef.current) {
-      clearTimeout(tapTimerRef.current);
-      tapTimerRef.current = null;
+    // v1.9.3 新增：清理长按硬降定时器
+    if (longPressHardDropTimerRef.current) {
+      clearTimeout(longPressHardDropTimerRef.current);
+      longPressHardDropTimerRef.current = null;
+    }
+    if (hardDropRepeatTimerRef.current) {
+      clearInterval(hardDropRepeatTimerRef.current);
+      hardDropRepeatTimerRef.current = null;
     }
   }, []);
 
@@ -95,12 +115,28 @@ const MobileControls: React.FC<MobileControlsProps> = ({
     }
   }, [disabled, startLongPress, vibrate]);
 
-  // 触摸滑动处理
+  // v1.9.3 触摸滑动处理（集成长按硬降）
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (disabled) return;
     const touch = e.touches[0];
     touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-  }, [disabled]);
+    
+    // v1.9.3 新增：启动长按硬降计时器
+    if (isLongPressEnabled) {
+      longPressHardDropTimerRef.current = window.setTimeout(() => {
+        vibrate([20, 10, 20]); // 硬降震动反馈
+        onHardDrop();
+        
+        // v1.9.3 新增：长按连发
+        if (isRepeatEnabled) {
+          hardDropRepeatTimerRef.current = window.setInterval(() => {
+            vibrate(10);
+            onHardDrop();
+          }, LONG_PRESS_REPEAT_INTERVAL);
+        }
+      }, LONG_PRESS_TRIGGER_TIME);
+    }
+  }, [disabled, isLongPressEnabled, isRepeatEnabled, vibrate, onHardDrop, LONG_PRESS_TRIGGER_TIME, LONG_PRESS_REPEAT_INTERVAL]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!touchStartRef.current || disabled) return;
@@ -110,6 +146,18 @@ const MobileControls: React.FC<MobileControlsProps> = ({
     const deltaY = touch.clientY - touchStartRef.current.y;
     
     e.preventDefault();
+    
+    // v1.9.3 优化：滑动时取消长按硬降
+    if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+      if (longPressHardDropTimerRef.current) {
+        clearTimeout(longPressHardDropTimerRef.current);
+        longPressHardDropTimerRef.current = null;
+      }
+      if (hardDropRepeatTimerRef.current) {
+        clearInterval(hardDropRepeatTimerRef.current);
+        hardDropRepeatTimerRef.current = null;
+      }
+    }
     
     if (Math.abs(deltaX) > 30) {
       deltaX > 0 ? onMoveRight() : onMoveLeft();
@@ -126,40 +174,16 @@ const MobileControls: React.FC<MobileControlsProps> = ({
 
   const handleTouchEnd = useCallback(() => {
     touchStartRef.current = null;
+    // v1.9.3 新增：清理长按硬降定时器
+    if (longPressHardDropTimerRef.current) {
+      clearTimeout(longPressHardDropTimerRef.current);
+      longPressHardDropTimerRef.current = null;
+    }
+    if (hardDropRepeatTimerRef.current) {
+      clearInterval(hardDropRepeatTimerRef.current);
+      hardDropRepeatTimerRef.current = null;
+    }
   }, []);
-
-  // 双击时间窗口：400ms（行业标准，平衡响应速度和误触率）
-  const DOUBLE_TAP_DELAY = 400;
-
-  // 双击硬降落（优化：延迟执行单击动作，避免双击时误触发）
-  const handleTap = useCallback(() => {
-    const now = Date.now();
-    const timeSinceLastTap = now - lastTapRef.current;
-    
-    // 清理之前的定时器
-    if (tapTimerRef.current) {
-      clearTimeout(tapTimerRef.current);
-      tapTimerRef.current = null;
-    }
-    
-    // 双击 - 硬降（400ms 内第二次点击）
-    if (timeSinceLastTap < DOUBLE_TAP_DELAY) {
-      // 检测到双击，立即执行硬降
-      vibrate([20, 10, 20]);
-      onHardDrop();
-      lastTapRef.current = 0;
-    } else {
-      // 第一次点击，延迟执行旋转，等待可能的第二次点击
-      lastTapRef.current = now;
-      tapTimerRef.current = window.setTimeout(() => {
-        // 延迟后没有第二次点击，执行单击旋转
-        vibrate(10);
-        onRotate();
-        lastTapRef.current = 0;
-        tapTimerRef.current = null;
-      }, DOUBLE_TAP_DELAY);
-    }
-  }, [vibrate, onHardDrop, onRotate]);
 
   // 组件卸载时清理
   useEffect(() => {
@@ -177,9 +201,15 @@ const MobileControls: React.FC<MobileControlsProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={handleTap}
+        // v1.9.3 移除 onClick，改为单击立即旋转
+        onClick={() => {
+          if (!disabled) {
+            vibrate(10);
+            onRotate();
+          }
+        }}
       >
-        <div className="touch-hint">滑动控制 | 双击硬降</div>
+        <div className="touch-hint">滑动控制 | 长按硬降</div>
       </div>
 
       {/* 第一行：方向控制 ⬅️ 🔄 ➡️ */}

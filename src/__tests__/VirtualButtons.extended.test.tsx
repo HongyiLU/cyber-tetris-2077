@@ -109,65 +109,65 @@ describe('VirtualButtons - 扩展测试', () => {
     });
   });
 
-  describe('双击硬降功能', () => {
-    it('300ms 内双击触发硬降', () => {
+  describe('v1.9.3 长按硬降功能', () => {
+    it('长按 300ms 触发硬降', () => {
       render(<VirtualButtons {...mockHandlers} />);
       
-      const touchArea = screen.getByText('滑动控制 | 双击硬降').parentElement;
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement;
       
       act(() => {
-        fireEvent.click(touchArea!);
-      });
-      
-      act(() => {
-        jest.advanceTimersByTime(200);
-        fireEvent.click(touchArea!);
+        fireEvent.touchStart(touchArea!, {
+          touches: [{ clientX: 100, clientY: 100 }],
+        });
+        jest.advanceTimersByTime(300);
       });
       
       expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(1);
     });
 
-    it('超过 400ms 不触发双击', () => {
+    it('短按 (<300ms) 不触发硬降', () => {
       render(<VirtualButtons {...mockHandlers} />);
       
-      const touchArea = screen.getByText('滑动控制 | 双击硬降').parentElement;
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement;
       
       act(() => {
-        fireEvent.click(touchArea!);
+        fireEvent.touchStart(touchArea!, {
+          touches: [{ clientX: 100, clientY: 100 }],
+        });
+        jest.advanceTimersByTime(250);
+        fireEvent.touchEnd(touchArea!);
       });
       
-      act(() => {
-        jest.advanceTimersByTime(450);
-        fireEvent.click(touchArea!);
-      });
-      
-      // 两次独立点击，都不触发硬降（硬降需要双击）
       expect(mockHandlers.onHardDrop).not.toHaveBeenCalled();
     });
 
-    it('连续双击多次触发', () => {
+    it('长按 500ms 触发连发硬降', () => {
+      render(<VirtualButtons {...mockHandlers} longPressConfig={{ repeatEnabled: true, repeatInterval: 200 }} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement;
+      
+      act(() => {
+        fireEvent.touchStart(touchArea!, {
+          touches: [{ clientX: 100, clientY: 100 }],
+        });
+        jest.advanceTimersByTime(500);
+      });
+      
+      // 300ms 触发第一次，500ms 时触发第二次
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(2);
+    });
+
+    it('单击立即旋转（无延迟）', () => {
       render(<VirtualButtons {...mockHandlers} />);
       
-      const touchArea = screen.getByText('滑动控制 | 双击硬降').parentElement;
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement;
       
-      // 第一次双击
       act(() => {
-        fireEvent.click(touchArea!);
-        jest.advanceTimersByTime(200);
         fireEvent.click(touchArea!);
       });
       
-      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(1);
-      
-      // 第二次双击（需要等待第一次双击的 300ms 窗口过去）
-      act(() => {
-        jest.advanceTimersByTime(350);
-        fireEvent.click(touchArea!);
-        jest.advanceTimersByTime(200);
-        fireEvent.click(touchArea!);
-      });
-      
-      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(2);
+      expect(mockHandlers.onRotate).toHaveBeenCalledTimes(1);
+      expect(mockHandlers.onHardDrop).not.toHaveBeenCalled();
     });
   });
 
@@ -175,7 +175,7 @@ describe('VirtualButtons - 扩展测试', () => {
     it('滑动距离小于 30px 不触发', () => {
       render(<VirtualButtons {...mockHandlers} />);
       
-      const touchArea = screen.getByText('滑动控制 | 双击硬降').parentElement;
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement;
       
       act(() => {
         fireEvent.touchStart(touchArea!, {
@@ -192,7 +192,7 @@ describe('VirtualButtons - 扩展测试', () => {
     it('精确 30px 滑动触发', () => {
       render(<VirtualButtons {...mockHandlers} />);
       
-      const touchArea = screen.getByText('滑动控制 | 双击硬降').parentElement;
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement;
       
       act(() => {
         fireEvent.touchStart(touchArea!, {
@@ -209,7 +209,7 @@ describe('VirtualButtons - 扩展测试', () => {
     it('连续滑动多次触发', () => {
       render(<VirtualButtons {...mockHandlers} />);
       
-      const touchArea = screen.getByText('滑动控制 | 双击硬降').parentElement;
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement;
       
       act(() => {
         fireEvent.touchStart(touchArea!, {
@@ -230,7 +230,7 @@ describe('VirtualButtons - 扩展测试', () => {
     it('斜向滑动优先触发水平', () => {
       render(<VirtualButtons {...mockHandlers} />);
       
-      const touchArea = screen.getByText('滑动控制 | 双击硬降').parentElement;
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement;
       
       act(() => {
         fireEvent.touchStart(touchArea!, {
@@ -243,6 +243,26 @@ describe('VirtualButtons - 扩展测试', () => {
       
       expect(mockHandlers.onMoveRight).toHaveBeenCalledTimes(1);
       expect(mockHandlers.onSoftDrop).not.toHaveBeenCalled();
+    });
+
+    it('滑动时取消长按硬降', () => {
+      render(<VirtualButtons {...mockHandlers} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement;
+      
+      act(() => {
+        fireEvent.touchStart(touchArea!, {
+          touches: [{ clientX: 100, clientY: 100 }],
+        });
+        jest.advanceTimersByTime(100);
+        fireEvent.touchMove(touchArea!, {
+          touches: [{ clientX: 150, clientY: 100 }],
+        });
+        jest.advanceTimersByTime(200);
+      });
+      
+      expect(mockHandlers.onHardDrop).not.toHaveBeenCalled();
+      expect(mockHandlers.onMoveRight).toHaveBeenCalled();
     });
   });
 
@@ -390,7 +410,7 @@ describe('VirtualButtons - 扩展测试', () => {
       expect(mockVibrate).toHaveBeenCalledWith(10);
     });
 
-    it('双击时调用组合震动', () => {
+    it('长按硬降时调用组合震动', () => {
       const mockVibrate = jest.fn();
       Object.defineProperty(navigator, 'vibrate', {
         value: mockVibrate,
@@ -399,12 +419,13 @@ describe('VirtualButtons - 扩展测试', () => {
       
       render(<VirtualButtons {...mockHandlers} />);
       
-      const touchArea = screen.getByText('滑动控制 | 双击硬降').parentElement;
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement;
       
       act(() => {
-        fireEvent.click(touchArea!);
-        jest.advanceTimersByTime(200);
-        fireEvent.click(touchArea!);
+        fireEvent.touchStart(touchArea!, {
+          touches: [{ clientX: 100, clientY: 100 }],
+        });
+        jest.advanceTimersByTime(300);
       });
       
       expect(mockVibrate).toHaveBeenCalledWith([20, 10, 20]);

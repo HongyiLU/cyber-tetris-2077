@@ -55,7 +55,7 @@ describe('MobileControls', () => {
   it('渲染触摸提示', () => {
     render(<MobileControls {...mockHandlers} />);
     
-    expect(screen.getByText('滑动控制 | 双击硬降')).toBeInTheDocument();
+    expect(screen.getByText('滑动控制 | 长按硬降')).toBeInTheDocument();
   });
 
   it('点击左移按钮触发回调', () => {
@@ -147,7 +147,7 @@ describe('MobileControls', () => {
   it('触摸区域存在', () => {
     render(<MobileControls {...mockHandlers} />);
     
-    expect(screen.getByText('滑动控制 | 双击硬降').parentElement).toHaveClass('touch-area');
+    expect(screen.getByText('滑动控制 | 长按硬降').parentElement).toHaveClass('touch-area');
   });
 
   it('按钮按下时添加 active 类', async () => {
@@ -170,4 +170,224 @@ describe('MobileControls', () => {
       expect(button).not.toHaveClass('active');
     });
   });
+
+  // ==================== v1.9.3 长按硬降功能测试 ====================
+
+  describe('v1.9.3 长按硬降功能', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('短按（<300ms）不触发硬降', () => {
+      render(<MobileControls {...mockHandlers} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.touchStart(touchArea, {
+        touches: [{ clientX: 100, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(250);
+      fireEvent.touchEnd(touchArea);
+      
+      expect(mockHandlers.onHardDrop).not.toHaveBeenCalled();
+    });
+
+    it('长按 300ms 触发硬降', () => {
+      render(<MobileControls {...mockHandlers} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.touchStart(touchArea, {
+        touches: [{ clientX: 100, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(300);
+      
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(1);
+    });
+
+    it('长按 500ms 触发连发硬降', () => {
+      render(<MobileControls {...mockHandlers} longPressConfig={{ repeatEnabled: true, repeatInterval: 200 }} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.touchStart(touchArea, {
+        touches: [{ clientX: 100, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(300);
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(1);
+      
+      jest.advanceTimersByTime(200);
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(2);
+      
+      jest.advanceTimersByTime(200);
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(3);
+    });
+
+    it('松开手指停止连发', () => {
+      render(<MobileControls {...mockHandlers} longPressConfig={{ repeatEnabled: true, repeatInterval: 200 }} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.touchStart(touchArea, {
+        touches: [{ clientX: 100, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(300);
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(1);
+      
+      jest.advanceTimersByTime(200);
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(2);
+      
+      fireEvent.touchEnd(touchArea);
+      
+      jest.advanceTimersByTime(200);
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(2);
+    });
+
+    it('滑动时取消长按硬降', () => {
+      render(<MobileControls {...mockHandlers} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.touchStart(touchArea, {
+        touches: [{ clientX: 100, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(100);
+      
+      fireEvent.touchMove(touchArea, {
+        touches: [{ clientX: 150, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(200);
+      
+      expect(mockHandlers.onHardDrop).not.toHaveBeenCalled();
+      expect(mockHandlers.onMoveRight).toHaveBeenCalled();
+    });
+
+    it('单击立即旋转（无延迟）', () => {
+      render(<MobileControls {...mockHandlers} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.click(touchArea);
+      
+      expect(mockHandlers.onRotate).toHaveBeenCalledTimes(1);
+    });
+
+    it('自定义长按触发时间 200ms', () => {
+      render(<MobileControls {...mockHandlers} longPressConfig={{ triggerTime: 200 }} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.touchStart(touchArea, {
+        touches: [{ clientX: 100, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(200);
+      
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(1);
+    });
+
+    it('自定义长按触发时间 500ms', () => {
+      render(<MobileControls {...mockHandlers} longPressConfig={{ triggerTime: 500 }} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.touchStart(touchArea, {
+        touches: [{ clientX: 100, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(300);
+      expect(mockHandlers.onHardDrop).not.toHaveBeenCalled();
+      
+      jest.advanceTimersByTime(200);
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(1);
+    });
+
+    it('自定义连发间隔 100ms', () => {
+      render(<MobileControls {...mockHandlers} longPressConfig={{ repeatEnabled: true, repeatInterval: 100 }} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.touchStart(touchArea, {
+        touches: [{ clientX: 100, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(300);
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(1);
+      
+      jest.advanceTimersByTime(100);
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(2);
+    });
+
+    it('禁用长按硬降', () => {
+      render(<MobileControls {...mockHandlers} longPressConfig={{ enabled: false }} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.touchStart(touchArea, {
+        touches: [{ clientX: 100, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(1000);
+      
+      expect(mockHandlers.onHardDrop).not.toHaveBeenCalled();
+    });
+
+    it('禁用连发功能', () => {
+      render(<MobileControls {...mockHandlers} longPressConfig={{ repeatEnabled: false }} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.touchStart(touchArea, {
+        touches: [{ clientX: 100, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(300);
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(1);
+      
+      jest.advanceTimersByTime(1000);
+      expect(mockHandlers.onHardDrop).toHaveBeenCalledTimes(1);
+    });
+
+    it('快速连续单击只触发旋转', () => {
+      render(<MobileControls {...mockHandlers} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.click(touchArea);
+      fireEvent.click(touchArea);
+      fireEvent.click(touchArea);
+      
+      expect(mockHandlers.onRotate).toHaveBeenCalledTimes(3);
+      expect(mockHandlers.onHardDrop).not.toHaveBeenCalled();
+    });
+
+    it('组件卸载时清理计时器', () => {
+      const { unmount } = render(<MobileControls {...mockHandlers} longPressConfig={{ repeatEnabled: true }} />);
+      
+      const touchArea = screen.getByText('滑动控制 | 长按硬降').parentElement!;
+      
+      fireEvent.touchStart(touchArea, {
+        touches: [{ clientX: 100, clientY: 100 }],
+      });
+      
+      jest.advanceTimersByTime(300);
+      
+      unmount();
+      
+      expect(() => {
+        jest.advanceTimersByTime(200);
+      }).not.toThrow();
+    });
+  });
+  // ==================== v1.9.3 测试结束 ====================
 });

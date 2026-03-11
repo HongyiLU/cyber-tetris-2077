@@ -15,6 +15,13 @@ interface GameCanvasProps {
   onSoftDrop?: () => void;
   onHardDrop?: () => void;
   onPause?: () => void;
+  // v1.9.3 新增：长按硬降配置
+  longPressConfig?: {
+    enabled?: boolean;        // 是否启用长按硬降（默认 true）
+    triggerTime?: number;     // 长按触发时间 ms（默认 300）
+    repeatEnabled?: boolean;  // 是否启用连发（默认 false，画布上不启用连发）
+    repeatInterval?: number;  // 连发间隔 ms（默认 200）
+  };
 }
 
 // 创建 typeId 到颜色的反向映射
@@ -35,6 +42,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   onSoftDrop,
   onHardDrop,
   onPause,
+  longPressConfig = {},
 }) => {
   // 移动端使用更小的 blockSize
   const actualBlockSize = blockSize ?? (typeof window !== 'undefined' && window.innerWidth < 768 
@@ -44,23 +52,34 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameStateRef = useRef<GameState | null>(null);
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
-  const lastTapRef = useRef<number>(0);
-  const tapTimerRef = useRef<number | null>(null);
+  // v1.9.3 新增：长按硬降计时器
+  const longPressHardDropTimerRef = useRef<number | null>(null);
+  const hardDropRepeatTimerRef = useRef<number | null>(null);
+
+  // v1.9.3 长按硬降配置
+  const LONG_PRESS_TRIGGER_TIME = longPressConfig.triggerTime ?? 300; // 默认 300ms
+  const LONG_PRESS_REPEAT_INTERVAL = longPressConfig.repeatInterval ?? 200; // 默认 200ms
+  const isLongPressEnabled = longPressConfig.enabled ?? true;
+  const isRepeatEnabled = longPressConfig.repeatEnabled ?? false; // 画布上默认不启用连发
 
   // 更新 gameStateRef
   useEffect(() => {
     gameStateRef.current = gameState;
   }, [gameState]);
 
-  // 清理点击定时器
-  const clearTapTimer = useCallback(() => {
-    if (tapTimerRef.current) {
-      clearTimeout(tapTimerRef.current);
-      tapTimerRef.current = null;
+  // v1.9.3 清理长按硬降定时器
+  const clearLongPressTimers = useCallback(() => {
+    if (longPressHardDropTimerRef.current) {
+      clearTimeout(longPressHardDropTimerRef.current);
+      longPressHardDropTimerRef.current = null;
+    }
+    if (hardDropRepeatTimerRef.current) {
+      clearInterval(hardDropRepeatTimerRef.current);
+      hardDropRepeatTimerRef.current = null;
     }
   }, []);
 
-  // 触摸手势处理
+  // v1.9.3 触摸手势处理（集成长按硬降）
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (!gameState || gameState.gameOver || gameState.paused) return;
     
@@ -70,7 +89,23 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       y: touch.clientY,
       time: Date.now(),
     };
-  }, [gameState]);
+    
+    // v1.9.3 新增：启动长按硬降计时器
+    if (isLongPressEnabled) {
+      longPressHardDropTimerRef.current = window.setTimeout(() => {
+        if (onHardDrop) {
+          onHardDrop();
+        }
+        
+        // v1.9.3 新增：长按连发（画布上默认关闭）
+        if (isRepeatEnabled && onHardDrop) {
+          hardDropRepeatTimerRef.current = window.setInterval(() => {
+            onHardDrop();
+          }, LONG_PRESS_REPEAT_INTERVAL);
+        }
+      }, LONG_PRESS_TRIGGER_TIME);
+    }
+  }, [gameState, isLongPressEnabled, isRepeatEnabled, onHardDrop, LONG_PRESS_TRIGGER_TIME, LONG_PRESS_REPEAT_INTERVAL]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!touchStartRef.current || !gameState || gameState.gameOver || gameState.paused) return;
@@ -81,6 +116,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     
     // 防止默认滚动
     e.preventDefault();
+    
+    // v1.9.3 优化：滑动时取消长按硬降
+    if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+      clearLongPressTimers();
+    }
     
     // 水平滑动 - 移动方块
     if (Math.abs(deltaX) > 30) {
@@ -105,51 +145,29 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         time: Date.now(),
       };
     }
-  }, [gameState, onMoveLeft, onMoveRight, onSoftDrop]);
+  }, [gameState, onMoveLeft, onMoveRight, onSoftDrop, clearLongPressTimers]);
 
   const handleTouchEnd = useCallback(() => {
     touchStartRef.current = null;
-  }, []);
+    // v1.9.3 新增：清理长按硬降定时器
+    clearLongPressTimers();
+  }, [clearLongPressTimers]);
 
-  // 双击时间窗口：400ms（行业标准，平衡响应速度和误触率）
-  const DOUBLE_TAP_DELAY = 400;
-
-  const handleTap = useCallback(() => {
+  // v1.9.3 单击立即旋转（替代双击方案）
+  const handleClick = useCallback(() => {
     if (!gameState || gameState.gameOver || gameState.paused) return;
     
-    const now = Date.now();
-    const timeSinceLastTap = now - lastTapRef.current;
-    
-    // 清理之前的定时器
-    clearTapTimer();
-    
-    // 双击 - 硬降（400ms 内第二次点击）
-    if (timeSinceLastTap < DOUBLE_TAP_DELAY) {
-      // 检测到双击，立即执行硬降
-      if (onHardDrop) {
-        onHardDrop();
-      }
-      lastTapRef.current = 0;
-    } else {
-      // 第一次点击，延迟执行旋转，等待可能的第二次点击
-      lastTapRef.current = now;
-      tapTimerRef.current = window.setTimeout(() => {
-        // 延迟后没有第二次点击，执行单击旋转
-        if (onRotate) {
-          onRotate();
-        }
-        lastTapRef.current = 0;
-        tapTimerRef.current = null;
-      }, DOUBLE_TAP_DELAY);
+    if (onRotate) {
+      onRotate();
     }
-  }, [gameState, onRotate, onHardDrop, clearTapTimer]);
+  }, [gameState, onRotate]);
 
   // 组件卸载时清理定时器
   useEffect(() => {
     return () => {
-      clearTapTimer();
+      clearLongPressTimers();
     };
-  }, [clearTapTimer]);
+  }, [clearLongPressTimers]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -242,7 +260,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={handleTap}
+        onClick={handleClick}
         style={{
           border: `2px solid var(--neon-cyan)`,
           borderRadius: '4px',
@@ -265,7 +283,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
           pointerEvents: 'none',
           textShadow: '0 0 5px rgba(0, 255, 255, 0.5)',
         }}>
-          👆 滑动控制<br/>双击硬降
+          👆 滑动控制<br/>长按硬降
         </div>
       )}
     </div>
