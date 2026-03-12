@@ -69,13 +69,13 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
             alignItems: 'center',
             gap: '10px',
             width: '100%',
-            maxWidth: '400px',
+            maxWidth: '500px',
             padding: '10px',
           }}>
-            {/* 游戏画布 */}
+            {/* 游戏画布 - 增大比例 */}
             <div style={{
               width: '100%',
-              maxWidth: '240px',
+              maxWidth: '360px',
             }}>
               {gameCanvas}
             </div>
@@ -83,7 +83,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
             {/* 游戏信息 */}
             <div style={{
               width: '100%',
-              maxWidth: '240px',
+              maxWidth: '360px',
             }}>
               {gameInfo}
             </div>
