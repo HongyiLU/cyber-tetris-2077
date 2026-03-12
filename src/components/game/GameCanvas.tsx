@@ -44,9 +44,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   onPause,
   longPressConfig = {},
 }) => {
-  // 移动端使用更小的 blockSize
+  // v1.9.4 优化：移动端使用更大的 blockSize 以匹配增大的画布容器
   const actualBlockSize = blockSize ?? (typeof window !== 'undefined' && window.innerWidth < 768 
-    ? 20  // 移动端 20px
+    ? 30  // 移动端 30px（v1.9.4 从 20px 提升）
     : GAME_CONFIG.GAME.BLOCK_SIZE);  // 桌面端 30px
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
