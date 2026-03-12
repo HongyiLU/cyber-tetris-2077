@@ -23,3 +23,7 @@ export { default as ParticleCanvasDefault } from './ParticleCanvas';
 
 // 这里可以放置纯 UI 展示组件
 export type { DamageType } from './DamageNumber';
+
+// 新增组件导出
+export { default as GameStartCountdown } from './GameStartCountdown';
+export { default as GameEndModal } from './GameEndModal';

@@ -9,7 +9,7 @@ import { LeaderboardSystem } from './systems/LeaderboardSystem';
 import { AudioManager } from './systems/AudioManagerSynth';
 import { SoundId } from './systems/AudioManagerSynth';
 import { GameCanvas, GameInfo } from './components/game';
-import { CardDeck, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification, ParticleCanvas } from './components/ui';
+import { CardDeck, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification, ParticleCanvas, GameStartCountdown, GameEndModal } from './components/ui';
 import { ParticleEffect } from './system/ParticleEffect';
 import { useGameLoop, useKeyboardControl } from './hooks';
 import { GAME_CONFIG } from './config/game-config';
@@ -46,6 +46,8 @@ const App: React.FC = () => {
   });
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameEnded, setGameEnded] = useState(false);
+  const [showCountdown, setShowCountdown] = useState(false);
   const [showDeck, setShowDeck] = useState(false);
   const [showEnemySelect, setShowEnemySelect] = useState(false);
   const [showEquipment, setShowEquipment] = useState(false);
@@ -85,9 +87,12 @@ const App: React.FC = () => {
       setGameState(state);
       // battleState 直接从 state.battleState 读取，无需单独状态
       
-      // 游戏结束或战斗胜利时停止 BGM
-      if ((state.gameOver || state.battleState === BattleState.WON) && audioManager.isBGMPlaying()) {
-        audioManager.stopBGM();
+      // 游戏结束或战斗胜利时停止 BGM 并显示结束弹窗
+      if ((state.gameOver || state.battleState === BattleState.WON || state.battleState === BattleState.LOST) && !gameEnded) {
+        if (audioManager.isBGMPlaying()) {
+          audioManager.stopBGM();
+        }
+        setGameEnded(true);
       }
     },
   });
@@ -175,6 +180,13 @@ const App: React.FC = () => {
   }, []);
 
   const handleStartBattle = useCallback(() => {
+    // 关闭敌人选择界面，显示倒计时
+    setShowEnemySelect(false);
+    setShowCountdown(true);
+  }, []);
+
+  const handleCountdownComplete = useCallback(() => {
+    setShowCountdown(false);
     // P0-003: 游戏开始后 500ms 内禁用虚拟按键，防止误触
     setControlsDisabled(true);
     setTimeout(() => setControlsDisabled(false), 500);
@@ -183,7 +195,7 @@ const App: React.FC = () => {
     gameEngine.init();
     setGameState(gameEngine.getGameState());
     setGameStarted(true);
-    setShowEnemySelect(false);
+    setGameEnded(false);
     // 开始播放 BGM（需要用户交互后才能播放）
     setTimeout(() => {
       audioManager.playBGM();
@@ -230,6 +242,27 @@ const App: React.FC = () => {
     // 播放旋转音效作为反馈
     audioManager.playSound(SoundId.ROTATE);
   }, [gameEngine, audioManager]);
+
+  // 游戏结束后的重新挑战
+  const handleRestartGame = useCallback(() => {
+    setGameEnded(false);
+    setGameStarted(false);
+    // 重置游戏引擎
+    gameEngine.init();
+    setGameState(gameEngine.getGameState());
+    // 显示敌人选择界面
+    setShowEnemySelect(true);
+  }, [gameEngine]);
+
+  // 返回标题页
+  const handleBackToTitle = useCallback(() => {
+    setGameEnded(false);
+    setGameStarted(false);
+    setGameEnded(false);
+    // 重置游戏引擎
+    gameEngine.init();
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
 
   // 音频控制回调
   const handleSetMasterVolume = useCallback((volume: number) => {
@@ -986,6 +1019,29 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 游戏开始倒计时 */}
+      <GameStartCountdown
+        visible={showCountdown}
+        duration={3}
+        onComplete={handleCountdownComplete}
+        onCancel={() => {
+          setShowCountdown(false);
+          setShowEnemySelect(true);
+        }}
+      />
+
+      {/* 游戏结束弹窗 */}
+      <GameEndModal
+        visible={gameEnded}
+        score={gameState?.score ?? 0}
+        lines={gameState?.lines ?? 0}
+        combo={gameState?.combo ?? 0}
+        maxCombo={gameState?.maxCombo ?? 0}
+        isVictory={gameState?.battleState === BattleState.WON}
+        onRestart={handleRestartGame}
+        onBackToTitle={handleBackToTitle}
+      />
     </ResponsiveLayout>
   );
 };
