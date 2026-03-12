@@ -54,7 +54,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
             gap: '10px',
             alignItems: 'center',
             width: '100%',
-            maxWidth: '400px',
+            maxWidth: '500px',
             padding: '20px 10px',
           }}>
             {children}
