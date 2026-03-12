@@ -269,8 +269,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
           display: 'block',
         }}
       />
-      {/* 移动端触摸提示 */}
-      {typeof window !== 'undefined' && window.innerWidth < 768 && !gameState?.gameOver && !gameState?.paused && (
+      {/* 移动端触摸提示 - v1.9.6 优化：仅在游戏未开始时显示 */}
+      {typeof window !== 'undefined' && window.innerWidth < 768 && (!gameState || gameState.gameOver || gameState.paused) && (
         <div style={{
           position: 'absolute',
           top: '50%',
