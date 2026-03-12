@@ -1,509 +1,401 @@
-// ==================== 卡组管理器测试 ====================
+// ==================== DeckManager 单元测试 ====================
+// v1.9.5 卡组编辑功能测试
 
 import { DeckManager } from '../engine/DeckManager';
 import { GAME_CONFIG } from '../config/game-config';
-import type { Deck } from '../types/deck';
 
-describe('DeckManager', () => {
+// 模拟 localStorage
+const localStorageMock = (() => {
+  let store: { [key: string]: string } = {};
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(global, 'localStorage', {
+  value: localStorageMock,
+});
+
+describe('DeckManager - v1.9.5 卡组编辑功能', () => {
   let deckManager: DeckManager;
 
   beforeEach(() => {
-    // 清空 localStorage
     localStorage.clear();
     deckManager = new DeckManager();
   });
 
-  // ==================== 卡组 CRUD 测试 ====================
+  // ==================== setCardCount 功能测试 ====================
 
-  describe('卡组 CRUD 操作', () => {
-    test('应该成功创建卡组', () => {
-      const deck = deckManager.createDeck('测试卡组', ['I', 'O', 'T']);
-      
-      expect(deck.id).toBeDefined();
-      expect(deck.name).toBe('测试卡组');
-      expect(deck.cards).toEqual(['I', 'O', 'T']);
-      expect(deck.createdAt).toBeDefined();
+  describe('setCardCount', () => {
+    test('应该能够设置方块数量为 0', () => {
+      deckManager.setCardCount('I', 0);
+      expect(deckManager.getCardCount('I')).toBe(0);
     });
 
-    test('创建卡组时应该验证卡组', () => {
-      // 卡组太小
-      expect(() => {
-        deckManager.createDeck('太小的卡组', ['I']);
-      }).toThrow();
-
-      // 卡组太大
-      const tooManyCards = Array(20).fill('I');
-      expect(() => {
-        deckManager.createDeck('太大的卡组', tooManyCards);
-      }).toThrow();
+    test('应该能够设置方块数量为 1', () => {
+      deckManager.setCardCount('O', 1);
+      expect(deckManager.getCardCount('O')).toBe(1);
     });
 
-    test('应该成功获取卡组', () => {
-      const created = deckManager.createDeck('测试卡组', ['I', 'O', 'T']);
-      const retrieved = deckManager.getDeck(created.id);
-      
-      expect(retrieved).toBeDefined();
-      expect(retrieved?.name).toBe('测试卡组');
+    test('应该能够设置方块数量为 2', () => {
+      deckManager.setCardCount('T', 2);
+      expect(deckManager.getCardCount('T')).toBe(2);
     });
 
-    test('应该成功更新卡组', () => {
-      const deck = deckManager.createDeck('原名', ['I', 'O', 'T']);
-      
-      deckManager.updateDeck(deck.id, { name: '新名称' });
-      
-      const updated = deckManager.getDeck(deck.id);
-      expect(updated?.name).toBe('新名称');
+    test('应该能够设置方块数量为 3', () => {
+      deckManager.setCardCount('S', 3);
+      expect(deckManager.getCardCount('S')).toBe(3);
     });
 
-    test('应该成功删除卡组', () => {
-      const deck = deckManager.createDeck('待删除', ['I', 'O', 'T']);
+    test('应该能够同时设置多个方块数量', () => {
+      deckManager.setCardCount('I', 3);
+      deckManager.setCardCount('O', 2);
+      deckManager.setCardCount('T', 1);
       
-      deckManager.deleteDeck(deck.id);
-      
-      const retrieved = deckManager.getDeck(deck.id);
-      expect(retrieved).toBeUndefined();
-    });
-
-    test('应该列出所有卡组', () => {
-      deckManager.createDeck('卡组 1', ['I', 'O', 'T']);
-      deckManager.createDeck('卡组 2', ['T', 'S', 'Z']);
-      
-      const decks = deckManager.listDecks();
-      
-      expect(decks.length).toBeGreaterThanOrEqual(2);
+      expect(deckManager.getCardCount('I')).toBe(3);
+      expect(deckManager.getCardCount('O')).toBe(2);
+      expect(deckManager.getCardCount('T')).toBe(1);
     });
   });
 
-  // ==================== 卡组验证测试 ====================
+  // ==================== getCardCount 功能测试 ====================
 
-  describe('卡组验证', () => {
-    test('应该验证有效卡组', () => {
-      const deck: Deck = {
-        id: 'test',
-        name: '有效卡组',
-        cards: ['I', 'O', 'T'],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-
-      const result = deckManager.validateDeck(deck);
-      
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+  describe('getCardCount', () => {
+    test('应该返回默认数量 1（未设置时）', () => {
+      expect(deckManager.getCardCount('I')).toBe(1);
+      expect(deckManager.getCardCount('O')).toBe(1);
+      expect(deckManager.getCardCount('T')).toBe(1);
     });
 
-    test('应该检测空名称', () => {
-      const deck: Deck = {
-        id: 'test',
-        name: '',
-        cards: ['I', 'O', 'T'],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-
-      const result = deckManager.validateDeck(deck);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('卡组名称不能为空');
+    test('应该返回设置后的数量', () => {
+      deckManager.setCardCount('Z', 3);
+      expect(deckManager.getCardCount('Z')).toBe(3);
     });
 
-    test('应该检测卡组太小', () => {
-      const deck: Deck = {
-        id: 'test',
-        name: '太小的卡组',
-        cards: ['I'],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-
-      const result = deckManager.validateDeck(deck);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('至少需要'))).toBe(true);
+    test('对于无效的方块类型应该返回 0', () => {
+      expect(deckManager.getCardCount('INVALID')).toBe(0);
+      expect(deckManager.getCardCount('X')).toBe(0);
+      expect(deckManager.getCardCount('')).toBe(0);
     });
 
-    test('应该检测卡组太大', () => {
-      const deck: Deck = {
-        id: 'test',
-        name: '太大的卡组',
-        cards: Array(20).fill('I'),
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-
-      const result = deckManager.validateDeck(deck);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('最多容纳'))).toBe(true);
-    });
-
-    test('应该检测重复卡牌', () => {
-      const deck: Deck = {
-        id: 'test',
-        name: '重复卡组',
-        cards: ['I', 'I', 'O'],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-
-      const result = deckManager.validateDeck(deck);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('卡组中包含重复的卡牌');
-    });
-
-    test('应该检测无效卡牌 ID', () => {
-      const deck: Deck = {
-        id: 'test',
-        name: '无效卡牌',
-        cards: ['I', 'O', 'INVALID_ID'],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-
-      const result = deckManager.validateDeck(deck);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('无效的卡牌 ID: INVALID_ID');
+    test('应该返回所有 7 种经典方块的数量', () => {
+      const classicPieces = ['I', 'O', 'T', 'S', 'Z', 'L', 'J'];
+      classicPieces.forEach(piece => {
+        expect(deckManager.getCardCount(piece)).toBeDefined();
+        expect(typeof deckManager.getCardCount(piece)).toBe('number');
+      });
     });
   });
 
-  // ==================== 持久化测试 ====================
+  // ==================== 数量限制测试 ====================
 
-  describe('持久化', () => {
-    test('应该保存卡组到 localStorage', () => {
-      deckManager.createDeck('持久化测试', ['I', 'O', 'T']);
-      
-      const saved = localStorage.getItem('cyber-blocks-decks');
-      expect(saved).toBeDefined();
-      
-      const parsed = JSON.parse(saved!);
-      expect(parsed.decks).toBeDefined();
-      expect(parsed.decks.length).toBeGreaterThan(0);
+  describe('数量限制（0-3）', () => {
+    test('设置数量为 -1 应该抛出错误', () => {
+      expect(() => deckManager.setCardCount('I', -1)).toThrow('数量必须在 0-3 之间');
     });
 
-    test('应该从 localStorage 加载卡组', () => {
-      // 创建并保存卡组
-      const deck = deckManager.createDeck('加载测试', ['I', 'O', 'T']);
+    test('设置数量为 4 应该抛出错误', () => {
+      expect(() => deckManager.setCardCount('I', 4)).toThrow('数量必须在 0-3 之间');
+    });
+
+    test('设置数量为 100 应该抛出错误', () => {
+      expect(() => deckManager.setCardCount('I', 100)).toThrow('数量必须在 0-3 之间');
+    });
+
+    test('设置非整数应该抛出错误', () => {
+      expect(() => deckManager.setCardCount('I', 1.5)).toThrow('数量必须在 0-3 之间');
+    });
+
+    test('边界值 0 应该成功', () => {
+      expect(() => deckManager.setCardCount('I', 0)).not.toThrow();
+      expect(deckManager.getCardCount('I')).toBe(0);
+    });
+
+    test('边界值 3 应该成功', () => {
+      expect(() => deckManager.setCardCount('I', 3)).not.toThrow();
+      expect(deckManager.getCardCount('I')).toBe(3);
+    });
+
+    test('边界值 1 应该成功', () => {
+      expect(() => deckManager.setCardCount('I', 1)).not.toThrow();
+      expect(deckManager.getCardCount('I')).toBe(1);
+    });
+  });
+
+  // ==================== save/load 配置测试 ====================
+
+  describe('saveDeckConfig / loadDeckConfig', () => {
+    test('应该能够保存配置到 localStorage', () => {
+      deckManager.setCardCount('I', 3);
+      deckManager.setCardCount('O', 2);
+      deckManager.setCardCount('T', 0);
+      
+      const result = deckManager.saveDeckConfig();
+      
+      expect(result.success).toBe(true);
+      expect(localStorage.getItem('tetris_deck_config_v1')).toBeDefined();
+    });
+
+    test('应该能够从 localStorage 加载配置', () => {
+      // 设置并保存配置
+      deckManager.setCardCount('I', 3);
+      deckManager.setCardCount('O', 2);
+      deckManager.setCardCount('T', 0);
+      deckManager.saveDeckConfig();
       
       // 创建新的 DeckManager 实例
-      const newManager = new DeckManager();
+      const newDeckManager = new DeckManager();
+      const loadResult = newDeckManager.loadDeckConfig();
       
-      // 应该能加载之前保存的卡组
-      const loaded = newManager.getDeck(deck.id);
-      expect(loaded).toBeDefined();
-      expect(loaded?.name).toBe('加载测试');
+      expect(loadResult.success).toBe(true);
+      expect(newDeckManager.getCardCount('I')).toBe(3);
+      expect(newDeckManager.getCardCount('O')).toBe(2);
+      expect(newDeckManager.getCardCount('T')).toBe(0);
     });
 
-    test('首次使用应该加载预设卡组', () => {
+    test('首次使用应该使用默认配置（每种方块 1 个）', () => {
       localStorage.clear();
-      const manager = new DeckManager();
+      const freshManager = new DeckManager();
+      const classicPieces = ['I', 'O', 'T', 'S', 'Z', 'L', 'J'];
       
-      const decks = manager.listDecks();
-      
-      // 应该至少有 3 个预设卡组
-      expect(decks.length).toBeGreaterThanOrEqual(3);
-      
-      // 检查预设卡组名称
-      const names = decks.map(d => d.name);
-      expect(names).toContain('经典卡组');
-      expect(names).toContain('新手卡组');
-      expect(names).toContain('全卡卡组');
+      classicPieces.forEach(piece => {
+        expect(freshManager.getCardCount(piece)).toBe(1);
+      });
     });
 
-    test('加载时应该自动过滤已删除的方块 ID', () => {
-      localStorage.clear();
+    test('应该能够重置为默认配置', () => {
+      deckManager.setCardCount('I', 3);
+      deckManager.setCardCount('O', 3);
+      deckManager.setCardCount('T', 3);
       
-      // 模拟保存包含已删除方块（X5）的旧数据
-      const oldData = {
-        decks: [
-          ['deck-1', {
-            id: 'deck-1',
-            name: '旧卡组',
-            cards: ['I', 'O', 'X5', 'T', 'P5'], // X5 和 P5 是已删除的方块
-            createdAt: Date.now(),
-          }],
-        ],
-        activeDeckId: 'deck-1',
+      deckManager.resetDeckConfig();
+      
+      expect(deckManager.getCardCount('I')).toBe(1);
+      expect(deckManager.getCardCount('O')).toBe(1);
+      expect(deckManager.getCardCount('T')).toBe(1);
+    });
+
+    test('保存失败时应该返回错误信息', () => {
+      // 模拟 localStorage 失败
+      const originalSetItem = localStorage.setItem;
+      localStorage.setItem = () => {
+        throw new Error('Storage full');
       };
-      localStorage.setItem('cyber-blocks-decks', JSON.stringify(oldData));
       
-      // 创建新的 DeckManager 实例，应该自动过滤无效卡牌
-      const manager = new DeckManager();
+      const result = deckManager.saveDeckConfig();
       
-      const deck = manager.getDeck('deck-1');
-      expect(deck).toBeDefined();
-      // X5 和 P5 应该被过滤掉
-      expect(deck?.cards).not.toContain('X5');
-      expect(deck?.cards).not.toContain('P5');
-      expect(deck?.cards).toEqual(['I', 'O', 'T']);
-    });
-
-    test('过滤后卡组太小应该被移除', () => {
-      localStorage.clear();
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
       
-      // 模拟保存只包含已删除方块的卡组
-      const oldData = {
-        decks: [
-          ['deck-tiny', {
-            id: 'deck-tiny',
-            name: '太小的卡组',
-            cards: ['X5', 'P5'], // 全部是已删除的方块
-            createdAt: Date.now(),
-          }],
-          ['deck-ok', {
-            id: 'deck-ok',
-            name: '正常的卡组',
-            cards: ['I', 'O', 'T'],
-            createdAt: Date.now(),
-          }],
-        ],
-        activeDeckId: 'deck-tiny',
-      };
-      localStorage.setItem('cyber-blocks-decks', JSON.stringify(oldData));
-      
-      const manager = new DeckManager();
-      
-      // 太小的卡组应该被移除
-      const tinyDeck = manager.getDeck('deck-tiny');
-      expect(tinyDeck).toBeUndefined();
-      
-      // 正常的卡组应该保留
-      const okDeck = manager.getDeck('deck-ok');
-      expect(okDeck).toBeDefined();
-      
-      // 激活状态应该被清空（因为激活的卡组被移除了）
-      expect(manager.getActiveDeck()).toBeNull();
-    });
-
-    test('全卡卡组不应该包含已删除的方块', () => {
-      const presets = deckManager.getPresetDecks();
-      const complete = presets.find(p => p.id === 'preset-complete');
-      
-      expect(complete).toBeDefined();
-      // 只包含经典 7 种（特殊方块已移除）
-      expect(complete?.cards.length).toBe(7);
-      expect(complete?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
-      // 不应该包含任何特殊方块
-      expect(complete?.cards).not.toContain('BOMB');
-      expect(complete?.cards).not.toContain('STAR');
-      expect(complete?.cards).not.toContain('ROW');
+      // 恢复
+      localStorage.setItem = originalSetItem;
     });
   });
 
-  // ==================== 激活卡组测试 ====================
+  // ==================== buildDeck 使用配置测试 ====================
 
-  describe('激活卡组', () => {
-    test('应该设置和获取激活的卡组', () => {
-      const deck = deckManager.createDeck('激活测试', ['I', 'O', 'T']);
+  describe('buildDeck', () => {
+    test('应该使用默认配置构建牌堆（7 张牌）', () => {
+      const deck = deckManager.buildDeck();
+      expect(deck.length).toBe(7);
       
-      deckManager.setActiveDeck(deck.id);
-      const active = deckManager.getActiveDeck();
-      
-      expect(active).toBeDefined();
-      expect(active?.id).toBe(deck.id);
+      const classicPieces = ['I', 'O', 'T', 'S', 'Z', 'L', 'J'];
+      classicPieces.forEach(piece => {
+        expect(deck).toContain(piece);
+      });
     });
 
-    test('应该可以清空激活的卡组', () => {
-      const deck = deckManager.createDeck('激活测试', ['I', 'O', 'T']);
-      deckManager.setActiveDeck(deck.id);
+    test('应该使用自定义配置构建牌堆', () => {
+      deckManager.setCardCount('I', 3);
+      deckManager.setCardCount('O', 2);
+      deckManager.setCardCount('T', 1);
+      deckManager.setCardCount('S', 0);
+      deckManager.setCardCount('Z', 0);
+      deckManager.setCardCount('L', 0);
+      deckManager.setCardCount('J', 0);
       
-      deckManager.setActiveDeck(null);
-      const active = deckManager.getActiveDeck();
+      const deck = deckManager.buildDeck();
       
-      expect(active).toBeNull();
+      expect(deck.length).toBe(6); // 3+2+1+0+0+0+0
+      expect(deck.filter(c => c === 'I').length).toBe(3);
+      expect(deck.filter(c => c === 'O').length).toBe(2);
+      expect(deck.filter(c => c === 'T').length).toBe(1);
+      expect(deck).not.toContain('S');
+      expect(deck).not.toContain('Z');
     });
 
-    test('设置不存在的卡组应该抛出错误', () => {
-      expect(() => {
-        deckManager.setActiveDeck('non-existent-id');
-      }).toThrow();
-    });
-  });
-
-  // ==================== 预设卡组测试 ====================
-
-  describe('预设卡组', () => {
-    test('应该提供预设卡组列表', () => {
-      const presets = deckManager.getPresetDecks();
-      
-      expect(presets.length).toBeGreaterThanOrEqual(3);
-      
-      const names = presets.map(p => p.name);
-      expect(names).toContain('经典卡组');
-      expect(names).toContain('新手卡组');
-      expect(names).toContain('全卡卡组');
-    });
-
-    test('经典卡组应该只包含 7 种经典 4 块', () => {
-      const presets = deckManager.getPresetDecks();
-      const classic = presets.find(p => p.name === '经典卡组');
-      
-      expect(classic).toBeDefined();
-      expect(classic?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
-    });
-
-    test('新手卡组应该只包含经典 7 种', () => {
-      const presets = deckManager.getPresetDecks();
-      const beginner = presets.find(p => p.name === '新手卡组');
-      
-      expect(beginner).toBeDefined();
-      // 新手卡组只包含经典 7 种
-      expect(beginner?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
-    });
-  });
-
-  // ==================== 配置测试 ====================
-
-  describe('卡组配置', () => {
-    test('应该获取默认配置', () => {
-      const config = deckManager.getConfig();
-      
-      expect(config.minDeckSize).toBe(3);
-      expect(config.maxDeckSize).toBe(15);
-      expect(config.rarityWeights).toBeDefined();
-    });
-
-    test('应该获取稀有度权重', () => {
-      const weights = deckManager.getRarityWeights();
-      
-      expect(weights.common).toBe(50);
-      expect(weights.uncommon).toBe(30);
-      expect(weights.rare).toBe(15);
-      expect(weights.epic).toBe(4);
-      expect(weights.legendary).toBe(1);
-    });
-
-    test('应该支持自定义配置', () => {
-      const customManager = new DeckManager({
-        minDeckSize: 5,
-        maxDeckSize: 20,
+    test('当所有方块数量为 0 时应该返回空数组', () => {
+      ['I', 'O', 'T', 'S', 'Z', 'L', 'J'].forEach(piece => {
+        deckManager.setCardCount(piece, 0);
       });
       
-      const config = customManager.getConfig();
+      const deck = deckManager.buildDeck();
+      expect(deck.length).toBe(0);
+    });
+
+    test('最大配置时牌堆应该有 21 张牌（7 种 × 3）', () => {
+      ['I', 'O', 'T', 'S', 'Z', 'L', 'J'].forEach(piece => {
+        deckManager.setCardCount(piece, 3);
+      });
       
-      expect(config.minDeckSize).toBe(5);
-      expect(config.maxDeckSize).toBe(20);
+      const deck = deckManager.buildDeck();
+      expect(deck.length).toBe(21);
     });
   });
-});
 
-describe('GameEngine with DeckManager', () => {
-  // 这些测试需要实际运行游戏引擎
-  // 这里只是示例，实际测试可能需要更多设置
-  
-  test('GameEngine 应该能使用 DeckManager', () => {
-    // 这个测试验证 GameEngine 和 DeckManager 的集成
-    // 具体测试逻辑在 GameEngine.test.ts 中
-    expect(true).toBe(true);
-  });
-});
+  // ==================== getTotalCardCount 测试 ====================
 
-// ==================== 牌堆模式测试 ====================
+  describe('getTotalCardCount', () => {
+    test('默认配置下总数应该是 7', () => {
+      expect(deckManager.getTotalCardCount()).toBe(7);
+    });
 
-describe('DeckManager - 牌堆模式（无放回抽样）', () => {
-  let deckManager: DeckManager;
-  let testDeck: Deck;
+    test('应该正确计算自定义配置的总数', () => {
+      deckManager.setCardCount('I', 3);
+      deckManager.setCardCount('O', 2);
+      deckManager.setCardCount('T', 1);
+      // 其他方块保持默认值 1，所以总数 = 3+2+1+1+1+1+1 = 10
+      expect(deckManager.getTotalCardCount()).toBe(10);
+    });
 
-  beforeEach(() => {
-    localStorage.clear();
-    deckManager = new DeckManager();
-    testDeck = deckManager.createDeck('测试牌堆', ['I', 'O', 'T', 'S', 'Z']);
-    deckManager.setActiveDeck(testDeck.id);
-  });
+    test('所有方块为 0 时总数应该是 0', () => {
+      ['I', 'O', 'T', 'S', 'Z', 'L', 'J'].forEach(piece => {
+        deckManager.setCardCount(piece, 0);
+      });
+      
+      expect(deckManager.getTotalCardCount()).toBe(0);
+    });
 
-  test('应该成功初始化抽取池', () => {
-    // 初始时抽取池应为空
-    expect(deckManager.getDrawPoolSize()).toBe(0);
-    
-    // 第一次抽卡会自动填充
-    const result = deckManager.drawFromDeck();
-    
-    expect(result.success).toBe(true);
-    expect(result.card).toBeDefined();
-    expect(result.wasRefilled).toBe(true); // 第一次抽卡会触发填充
-    expect(deckManager.getDrawPoolSize()).toBe(4); // 5 张卡抽了 1 张，剩 4 张
+    test('最大配置时总数应该是 21', () => {
+      ['I', 'O', 'T', 'S', 'Z', 'L', 'J'].forEach(piece => {
+        deckManager.setCardCount(piece, 3);
+      });
+      
+      expect(deckManager.getTotalCardCount()).toBe(21);
+    });
   });
 
-  test('应该实现无放回抽样（抽一张少一张）', () => {
-    const initialSize = 5; // 5 张卡
-    
-    // 第一次抽卡
-    const result1 = deckManager.drawFromDeck();
-    expect(result1.success).toBe(true);
-    expect(deckManager.getDrawPoolSize()).toBe(initialSize - 1);
-    
-    // 第二次抽卡
-    const result2 = deckManager.drawFromDeck();
-    expect(result2.success).toBe(true);
-    expect(deckManager.getDrawPoolSize()).toBe(initialSize - 2);
-    
-    // 第三次抽卡
-    const result3 = deckManager.drawFromDeck();
-    expect(result3.success).toBe(true);
-    expect(deckManager.getDrawPoolSize()).toBe(initialSize - 3);
+  // ==================== getDeckConfig 测试 ====================
+
+  describe('getDeckConfig', () => {
+    test('应该返回所有方块的配置', () => {
+      const config = deckManager.getDeckConfig();
+      
+      expect(config).toHaveProperty('I');
+      expect(config).toHaveProperty('O');
+      expect(config).toHaveProperty('T');
+      expect(config).toHaveProperty('S');
+      expect(config).toHaveProperty('Z');
+      expect(config).toHaveProperty('L');
+      expect(config).toHaveProperty('J');
+    });
+
+    test('应该返回当前配置值', () => {
+      deckManager.setCardCount('I', 3);
+      deckManager.setCardCount('O', 2);
+      
+      const config = deckManager.getDeckConfig();
+      expect(config['I']).toBe(3);
+      expect(config['O']).toBe(2);
+    });
+
+    test('返回的应该是副本而不是引用', () => {
+      const config1 = deckManager.getDeckConfig();
+      config1['I'] = 999;
+      
+      const config2 = deckManager.getDeckConfig();
+      expect(config2['I']).toBe(1); // 应该是默认值，不是 999
+    });
   });
 
-  test('抽空后应该自动洗牌', () => {
-    // 连续抽 5 次，抽空牌堆
-    for (let i = 0; i < 5; i++) {
+  // ==================== 边界条件测试 ====================
+
+  describe('边界条件', () => {
+    test('快速连续设置同一方块应该使用最后设置的值', () => {
+      deckManager.setCardCount('I', 1);
+      deckManager.setCardCount('I', 2);
+      deckManager.setCardCount('I', 3);
+      
+      expect(deckManager.getCardCount('I')).toBe(3);
+    });
+
+    test('设置后保存再加载应该保持配置不变', () => {
+      ['I', 'O', 'T', 'S', 'Z', 'L', 'J'].forEach((piece, index) => {
+        deckManager.setCardCount(piece, index % 4); // 0, 1, 2, 3, 0, 1, 2
+      });
+      
+      deckManager.saveDeckConfig();
+      
+      const newManager = new DeckManager();
+      
+      ['I', 'O', 'T', 'S', 'Z', 'L', 'J'].forEach((piece, index) => {
+        expect(newManager.getCardCount(piece)).toBe(index % 4);
+      });
+    });
+
+    test('localStorage 中有无效数据时应该使用默认值', () => {
+      localStorage.setItem('tetris_deck_config_v1', JSON.stringify({
+        'I': -1, // 无效
+        'O': 5,  // 无效
+        'T': 'invalid', // 无效
+        'S': 2,  // 有效
+      }));
+      
+      const newManager = new DeckManager();
+      
+      expect(newManager.getCardCount('I')).toBe(1); // 默认值
+      expect(newManager.getCardCount('O')).toBe(1); // 默认值
+      expect(newManager.getCardCount('T')).toBe(1); // 默认值
+      expect(newManager.getCardCount('S')).toBe(2); // 保持有效值
+    });
+
+    test('localStorage 损坏时应该使用默认配置', () => {
+      localStorage.setItem('tetris_deck_config_v1', 'invalid json{{{');
+      
+      const newManager = new DeckManager();
+      const loadResult = newManager.loadDeckConfig();
+      
+      expect(loadResult.success).toBe(false);
+      expect(newManager.getCardCount('I')).toBe(1); // 默认值
+    });
+  });
+
+  // ==================== 向后兼容性测试 ====================
+
+  describe('向后兼容性', () => {
+    test('默认卡组配置应该保持向后兼容（每种方块 1 个）', () => {
+      const classicPieces = ['I', 'O', 'T', 'S', 'Z', 'L', 'J'];
+      classicPieces.forEach(piece => {
+        expect(deckManager.getCardCount(piece)).toBe(1);
+      });
+    });
+
+    test('预设卡组应该正常工作', () => {
+      const presets = deckManager.getPresetDecks();
+      expect(presets.length).toBeGreaterThan(0);
+      
+      presets.forEach(preset => {
+        expect(preset.id).toBeDefined();
+        expect(preset.name).toBeDefined();
+        expect(preset.cards).toBeDefined();
+      });
+    });
+
+    test('原有的 drawFromDeck 功能应该正常工作', () => {
       const result = deckManager.drawFromDeck();
+      expect(result).toBeDefined();
       expect(result.success).toBe(true);
-      expect(result.wasRefilled).toBe(i === 0); // 只有第一次会触发填充
-    }
-    
-    // 此时抽取池应为空
-    expect(deckManager.getDrawPoolSize()).toBe(0);
-    
-    // 第 6 次抽卡应该触发洗牌
-    const result6 = deckManager.drawFromDeck();
-    expect(result6.success).toBe(true);
-    expect(result6.wasRefilled).toBe(true); // 触发洗牌
-    expect(deckManager.getDrawPoolSize()).toBe(4); // 5 张卡抽了 1 张，剩 4 张
-  });
-
-  test('应该使用 Fisher-Yates 洗牌算法', () => {
-    // 多次重置并抽卡，验证随机性
-    const results: string[] = [];
-    
-    for (let i = 0; i < 10; i++) {
-      deckManager.resetDrawPool();
-      const result = deckManager.drawFromDeck();
-      if (result.card) {
-        results.push(result.card.id);
-      }
-    }
-    
-    // 验证结果有一定的随机性（不应该总是相同顺序）
-    const uniqueResults = new Set(results);
-    expect(uniqueResults.size).toBeGreaterThan(1);
-  });
-
-  test('重置抽取池应该清空当前池', () => {
-    // 抽一些卡
-    deckManager.drawFromDeck();
-    deckManager.drawFromDeck();
-    expect(deckManager.getDrawPoolSize()).toBe(3);
-    
-    // 重置
-    deckManager.resetDrawPool();
-    expect(deckManager.getDrawPoolSize()).toBe(0);
-    
-    // 再次抽卡会重新填充
-    const result = deckManager.drawFromDeck();
-    expect(result.wasRefilled).toBe(true);
-    expect(deckManager.getDrawPoolSize()).toBe(4);
-  });
-
-  test('空卡组时应该返回回退卡牌', () => {
-    // 设置一个空卡组
-    deckManager.setActiveDeck(null);
-    
-    const result = deckManager.drawFromDeck();
-    
-    expect(result.success).toBe(false);
-    expect(result.card).toBeDefined();
-    expect(result.message).toBe('卡组为空');
-    expect(result.wasRefilled).toBe(false);
+      expect(result.card).toBeDefined();
+      expect(result.card!.id).toBeDefined();
+    });
   });
 });

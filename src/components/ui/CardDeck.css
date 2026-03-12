@@ -589,3 +589,287 @@
   border: 1px solid #666;
   color: #888;
 }
+
+/* ==================== v1.9.5 卡组编辑界面样式 ==================== */
+
+/* 卡组编辑容器 */
+.deck-edit-container {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+/* 编辑头部 */
+.deck-edit-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.deck-edit-title {
+  font-size: 22px;
+  color: #00ffff;
+  margin: 0 0 10px 0;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.deck-edit-subtitle {
+  font-size: 14px;
+  color: #888;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* 编辑统计 */
+.deck-edit-stats {
+  background: rgba(0, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.deck-edit-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+}
+
+.stat-label {
+  color: #aaa;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: bold;
+  color: #00ff80;
+}
+
+.stat-value.warning {
+  color: #ffaa00;
+}
+
+.deck-edit-warning {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 170, 0, 0.15);
+  border: 1px solid rgba(255, 170, 0, 0.4);
+  border-radius: 4px;
+  color: #ffaa00;
+  font-size: 13px;
+}
+
+/* 编辑列表 */
+.deck-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.deck-edit-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.deck-edit-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 255, 255, 0.3);
+}
+
+.deck-edit-card-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.deck-edit-card-icon {
+  font-size: 32px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.deck-edit-card-name {
+  font-size: 16px;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* 编辑控制按钮 */
+.deck-edit-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.deck-edit-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #00ffff;
+  background: rgba(0, 255, 255, 0.1);
+  color: #00ffff;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Orbitron, monospace;
+}
+
+.deck-edit-btn:hover:not(:disabled) {
+  background: rgba(0, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.deck-edit-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: #666;
+  color: #666;
+}
+
+.deck-edit-btn.minus {
+  border-color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff4444;
+}
+
+.deck-edit-btn.minus:hover:not(:disabled) {
+  background: rgba(255, 68, 68, 0.3);
+}
+
+.deck-edit-btn.plus {
+  border-color: #00ff80;
+  background: rgba(0, 255, 128, 0.1);
+  color: #00ff80;
+}
+
+.deck-edit-btn.plus:hover:not(:disabled) {
+  background: rgba(0, 255, 128, 0.3);
+}
+
+/* 数量显示 */
+.deck-edit-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 50px;
+}
+
+.count-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #00ffff;
+  line-height: 1;
+}
+
+.count-value.zero {
+  color: #666;
+}
+
+.count-label {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* 编辑操作按钮 */
+.deck-edit-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.deck-edit-action-btn {
+  padding: 12px 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: Orbitron, monospace;
+  transition: all 0.3s;
+}
+
+.deck-edit-action-btn.reset {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #888;
+  color: #aaa;
+}
+
+.deck-edit-action-btn.reset:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #aaa;
+  color: #fff;
+}
+
+.deck-edit-action-btn.save {
+  background: rgba(0, 255, 128, 0.2);
+  border: 2px solid #00ff80;
+  color: #00ff80;
+}
+
+.deck-edit-action-btn.save:hover:not(:disabled) {
+  background: rgba(0, 255, 128, 0.3);
+  box-shadow: 0 0 15px rgba(0, 255, 128, 0.4);
+}
+
+.deck-edit-action-btn.save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #666;
+  color: #666;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .deck-edit-item {
+    padding: 12px 15px;
+  }
+  
+  .deck-edit-card-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 28px;
+  }
+  
+  .deck-edit-card-name {
+    font-size: 14px;
+  }
+  
+  .deck-edit-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+  
+  .count-value {
+    font-size: 20px;
+  }
+  
+  .deck-edit-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .deck-edit-action-btn {
+    width: 100%;
+    padding: 14px 20px;
+  }
+}

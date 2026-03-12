@@ -12,7 +12,7 @@ interface CardDeckProps {
 }
 
 const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'collection' | 'deck' | 'presets'>('deck');
+  const [activeTab, setActiveTab] = useState<'collection' | 'deck' | 'presets' | 'edit'>('deck');
   const [selectedCard, setSelectedCard] = useState<CardData | null>(null);
   const [rarityFilter, setRarityFilter] = useState<string>('all');
   const [decks, setDecks] = useState<Deck[]>([]);
@@ -20,6 +20,9 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
   const [showNewDeckModal, setShowNewDeckModal] = useState(false);
   const [newDeckName, setNewDeckName] = useState('');
   const [newDeckDescription, setNewDeckDescription] = useState('');
+  
+  // v1.9.5 新增：卡组编辑状态
+  const [deckConfig, setDeckConfig] = useState<{ [pieceType: string]: number }>({});
 
   // 所有可用卡牌
   const allCards = deckManager.getAllCards();
@@ -33,6 +36,12 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
       setActiveDeckId(active?.id || null);
     };
     loadDecks();
+  }, [deckManager]);
+
+  // v1.9.5 新增：加载卡组配置
+  useEffect(() => {
+    const config = deckManager.getDeckConfig();
+    setDeckConfig(config);
   }, [deckManager]);
 
   // 过滤卡牌
@@ -199,6 +208,51 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
     }
   };
 
+  // v1.9.5 新增：卡组编辑功能
+  const handleSetCardCount = (pieceType: string, count: number) => {
+    try {
+      deckManager.setCardCount(pieceType, count);
+      const config = deckManager.getDeckConfig();
+      setDeckConfig(config);
+    } catch (error) {
+      console.error('设置方块数量失败:', error);
+      if (error instanceof Error) {
+        alert(`设置失败：${error.message}`);
+      }
+    }
+  };
+
+  const handleSaveDeckConfig = () => {
+    try {
+      const result = deckManager.saveDeckConfig();
+      if (result.success) {
+        alert('卡组配置已保存！');
+        if (onClose) {
+          onClose();
+        }
+      } else {
+        alert(`保存失败：${result.error}`);
+      }
+    } catch (error) {
+      console.error('保存卡组配置失败:', error);
+      if (error instanceof Error) {
+        alert(`保存失败：${error.message}`);
+      }
+    }
+  };
+
+  const handleResetDeckConfig = () => {
+    if (confirm('确定要重置为默认卡组配置吗？')) {
+      deckManager.resetDeckConfig();
+      const config = deckManager.getDeckConfig();
+      setDeckConfig(config);
+    }
+  };
+
+  const getTotalCardCount = () => {
+    return Object.values(deckConfig).reduce((sum, count) => sum + count, 0);
+  };
+
   const getRarityClass = (rarity: string): string => {
     switch (rarity) {
       case 'legendary': return 'legendary';
@@ -220,6 +274,19 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
       case 'J': return '🎯';
       default: return '🎴';
     }
+  };
+
+  const getCardColor = (cardId: string): string => {
+    const colors: { [key: string]: string } = {
+      'I': '#00ffff',
+      'O': '#ffff00',
+      'T': '#da70d6',
+      'S': '#00ff00',
+      'Z': '#ff4444',
+      'L': '#ff8c00',
+      'J': '#4169e1',
+    };
+    return colors[cardId] || '#888';
   };
 
   return (
@@ -278,6 +345,12 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
             className={`card-deck-tab-btn ${activeTab === 'deck' ? 'active' : ''}`}
           >
             🎴 我的卡组 ({decks.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('edit')}
+            className={`card-deck-tab-btn ${activeTab === 'edit' ? 'active' : ''}`}
+          >
+            ✏️ 编辑卡组
           </button>
           <button
             onClick={() => setActiveTab('collection')}
@@ -405,6 +478,104 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
               )}
             </div>
           </>
+        )}
+
+        {/* v1.9.5 新增：卡组编辑标签页 */}
+        {activeTab === 'edit' && (
+          <div className="deck-edit-container">
+            <div className="deck-edit-header">
+              <h3 className="deck-edit-title">自定义卡组配置</h3>
+              <p className="deck-edit-subtitle">
+                调整每种方块的数量（0-3），构建属于你的专属卡组
+              </p>
+            </div>
+
+            {/* 卡组总数显示 */}
+            <div className="deck-edit-stats">
+              <div className="deck-edit-stat-item">
+                <span className="stat-label">当前卡组总数：</span>
+                <span className={`stat-value ${getTotalCardCount() < 3 ? 'warning' : ''}`}>
+                  {getTotalCardCount()} 张
+                </span>
+              </div>
+              {getTotalCardCount() < 3 && (
+                <div className="deck-edit-warning">
+                  ⚠️ 卡组至少需要 3 张卡牌才能使用
+                </div>
+              )}
+            </div>
+
+            {/* 方块配置列表 */}
+            <div className="deck-edit-list">
+              {allCards.map(card => {
+                const count = deckConfig[card.id] ?? 1;
+                const cardColor = getCardColor(card.id);
+                
+                return (
+                  <div key={card.id} className="deck-edit-item">
+                    <div className="deck-edit-card-info">
+                      <div 
+                        className="deck-edit-card-icon"
+                        style={{ color: cardColor }}
+                      >
+                        {getCardIcon(card.id)}
+                      </div>
+                      <div className="deck-edit-card-name">
+                        {card.name}
+                      </div>
+                    </div>
+                    
+                    <div className="deck-edit-controls">
+                      <button
+                        onClick={() => handleSetCardCount(card.id, count - 1)}
+                        className="deck-edit-btn minus"
+                        disabled={count <= 0}
+                        aria-label="减少数量"
+                      >
+                        −
+                      </button>
+                      
+                      <div className="deck-edit-count">
+                        <span className={`count-value ${count === 0 ? 'zero' : ''}`}>
+                          {count}
+                        </span>
+                        {count > 0 && (
+                          <span className="count-label">张</span>
+                        )}
+                      </div>
+                      
+                      <button
+                        onClick={() => handleSetCardCount(card.id, count + 1)}
+                        className="deck-edit-btn plus"
+                        disabled={count >= 3}
+                        aria-label="增加数量"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 操作按钮 */}
+            <div className="deck-edit-actions">
+              <button
+                onClick={handleResetDeckConfig}
+                className="deck-edit-action-btn reset"
+              >
+                🔄 重置为默认
+              </button>
+              
+              <button
+                onClick={handleSaveDeckConfig}
+                className="deck-edit-action-btn save"
+                disabled={getTotalCardCount() < 3}
+              >
+                💾 保存并返回
+              </button>
+            </div>
+          </div>
         )}
 
         {/* 稀有度过滤（仅收藏标签页显示） */}

@@ -19,6 +19,13 @@ export interface StorageOperationResult {
 export type StorageErrorCallback = (error: Error, operation: 'save' | 'load') => void;
 
 /**
+ * 卡组配置数据结构（用于自定义每种方块数量）
+ */
+export interface DeckConfigData {
+  [pieceType: string]: number; // 方块类型 -> 数量 (0-3)
+}
+
+/**
  * 卡牌稀有度权重（用于奖励系统）
  */
 const RARITY_WEIGHTS: Record<string, number> = {
@@ -39,12 +46,17 @@ const RARITY_WEIGHTS: Record<string, number> = {
  * - localStorage 持久化（带错误处理）
  * - 预设卡组管理
  * - 卡牌收集系统（向后兼容）
+ * - 卡组配置管理（v1.9.5 新增）
  */
 export class DeckManager {
   private decks: Map<string, Deck>;
   private activeDeckId: string | null;
   private readonly storageKey: string;
   private readonly config: DeckConfig;
+  
+  // v1.9.5 新增：卡组配置（每种方块的数量）
+  private deckConfig: DeckConfigData;
+  private readonly deckConfigStorageKey: string = 'tetris_deck_config_v1';
   
   // 牌堆模式：当前抽取池（会减少）
   private currentDrawPool: string[] = [];
@@ -80,10 +92,24 @@ export class DeckManager {
     },
   ];
 
+  /**
+   * 默认卡组配置（每种方块 1 个）
+   */
+  private readonly DEFAULT_DECK_CONFIG: DeckConfigData = {
+    'I': 1,
+    'O': 1,
+    'T': 1,
+    'S': 1,
+    'Z': 1,
+    'L': 1,
+    'J': 1,
+  };
+
   constructor(config: Partial<DeckConfig> = {}) {
     this.decks = new Map();
     this.activeDeckId = null;
     this.storageKey = 'cyber-blocks-decks';
+    this.deckConfig = { ...this.DEFAULT_DECK_CONFIG };
     
     // 合并默认配置和用户配置
     this.config = {
@@ -100,7 +126,7 @@ export class DeckManager {
 
     // 版本检测
     const storedVersion = localStorage.getItem('deck_version');
-    const currentVersion = 'v1.7.0';
+    const currentVersion = 'v1.9.5';
     
     // 版本变更时清除旧数据
     if (storedVersion && storedVersion !== currentVersion) {
@@ -113,6 +139,9 @@ export class DeckManager {
 
     // 加载已保存的卡组
     this.loadDecks();
+    
+    // 加载卡组配置（v1.9.5 新增）
+    this.loadDeckConfig();
   }
 
   // ==================== 错误处理 ====================
@@ -152,6 +181,124 @@ export class DeckManager {
     if (this.onErrorCallback) {
       this.onErrorCallback(err, operation);
     }
+  }
+
+  // ==================== 卡组配置管理（v1.9.5 新增） ====================
+
+  /**
+   * 设置方块数量（0-3）
+   * @param pieceType 方块类型（I, O, T, S, Z, L, J）
+   * @param count 数量（0-3）
+   * @throws 如果方块类型无效或数量超出范围
+   */
+  public setCardCount(pieceType: string, count: number): void {
+    // 验证方块类型
+    const validPieceTypes = GAME_CONFIG.CARDS.map(card => card.id);
+    if (!validPieceTypes.includes(pieceType)) {
+      throw new Error(`无效的方块类型：${pieceType}`);
+    }
+
+    // 验证数量范围
+    if (!Number.isInteger(count) || count < 0 || count > 3) {
+      throw new Error(`数量必须在 0-3 之间：${count}`);
+    }
+
+    this.deckConfig[pieceType] = count;
+  }
+
+  /**
+   * 获取方块数量
+   * @param pieceType 方块类型
+   * @returns 方块数量（0-3），如果方块类型无效则返回 0
+   */
+  public getCardCount(pieceType: string): number {
+    const validPieceTypes = GAME_CONFIG.CARDS.map(card => card.id);
+    if (!validPieceTypes.includes(pieceType)) {
+      return 0;
+    }
+    return this.deckConfig[pieceType] ?? 0;
+  }
+
+  /**
+   * 获取所有方块配置
+   * @returns 卡组配置数据
+   */
+  public getDeckConfig(): DeckConfigData {
+    return { ...this.deckConfig };
+  }
+
+  /**
+   * 保存卡组配置到 localStorage
+   * @returns 操作结果
+   */
+  public saveDeckConfig(): StorageOperationResult {
+    try {
+      localStorage.setItem(this.deckConfigStorageKey, JSON.stringify(this.deckConfig));
+      return { success: true };
+    } catch (error) {
+      this.handleStorageError(error, 'save');
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : '保存配置失败' 
+      };
+    }
+  }
+
+  /**
+   * 从 localStorage 加载卡组配置
+   * @returns 操作结果
+   */
+  public loadDeckConfig(): StorageOperationResult {
+    try {
+      const data = localStorage.getItem(this.deckConfigStorageKey);
+      if (!data) {
+        // 首次使用，使用默认配置
+        this.deckConfig = { ...this.DEFAULT_DECK_CONFIG };
+        return { success: true };
+      }
+
+      const parsed = JSON.parse(data);
+      
+      // 验证并加载配置
+      const validPieceTypes = GAME_CONFIG.CARDS.map(card => card.id);
+      const newConfig: DeckConfigData = {};
+      
+      for (const pieceType of validPieceTypes) {
+        const count = parsed[pieceType];
+        if (typeof count === 'number' && count >= 0 && count <= 3) {
+          newConfig[pieceType] = count;
+        } else {
+          newConfig[pieceType] = 1; // 默认值
+        }
+      }
+      
+      this.deckConfig = newConfig;
+      return { success: true, data };
+    } catch (error) {
+      this.handleStorageError(error, 'load');
+      // 加载失败时使用默认配置
+      this.deckConfig = { ...this.DEFAULT_DECK_CONFIG };
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : '加载配置失败' 
+      };
+    }
+  }
+
+  /**
+   * 重置为默认卡组配置
+   */
+  public resetDeckConfig(): void {
+    this.deckConfig = { ...this.DEFAULT_DECK_CONFIG };
+    this.saveDeckConfig();
+  }
+
+  /**
+   * 获取当前卡组总卡牌数
+   * @returns 总卡牌数
+   */
+  public getTotalCardCount(): number {
+    return Object.values(this.deckConfig).reduce((sum, count) => sum + count, 0);
   }
 
   // ==================== 卡组 CRUD 操作 ====================
@@ -518,10 +665,11 @@ export class DeckManager {
    */
   public exportAllData(): string {
     const data = {
-      version: '1.7.0',
+      version: '1.9.5',
       exportDate: new Date().toISOString(),
       decks: Array.from(this.decks.entries()),
       activeDeckId: this.activeDeckId,
+      deckConfig: this.deckConfig,
     };
     return JSON.stringify(data, null, 2);
   }
@@ -541,6 +689,11 @@ export class DeckManager {
 
       if (parsed.activeDeckId) {
         this.activeDeckId = parsed.activeDeckId;
+      }
+
+      // 导入卡组配置（如果存在）
+      if (parsed.deckConfig) {
+        this.deckConfig = parsed.deckConfig;
       }
 
       // 保存导入的数据
@@ -602,6 +755,7 @@ export class DeckManager {
   /**
    * 重新填充抽取池（洗牌）
    * 从激活的卡组中构建抽取池，使用 Fisher-Yates 洗牌算法
+   * v1.9.5 修改：使用配置的卡组数量构建牌堆
    */
   private refillDrawPool(): void {
     const deck = this.getActiveDeck();
@@ -611,8 +765,8 @@ export class DeckManager {
     
     // 遍历卡组中的每张卡牌
     deck.cards.forEach((cardId) => {
-      // 默认每张卡牌数量为 1
-      const poolCount = 1;
+      // v1.9.5 修改：使用配置的数量，默认为 1
+      const poolCount = this.deckConfig[cardId] ?? 1;
       for (let i = 0; i < poolCount; i++) {
         this.currentDrawPool.push(cardId);
       }
@@ -765,11 +919,24 @@ export class DeckManager {
     return { ...this.config.rarityWeights };
   }
 
-
-
-
-
-
+  /**
+   * 使用当前配置构建牌堆（用于测试）
+   * @returns 构建的牌堆
+   */
+  public buildDeck(): string[] {
+    const deck: string[] = [];
+    
+    // 遍历所有方块类型
+    const validPieceTypes = GAME_CONFIG.CARDS.map(card => card.id);
+    for (const pieceType of validPieceTypes) {
+      const count = this.deckConfig[pieceType] ?? 1;
+      for (let i = 0; i < count; i++) {
+        deck.push(pieceType);
+      }
+    }
+    
+    return deck;
+  }
 
   /**
    * 重置进度（用于测试）
@@ -777,6 +944,7 @@ export class DeckManager {
   public reset(): void {
     this.decks.clear();
     this.activeDeckId = null;
+    this.deckConfig = { ...this.DEFAULT_DECK_CONFIG };
     this.loadPresetDecks();
     this.activeDeckId = 'preset-classic';
     this.saveDecks();
