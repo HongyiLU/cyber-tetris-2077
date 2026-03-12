@@ -84,19 +84,58 @@ const GameStartCountdown: React.FC<GameStartCountdownProps> = ({
       }}
       onClick={handleCancel}
     >
-      <div
-        style={{
-          fontSize: 'clamp(80px, 20vw, 200px)',
-          fontFamily: 'Orbitron, monospace',
-          fontWeight: 'bold',
-          color: 'var(--neon-cyan, #00ffff)',
-          textShadow: '0 0 20px var(--neon-cyan, #00ffff), 0 0 40px var(--neon-cyan, #00ffff), 0 0 60px var(--neon-cyan, #00ffff)',
-          animation: 'countdownPulse 1s ease-in-out infinite, countdownZoom 1s ease-out',
-          cursor: 'pointer',
-          userSelect: 'none',
-        }}
-      >
-        {count > 0 ? count : 'GO!'}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+        <div
+          style={{
+            fontSize: 'clamp(80px, 20vw, 200px)',
+            fontFamily: 'Orbitron, monospace',
+            fontWeight: 'bold',
+            color: 'var(--neon-cyan, #00ffff)',
+            textShadow: '0 0 20px var(--neon-cyan, #00ffff), 0 0 40px var(--neon-cyan, #00ffff), 0 0 60px var(--neon-cyan, #00ffff)',
+            animation: 'countdownPulse 1s ease-in-out infinite, countdownZoom 1s ease-out',
+            cursor: 'pointer',
+            userSelect: 'none',
+          }}
+        >
+          {count > 0 ? count : 'GO!'}
+        </div>
+        
+        {/* 操作方式说明 - v1.9.8 新增 */}
+        {count === 3 && (
+          <div
+            style={{
+              padding: '20px 30px',
+              background: 'rgba(0, 255, 255, 0.1)',
+              border: '2px solid rgba(0, 255, 255, 0.5)',
+              borderRadius: '12px',
+              boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)',
+              animation: 'fadeIn 0.5s ease-out',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{
+              fontSize: 'clamp(12px, 3vw, 16px)',
+              color: 'var(--neon-cyan, #00ffff)',
+              fontFamily: 'Orbitron, monospace',
+              marginBottom: '10px',
+              textShadow: '0 0 5px rgba(0, 255, 255, 0.5)',
+            }}>
+              🎮 操作方式
+            </div>
+            <div style={{
+              fontSize: 'clamp(11px, 2.5vw, 14px)',
+              color: 'rgba(0, 255, 255, 0.8)',
+              fontFamily: 'Orbitron, monospace',
+              lineHeight: '1.8',
+            }}>
+              <div>← → 移动 | ↑ 旋转 | ↓ 加速</div>
+              <div>空格 硬降 | P 暂停</div>
+              <div style={{ marginTop: '8px', fontSize: 'clamp(10px, 2vw, 12px)', opacity: 0.7 }}>
+                📱 滑动控制 | 长按硬降 | 点击旋转
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       
       {/* 赛博朋克风格装饰 */}
