@@ -454,10 +454,16 @@ export class DeckManager {
 
   /**
    * 删除卡组
+   * v1.9.10 优化：允许删除预设卡组，但最后一个卡组无法删除
    * @param deckId 卡组 ID
-   * @throws 如果卡组不存在
+   * @throws 如果卡组不存在或尝试删除最后一个卡组
    */
   public deleteDeck(deckId: string): void {
+    // v1.9.10: 检查是否为最后一个卡组
+    if (this.decks.size <= 1) {
+      throw new Error('无法删除最后一个卡组，请至少保留一个卡组');
+    }
+
     if (!this.decks.has(deckId)) {
       throw new Error(`卡组不存在：${deckId}`);
     }

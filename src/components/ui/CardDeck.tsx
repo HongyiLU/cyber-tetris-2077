@@ -94,8 +94,24 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
   };
 
   // 删除卡组
+  // v1.9.10 优化：允许删除预设卡组，但最后一个卡组无法删除
   const handleDeleteDeck = (deckId: string) => {
-    if (!confirm('确定要删除这个卡组吗？')) return;
+    // 检查是否为最后一个卡组
+    if (decks.length <= 1) {
+      alert('无法删除最后一个卡组，请至少保留一个卡组');
+      return;
+    }
+    
+    const deck = decks.find(d => d.id === deckId);
+    const isPreset = deck?.id?.startsWith('preset-');
+    const remainingCount = decks.length - 1;
+    
+    // 确认删除（v1.9.10: 显示更多信息）
+    const confirmMsg = isPreset 
+      ? `确定要删除预设卡组"${deck?.name}"吗？\n\n删除后剩余 ${remainingCount} 个卡组`
+      : `确定要删除卡组"${deck?.name}"吗？\n\n删除后剩余 ${remainingCount} 个卡组`;
+    
+    if (!confirm(confirmMsg)) return;
     
     try {
       deckManager.deleteDeck(deckId);
@@ -479,15 +495,15 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                         >
                           📤
                         </button>
-                        {!deck.id.startsWith('preset-') && (
-                          <button
-                            onClick={() => handleDeleteDeck(deck.id)}
-                            className="deck-action-btn delete"
-                            title="删除卡组"
-                          >
-                            🗑️
-                          </button>
-                        )}
+                        {/* v1.9.10: 所有卡组都显示删除按钮（包括预设） */}
+                        <button
+                          onClick={() => handleDeleteDeck(deck.id)}
+                          className="deck-action-btn delete"
+                          title="删除卡组"
+                          disabled={decks.length <= 1}  // 最后一个卡组禁用
+                        >
+                          🗑️
+                        </button>
                       </div>
                     </div>
                   );

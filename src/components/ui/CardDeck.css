@@ -423,10 +423,18 @@
   color: #ffd700;
 }
 
-.deck-action-btn.delete:hover {
+.deck-action-btn.delete:hover:not(:disabled) {
   background: rgba(255, 0, 64, 0.2);
   border-color: #ff0040;
   color: #ff0040;
+}
+
+.deck-action-btn.delete:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: rgba(136, 136, 136, 0.1);
+  border-color: #666;
+  color: #666;
 }
 
 /* 表单样式 */
