@@ -23,6 +23,8 @@ export interface EnemyType {
   description: string;
   /** 敌人稀有度（影响解锁难度） */
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+  /** 是否为最终 BOSS */
+  isFinalBoss?: boolean;
 }
 
 /**

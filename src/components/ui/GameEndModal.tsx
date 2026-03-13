@@ -2,46 +2,40 @@
 
 import React from 'react';
 import './GameEndModal.css';
+import type { GameEndResult } from '../../types/game';
 
 interface GameEndModalProps {
   /** 是否可见 */
   visible: boolean;
-  /** 游戏得分 */
-  score: number;
-  /** 消除行数 */
-  lines: number;
-  /** 连击数 */
-  combo?: number;
-  /** 最大连击 */
-  maxCombo?: number;
+  /** 游戏结束结果 */
+  result: GameEndResult | null;
   /** 重新挑战回调 */
-  onRestart: () => void;
+  onRetry: () => void;
+  /** 挑战下一关卡回调（仅胜利时） */
+  onNextLevel?: () => void;
   /** 返回标题页回调 */
   onBackToTitle: () => void;
-  /** 挑战下一关卡回调 */
-  onNextLevel?: () => void;
-  /** 战斗胜利状态 */
-  isVictory?: boolean;
-  /** 敌人名称 */
-  enemyName?: string;
-  /** 是否为最终 BOSS */
-  isFinalBoss?: boolean;
 }
+
+/**
+ * 格式化时间为 MM:SS 格式
+ */
+const formatTime = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
 
 const GameEndModal: React.FC<GameEndModalProps> = ({
   visible,
-  score,
-  lines,
-  combo = 0,
-  maxCombo = 0,
-  onRestart,
-  onBackToTitle,
+  result,
+  onRetry,
   onNextLevel,
-  isVictory = false,
-  enemyName,
-  isFinalBoss = false,
+  onBackToTitle,
 }) => {
-  if (!visible) return null;
+  if (!visible || !result) return null;
+
+  const { isVictory, stats, enemyName, isFinalBoss, reason } = result;
 
   return (
     <div className="game-end-modal-overlay">
@@ -52,7 +46,9 @@ const GameEndModal: React.FC<GameEndModalProps> = ({
             {isVictory ? '🎉 战斗胜利!' : '💀 游戏结束'}
           </h2>
           <p className="game-end-modal-subtitle">
-            {isVictory && enemyName ? `恭喜击败 ${enemyName}!` : isVictory ? '恭喜击败敌人!' : '再接再厉，下次一定行!'}
+            {isVictory 
+              ? (enemyName ? `击败 ${enemyName}!` : '恭喜获胜!') 
+              : (reason || '再接再厉，下次一定行!')}
           </p>
         </div>
 
@@ -64,7 +60,7 @@ const GameEndModal: React.FC<GameEndModalProps> = ({
               🎯 得分
             </span>
             <span className="game-end-modal-stat-value">
-              {score.toLocaleString()}
+              {stats.score.toLocaleString()}
             </span>
           </div>
 
@@ -74,18 +70,28 @@ const GameEndModal: React.FC<GameEndModalProps> = ({
               📊 消除行数
             </span>
             <span className="game-end-modal-stat-value lines">
-              {lines}
+              {stats.linesCleared}
             </span>
           </div>
 
-          {/* 连击信息 (如果有) */}
-          {maxCombo > 1 && (
+          {/* 游戏时间 */}
+          <div className="game-end-modal-stat-row">
+            <span className="game-end-modal-stat-label">
+              ⏱️ 游戏时间
+            </span>
+            <span className="game-end-modal-stat-value time">
+              {formatTime(stats.time)}
+            </span>
+          </div>
+
+          {/* 最大连击 */}
+          {stats.combos > 1 && (
             <div className="game-end-modal-stat-row">
               <span className="game-end-modal-stat-label">
                 🔥 最大连击
               </span>
               <span className="game-end-modal-stat-value combo">
-                {maxCombo}x
+                {stats.combos}x
               </span>
             </div>
           )}
@@ -93,13 +99,25 @@ const GameEndModal: React.FC<GameEndModalProps> = ({
 
         {/* 按钮组 */}
         <div className="game-end-modal-buttons">
-          {/* 重新挑战/挑战下一关按钮 */}
-          <button
-            onClick={!isVictory ? onRestart : onNextLevel}
-            className="game-end-modal-btn"
-          >
-            {!isVictory ? '🔄 再次挑战' : '⚔️ 挑战下一怪物'}
-          </button>
+          {/* 失败：重新挑战 */}
+          {!isVictory && (
+            <button
+              onClick={onRetry}
+              className="game-end-modal-btn"
+            >
+              🔄 重新挑战
+            </button>
+          )}
+
+          {/* 胜利：挑战下一关（非最终 BOSS） */}
+          {isVictory && !isFinalBoss && onNextLevel && (
+            <button
+              onClick={onNextLevel}
+              className="game-end-modal-btn next"
+            >
+              ⚔️ 挑战下一关
+            </button>
+          )}
 
           {/* 回到标题页按钮 */}
           <button

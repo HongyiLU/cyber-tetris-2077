@@ -16,6 +16,7 @@ import { GAME_CONFIG } from './config/game-config';
 import type { GameState } from './types';
 import { BattleState } from './types';
 import type { DamageType } from './components/ui/DamageNumber';
+import type { GameEndResult } from './types/game';
 
 interface DamageNumberData {
   id: number;
@@ -46,7 +47,8 @@ const App: React.FC = () => {
   });
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
-  const [gameEnded, setGameEnded] = useState(false);
+  const [gameEndVisible, setGameEndVisible] = useState(false);
+  const [gameEndResult, setGameEndResult] = useState<GameEndResult | null>(null);
   const [showCountdown, setShowCountdown] = useState(false);
   const [showDeck, setShowDeck] = useState(false);
   const [showEnemySelect, setShowEnemySelect] = useState(false);
@@ -76,6 +78,19 @@ const App: React.FC = () => {
   // P0-003: 游戏开始时防误触保护（已移除虚拟按键，保留触摸控制）
   const [controlsDisabled, setControlsDisabled] = useState(false);
 
+  // 设置游戏结束回调
+  useEffect(() => {
+    gameEngine.setOnGameEnd((result: GameEndResult) => {
+      // 停止 BGM
+      if (audioManager.isBGMPlaying()) {
+        audioManager.stopBGM();
+      }
+      // 显示游戏结束弹窗
+      setGameEndResult(result);
+      setGameEndVisible(true);
+    });
+  }, [gameEngine, audioManager]);
+
   // 使用游戏循环 Hook
   useGameLoop({
     gameStarted,
@@ -87,13 +102,8 @@ const App: React.FC = () => {
       setGameState(state);
       // battleState 直接从 state.battleState 读取，无需单独状态
       
-      // 游戏结束或战斗胜利时停止 BGM 并显示结束弹窗
-      if ((state.gameOver || state.battleState === BattleState.WON || state.battleState === BattleState.LOST) && !gameEnded) {
-        if (audioManager.isBGMPlaying()) {
-          audioManager.stopBGM();
-        }
-        setGameEnded(true);
-      }
+      // 检查游戏结束/胜利
+      gameEngine.checkGameEnd();
     },
   });
 
@@ -195,7 +205,8 @@ const App: React.FC = () => {
     gameEngine.init();
     setGameState(gameEngine.getGameState());
     setGameStarted(true);
-    setGameEnded(false);
+    setGameEndVisible(false);
+    setGameEndResult(null);
     // 开始播放 BGM（需要用户交互后才能播放）
     setTimeout(() => {
       audioManager.playBGM();
@@ -245,7 +256,8 @@ const App: React.FC = () => {
 
   // 游戏结束后的重新挑战
   const handleRestartGame = useCallback(() => {
-    setGameEnded(false);
+    setGameEndVisible(false);
+    setGameEndResult(null);
     setGameStarted(false);
     // 重置游戏引擎
     gameEngine.init();
@@ -256,7 +268,8 @@ const App: React.FC = () => {
 
   // 返回标题页
   const handleBackToTitle = useCallback(() => {
-    setGameEnded(false);
+    setGameEndVisible(false);
+    setGameEndResult(null);
     setGameStarted(false);
     // 重置游戏引擎
     gameEngine.init();
@@ -265,9 +278,9 @@ const App: React.FC = () => {
 
   // 挑战下一关卡
   const handleNextLevel = useCallback(() => {
-    setGameEnded(false);
-    setGameStarted(false);
-    // 重置游戏状态，进入下一关
+    setGameEndVisible(false);
+    setGameEndResult(null);
+    // 保持游戏开始状态，进入下一关
     gameEngine.init();
     setGameState(gameEngine.getGameState());
     // 显示敌人选择界面（可以选择下一关的敌人）
@@ -1043,15 +1056,9 @@ const App: React.FC = () => {
 
       {/* 游戏结束弹窗 */}
       <GameEndModal
-        visible={gameEnded}
-        score={gameState?.score ?? 0}
-        lines={gameState?.lines ?? 0}
-        combo={gameState?.combo ?? 0}
-        maxCombo={gameState?.maxCombo ?? 0}
-        isVictory={gameState?.battleState === BattleState.WON}
-        enemyName={selectedEnemy}
-        isFinalBoss={false}
-        onRestart={handleRestartGame}
+        visible={gameEndVisible}
+        result={gameEndResult}
+        onRetry={handleRestartGame}
         onNextLevel={handleNextLevel}
         onBackToTitle={handleBackToTitle}
       />

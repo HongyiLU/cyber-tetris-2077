@@ -107,6 +107,12 @@
   text-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
 }
 
+.game-end-modal-stat-value.time {
+  font-size: clamp(20px, 5vw, 24px);
+  color: #3498db;
+  text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+}
+
 /* 按钮组 */
 .game-end-modal-buttons {
   display: flex;
@@ -147,6 +153,19 @@
 .game-end-modal-btn.back:hover {
   background: rgba(255, 68, 68, 0.3);
   box-shadow: 0 0 60px rgba(255, 68, 68, 0.8);
+}
+
+.game-end-modal-btn.next {
+  background: rgba(46, 204, 113, 0.15);
+  border: 3px solid #2ecc71;
+  color: #2ecc71;
+  box-shadow: 0 0 30px rgba(46, 204, 113, 0.4);
+  text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+}
+
+.game-end-modal-btn.next:hover {
+  background: rgba(46, 204, 113, 0.3);
+  box-shadow: 0 0 60px rgba(46, 204, 113, 0.8);
 }
 
 /* 赛博朋克风格装饰角标 */

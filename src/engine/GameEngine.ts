@@ -11,6 +11,7 @@ import type { EnemyType } from '../types/enemy';
 import { getEnemyType } from '../config/enemy-config';
 import { createEmptyBoard, checkCollision, rotateShape, copyBoard, copyShape } from '../utils/game-utils';
 import { ParticleEffect } from '../system/ParticleEffect';
+import type { GameEndResult, GameStats } from '../types/game';
 
 /**
  * 游戏引擎类
@@ -60,6 +61,14 @@ export class GameEngine {
   
   // 音频管理器
   private audioManager: AudioManager;
+  
+  // 游戏时间统计
+  private startTime: number = 0;
+  private elapsedTime: number = 0;
+  private gameTimer: NodeJS.Timeout | null = null;
+  
+  // 游戏结束回调
+  private onGameEnd?: (result: GameEndResult) => void;
 
   constructor(
     cols: number = GAME_CONFIG.GAME.COLS,
@@ -203,6 +212,7 @@ export class GameEngine {
     this.paused = false;
     this.pieceLocked = false;
     this.lastDrawnCard = null;
+    this.elapsedTime = 0;
     
     // 获取激活的卡组
     this.activeDeck = this.deckManager.getActiveDeck();
@@ -214,6 +224,9 @@ export class GameEngine {
     
     this.currentPiece = this.createPiece();
     this.nextPiece = this.createPiece();
+    
+    // 启动游戏计时器
+    this.startGameTimer();
   }
 
   /**
@@ -664,6 +677,116 @@ export class GameEngine {
     // 检查失败
     if (this.isPlayerDead()) {
       this.battleState = BattleState.LOST;
+    }
+  }
+  
+  // ==================== 游戏结束系统 ====================
+  
+  /**
+   * 设置游戏结束回调
+   * @param callback 游戏结束回调函数
+   */
+  public setOnGameEnd(callback: (result: GameEndResult) => void): void {
+    this.onGameEnd = callback;
+  }
+  
+  /**
+   * 启动游戏计时器
+   */
+  private startGameTimer(): void {
+    this.startTime = Date.now();
+    this.gameTimer = setInterval(() => {
+      this.elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
+    }, 1000);
+  }
+  
+  /**
+   * 停止游戏计时器
+   */
+  private stopGameTimer(): void {
+    if (this.gameTimer) {
+      clearInterval(this.gameTimer);
+      this.gameTimer = null;
+    }
+  }
+  
+  /**
+   * 获取游戏统计数据
+   */
+  private getGameStats(): GameStats {
+    return {
+      linesCleared: this.lines,
+      score: this.score,
+      time: this.elapsedTime,
+      combos: this.maxCombo,
+    };
+  }
+  
+  /**
+   * 触发游戏结束
+   * @param reason 结束原因
+   */
+  public triggerGameOver(reason: string = '方块堆叠过高'): void {
+    this.gameOver = true;
+    this.stopGameTimer();
+    
+    // 播放游戏结束音效
+    this.audioManager.playSound(SoundId.GAME_OVER);
+    
+    // 触发回调
+    if (this.onGameEnd) {
+      const result: GameEndResult = {
+        isVictory: false,
+        stats: this.getGameStats(),
+        reason,
+      };
+      this.onGameEnd(result);
+    }
+  }
+  
+  /**
+   * 触发游戏胜利
+   */
+  public triggerGameVictory(): void {
+    this.stopGameTimer();
+    
+    // 播放胜利音效
+    this.audioManager.playSound(SoundId.VICTORY);
+    
+    // 触发回调
+    if (this.onGameEnd) {
+      const result: GameEndResult = {
+        isVictory: true,
+        stats: this.getGameStats(),
+        enemyName: this.currentEnemyType?.name,
+        isFinalBoss: this.currentEnemyType?.isFinalBoss ?? false,
+      };
+      this.onGameEnd(result);
+    }
+  }
+  
+  /**
+   * 检查并触发游戏结束/胜利
+   * 在游戏循环中调用
+   */
+  public checkGameEnd(): void {
+    // 检查游戏结束（方块堆叠到顶部）
+    if (this.currentPiece && checkCollision(this.currentPiece.shape, this.currentPiece.position, this.board, this.cols, this.rows)) {
+      this.gameOver = true;
+      // 判断是刚生成就碰撞（层数超出画布）还是堆叠过高
+      const isTopOut = this.currentPiece.position.y <= 0;
+      const reason = isTopOut ? '层数超出画布' : '方块堆叠过高';
+      this.triggerGameOver(reason);
+    }
+    
+    // 检查战斗胜利
+    if (this.battleState === BattleState.WON) {
+      this.triggerGameVictory();
+    }
+    
+    // 检查战斗失败
+    if (this.battleState === BattleState.LOST) {
+      this.triggerGameOver('被敌人击败');
     }
   }
 }
