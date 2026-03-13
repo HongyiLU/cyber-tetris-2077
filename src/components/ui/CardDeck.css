@@ -307,6 +307,43 @@
   border: 2px solid #00ffff;
 }
 
+/* v1.9.9 新增：不可用卡组样式 */
+.deck-item.unusable {
+  opacity: 0.6;
+  border-color: rgba(255, 170, 0, 0.3);
+}
+
+.deck-item.unusable:hover {
+  opacity: 0.75;
+}
+
+.unusable-badge {
+  color: #ffaa00;
+  font-size: 11px;
+  padding: 2px 8px;
+  background: rgba(255, 170, 0, 0.15);
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.deck-usability-hint {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(255, 170, 0, 0.1);
+  border: 1px solid rgba(255, 170, 0, 0.3);
+  border-radius: 4px;
+  color: #ffaa00;
+  font-size: 12px;
+}
+
+.deck-action-btn.use.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(136, 136, 136, 0.1);
+  border-color: #666;
+  color: #666;
+}
+
 .deck-info {
   flex: 1;
 }
@@ -648,6 +685,20 @@
 
 .stat-value.warning {
   color: #ffaa00;
+}
+
+.stat-value.success {
+  color: #00ff80;
+}
+
+.deck-edit-success {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: rgba(0, 255, 128, 0.15);
+  border: 1px solid rgba(0, 255, 128, 0.4);
+  border-radius: 4px;
+  color: #00ff80;
+  font-size: 13px;
 }
 
 .deck-edit-warning {

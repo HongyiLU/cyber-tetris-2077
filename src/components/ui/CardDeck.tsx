@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from './Card';
 import type { CardData, Deck } from '../../types';
+import { isDeckValidForUse, getDeckStatusText, DEFAULT_DECK_CONFIG } from '../../types/deck';
 import type { DeckManager } from '../../engine/DeckManager';
 import './CardDeck.css';
 
@@ -37,6 +38,16 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
     };
     loadDecks();
   }, [deckManager]);
+
+  // v1.9.9 新增：判断卡组是否可用（使用类型定义中的 helper）
+  const isDeckUsable = (deck: Deck): boolean => {
+    return isDeckValidForUse(deck, DEFAULT_DECK_CONFIG.minDeckSize);
+  };
+
+  // v1.9.9 新增：获取卡组可用性提示
+  const getDeckUsabilityMessage = (deck: Deck): string => {
+    return getDeckStatusText(deck);
+  };
 
   // v1.9.5 新增：加载卡组配置
   useEffect(() => {
@@ -414,10 +425,13 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
               {decks.length > 0 ? (
                 decks.map(deck => {
                   const isActive = activeDeckId === deck.id;
+                  const usable = isDeckUsable(deck);
+                  
                   return (
                     <div
                       key={deck.id}
-                      className={`deck-item ${isActive ? 'active' : ''}`}
+                      className={`deck-item ${isActive ? 'active' : ''} ${!usable ? 'unusable' : ''}`}
+                      title={!usable ? getDeckUsabilityMessage(deck) : undefined}
                     >
                       <div className="deck-info">
                         <h4 className="deck-name">{deck.name}</h4>
@@ -427,6 +441,7 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                         <div className="deck-meta">
                           <span>{deck.cards.length}/7 张卡</span>
                           {isActive && <span className="active-badge">● 当前使用</span>}
+                          {!usable && <span className="unusable-badge">⚠️ 不可用</span>}
                         </div>
                         <div className="deck-cards-preview">
                           {deck.cards.length > 0 ? (
@@ -435,12 +450,18 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                             <span className="empty-deck">空卡组</span>
                           )}
                         </div>
+                        {!usable && (
+                          <div className="deck-usability-hint">
+                            {getDeckUsabilityMessage(deck)}
+                          </div>
+                        )}
                       </div>
                       <div className="deck-actions">
                         <button
                           onClick={() => handleSetActiveDeck(deck.id)}
-                          className={`deck-action-btn use ${isActive ? 'active' : ''}`}
-                          title={isActive ? '当前使用' : '使用此卡组'}
+                          className={`deck-action-btn use ${isActive ? 'active' : ''} ${!usable ? 'disabled' : ''}`}
+                          title={isActive ? '当前使用' : (!usable ? '卡组卡牌数量不足，无法使用' : '使用此卡组')}
+                          disabled={!usable}
                         >
                           {isActive ? '✓' : '使用'}
                         </button>
@@ -494,13 +515,17 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
             <div className="deck-edit-stats">
               <div className="deck-edit-stat-item">
                 <span className="stat-label">当前卡组总数：</span>
-                <span className={`stat-value ${getTotalCardCount() < 3 ? 'warning' : ''}`}>
+                <span className={`stat-value ${getTotalCardCount() < DEFAULT_DECK_CONFIG.minDeckSize ? 'warning' : 'success'}`}>
                   {getTotalCardCount()} 张
                 </span>
               </div>
-              {getTotalCardCount() < 3 && (
+              {getTotalCardCount() < DEFAULT_DECK_CONFIG.minDeckSize ? (
                 <div className="deck-edit-warning">
-                  ⚠️ 卡组至少需要 3 张卡牌才能使用
+                  ⚠️ 卡组至少需要 {DEFAULT_DECK_CONFIG.minDeckSize} 张卡牌才能使用（当前可保存）
+                </div>
+              ) : (
+                <div className="deck-edit-success">
+                  ✅ 卡组已满足使用要求
                 </div>
               )}
             </div>
@@ -570,7 +595,6 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
               <button
                 onClick={handleSaveDeckConfig}
                 className="deck-edit-action-btn save"
-                disabled={getTotalCardCount() < 3}
               >
                 💾 保存并返回
               </button>

@@ -2,6 +2,7 @@
 
 import { GAME_CONFIG } from '../config/game-config';
 import type { Deck, DeckConfig, DeckValidationResult, PresetDeck, DeckCard, DrawResult } from '../types/deck';
+import { DEFAULT_DECK_CONFIG } from '../types/deck';
 import type { CardData } from '../types';
 
 /**
@@ -112,16 +113,11 @@ export class DeckManager {
     this.deckConfig = { ...this.DEFAULT_DECK_CONFIG };
     
     // 合并默认配置和用户配置
+    // v1.9.9: 使用类型定义中的默认配置（minDeckSize = 7）
     this.config = {
-      minDeckSize: config.minDeckSize ?? 3,
-      maxDeckSize: config.maxDeckSize ?? 15,
-      rarityWeights: config.rarityWeights ?? {
-        common: 50,
-        uncommon: 30,
-        rare: 15,
-        epic: 4,
-        legendary: 1,
-      },
+      minDeckSize: config.minDeckSize ?? DEFAULT_DECK_CONFIG.minDeckSize,
+      maxDeckSize: config.maxDeckSize ?? DEFAULT_DECK_CONFIG.maxDeckSize,
+      rarityWeights: config.rarityWeights ?? DEFAULT_DECK_CONFIG.rarityWeights,
     };
 
     // 版本检测
@@ -305,6 +301,7 @@ export class DeckManager {
 
   /**
    * 创建新卡组
+   * v1.9.9 优化：创建时不验证最小组牌数，允许保存空卡组
    * @param name 卡组名称
    * @param cards 方块 ID 列表
    * @param description 卡组描述（可选）
@@ -324,8 +321,8 @@ export class DeckManager {
       updatedAt: now,
     };
 
-    // 验证卡组
-    const validation = this.validateDeck(deck);
+    // 验证卡组（创建时不检查最小组牌数）
+    const validation = this.validateDeck(deck, { checkMinSize: false });
     if (!validation.valid) {
       throw new Error(`卡组验证失败：${validation.errors.join(', ')}`);
     }
@@ -421,6 +418,7 @@ export class DeckManager {
 
   /**
    * 更新卡组
+   * v1.9.9 优化：更新时不验证最小组牌数，允许保存任意大小的卡组
    * @param deckId 卡组 ID
    * @param updates 要更新的字段
    * @throws 如果卡组不存在或验证失败
@@ -441,8 +439,8 @@ export class DeckManager {
       updatedAt: Date.now(),
     };
 
-    // 验证更新后的卡组
-    const validation = this.validateDeck(updatedDeck);
+    // 验证更新后的卡组（更新时不检查最小组牌数）
+    const validation = this.validateDeck(updatedDeck, { checkMinSize: false });
     if (!validation.valid) {
       throw new Error(`卡组验证失败：${validation.errors.join(', ')}`);
     }
@@ -485,10 +483,13 @@ export class DeckManager {
 
   /**
    * 验证卡组是否有效
+   * v1.9.9 优化：支持不同场景下的验证模式
    * @param deck 要验证的卡组
+   * @param options 验证选项
    * @returns 验证结果
    */
-  public validateDeck(deck: Deck): DeckValidationResult {
+  public validateDeck(deck: Deck, options: { checkMinSize?: boolean } = {}): DeckValidationResult {
+    const { checkMinSize = true } = options;
     const errors: string[] = [];
 
     // 检查名称
@@ -496,9 +497,9 @@ export class DeckManager {
       errors.push('卡组名称不能为空');
     }
 
-    // 检查卡片数量
-    if (deck.cards.length < this.config.minDeckSize) {
-      errors.push(`卡组至少需要 ${this.config.minDeckSize} 张卡牌（当前：${deck.cards.length}）`);
+    // 检查卡片数量（v1.9.9 优化：根据选项决定是否检查最小数量）
+    if (checkMinSize && deck.cards.length < this.config.minDeckSize) {
+      errors.push(`卡组至少需要 ${this.config.minDeckSize} 张卡牌才能使用（当前：${deck.cards.length}）`);
     }
     if (deck.cards.length > this.config.maxDeckSize) {
       errors.push(`卡组最多容纳 ${this.config.maxDeckSize} 张卡牌（当前：${deck.cards.length}）`);
@@ -522,6 +523,25 @@ export class DeckManager {
       valid: errors.length === 0,
       errors,
     };
+  }
+
+  /**
+   * 检查卡组是否可用（用于 UI 显示和游戏开始验证）
+   * v1.9.9 新增：快速判断卡组是否满足使用条件（只检查最小组牌数）
+   * @param deck 卡组对象
+   * @returns 是否可用
+   */
+  public isDeckUsable(deck: Deck): boolean {
+    return deck.cards.length >= this.config.minDeckSize;
+  }
+
+  /**
+   * 获取所有可用卡组（满足最小组牌数要求）
+   * v1.9.9 新增：过滤出可使用的卡组
+   * @returns 可用卡组列表
+   */
+  public getUsableDecks(): Deck[] {
+    return Array.from(this.decks.values()).filter(deck => this.isDeckUsable(deck));
   }
 
   // ==================== 卡组持久化（带错误处理） ====================
@@ -571,6 +591,7 @@ export class DeckManager {
       const validCardIds = new Set(GAME_CONFIG.CARDS.map(card => card.id));
       
       // 恢复卡组（过滤掉无效的卡牌 ID）
+      // v1.9.9 优化：保留所有卡组，包括不满足最小组牌数的卡组
       if (parsed.decks && Array.isArray(parsed.decks)) {
         const cleanedDecks: Array<[string, Deck]> = [];
         let hasInvalidCards = false;
@@ -586,11 +607,8 @@ export class DeckManager {
             return isValid;
           });
           
-          // 如果过滤后卡组仍然有效，保留该卡组
-          if (filteredCards.length >= this.config.minDeckSize) {
-            cleanedDecks.push([deckId, { ...deck, cards: filteredCards }]);
-          }
-          // 过滤后卡组太小的卡组将被自动移除
+          // v1.9.9 优化：保留所有卡组，包括过滤后太小的卡组
+          cleanedDecks.push([deckId, { ...deck, cards: filteredCards }]);
         }
         
         this.decks = new Map(cleanedDecks);
@@ -729,11 +747,24 @@ export class DeckManager {
 
   /**
    * 设置当前激活的卡组
+   * v1.9.9 优化：验证卡组是否满足最小组牌数要求
    * @param deckId 卡组 ID，null 表示不使用卡组（使用默认随机）
+   * @throws 如果卡组不存在或不满足使用条件
    */
   public setActiveDeck(deckId: string | null): void {
-    if (deckId !== null && !this.decks.has(deckId)) {
-      throw new Error(`卡组不存在：${deckId}`);
+    if (deckId !== null) {
+      const deck = this.decks.get(deckId);
+      if (!deck) {
+        throw new Error(`卡组不存在：${deckId}`);
+      }
+      
+      // v1.9.9 新增：验证卡组是否可用
+      if (!this.isDeckUsable(deck)) {
+        const validation = this.validateDeck(deck, { checkMinSize: true });
+        // 提取第一个错误信息（通常是卡组大小问题）
+        const errorMessage = validation.errors.find(e => e.includes('至少需要')) || validation.errors.join(', ');
+        throw new Error(errorMessage);
+      }
     }
     this.activeDeckId = deckId;
     this.saveDecks();
