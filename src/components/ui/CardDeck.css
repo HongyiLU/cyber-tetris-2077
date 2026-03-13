@@ -785,14 +785,23 @@
 }
 
 .deck-edit-card-icon {
-  font-size: 32px;
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
+  padding: 4px;
+}
+
+/* v1.9.13: BlockVisual 容器样式 */
+.deck-edit-item .block-visual {
+  filter: none;
+}
+
+.deck-edit-item .block-visual:hover {
+  transform: scale(1.08);
 }
 
 .deck-edit-card-name {
@@ -952,7 +961,11 @@
   .deck-edit-card-icon {
     width: 35px;
     height: 35px;
-    font-size: 28px;
+  }
+  
+  .deck-edit-item .block-visual {
+    width: 28px !important;
+    height: 28px !important;
   }
   
   .deck-edit-card-name {

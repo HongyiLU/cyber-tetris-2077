@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Card from './Card';
+import BlockVisual from './BlockVisual';
 import type { CardData, Deck } from '../../types';
 import { isDeckValidForUse, getDeckStatusText, DEFAULT_DECK_CONFIG } from '../../types/deck';
 import type { DeckManager } from '../../engine/DeckManager';
@@ -349,19 +350,6 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
     }
   };
 
-  const getCardIcon = (cardId: string): string => {
-    switch (cardId) {
-      case 'I': return '📏';
-      case 'O': return '⬜';
-      case 'T': return '⏲️';
-      case 'S': return '📐';
-      case 'Z': return '⚡';
-      case 'L': return '🔨';
-      case 'J': return '🎯';
-      default: return '🎴';
-    }
-  };
-
   const getCardColor = (cardId: string): string => {
     const colors: { [key: string]: string } = {
       'I': '#00ffff',
@@ -373,6 +361,20 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
       'J': '#4169e1',
     };
     return colors[cardId] || '#888';
+  };
+
+  // v1.9.13: 获取方块图标（保留用于预设卡组预览文本）
+  const getCardIcon = (cardId: string): string => {
+    switch (cardId) {
+      case 'I': return '📏';
+      case 'O': return '⬜';
+      case 'T': return '⏲️';
+      case 'S': return '📐';
+      case 'Z': return '⚡';
+      case 'L': return '🔨';
+      case 'J': return '🎯';
+      default: return '🎴';
+    }
   };
 
   return (
@@ -626,12 +628,13 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                   return (
                     <div key={card.id} className="deck-edit-item">
                       <div className="deck-edit-card-info">
-                        <div 
-                          className="deck-edit-card-icon"
-                          style={{ color: cardColor }}
-                        >
-                          {getCardIcon(card.id)}
-                        </div>
+                        {/* v1.9.13: 使用方块形状可视化组件代替图标 */}
+                        <BlockVisual
+                          pieceType={card.id}
+                          size={32}
+                          showBorder={true}
+                          showShadow={true}
+                        />
                         <div className="deck-edit-card-name">
                           {card.name}
                         </div>
