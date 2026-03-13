@@ -13,7 +13,7 @@ interface CardDeckProps {
 }
 
 const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'collection' | 'deck' | 'presets' | 'edit'>('deck');
+  const [activeTab, setActiveTab] = useState<'collection' | 'deck' | 'presets'>('deck');
   const [selectedCard, setSelectedCard] = useState<CardData | null>(null);
   const [rarityFilter, setRarityFilter] = useState<string>('all');
   const [decks, setDecks] = useState<Deck[]>([]);
@@ -24,6 +24,12 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
   
   // v1.9.5 新增：卡组编辑状态
   const [deckConfig, setDeckConfig] = useState<{ [pieceType: string]: number }>({});
+  
+  // v1.9.11 新增：弹窗编辑状态（移除编辑页签，改为弹窗）
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
+  const [editConfig, setEditConfig] = useState<{ [pieceType: string]: number }>({});
+  const [editDeckName, setEditDeckName] = useState('');
 
   // 所有可用卡牌
   const allCards = deckManager.getAllCards();
@@ -47,6 +53,57 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
   // v1.9.9 新增：获取卡组可用性提示
   const getDeckUsabilityMessage = (deck: Deck): string => {
     return getDeckStatusText(deck);
+  };
+
+  // v1.9.11 新增：打开编辑弹窗
+  const handleOpenEdit = (deckId: string) => {
+    const deck = deckManager.getDeck(deckId);
+    if (!deck) return;
+    
+    // 加载当前卡组配置
+    const config = deckManager.getDeckConfig();
+    setEditConfig(config);
+    setEditingDeckId(deckId);
+    setEditDeckName(deck.name);
+    setShowEditModal(true);
+  };
+
+  // v1.9.11 新增：保存编辑
+  const handleSaveEdit = () => {
+    if (!editingDeckId) return;
+    
+    try {
+      // 保存配置
+      deckManager.saveDeckConfig();
+      setEditingDeckId(null);
+      setDecks(deckManager.listDecks());
+      // 刷新配置显示
+      const config = deckManager.getDeckConfig();
+      setDeckConfig(config);
+    } catch (error) {
+      console.error('保存编辑失败:', error);
+      alert('保存失败');
+    }
+  };
+
+  // v1.9.11 新增：取消编辑
+  const handleCancelEdit = () => {
+    setEditingDeckId(null);
+    // 重置配置
+    const config = deckManager.getDeckConfig();
+    setEditConfig(config);
+  };
+
+  // v1.9.11 新增：修改配置
+  const handleEditSetCardCount = (pieceType: string, count: number) => {
+    setEditConfig({ ...editConfig, [pieceType]: count });
+  };
+
+  // v1.9.11 新增：获取编辑卡组名称
+  const getEditingDeckName = (): string => {
+    if (!editingDeckId) return '';
+    const deck = deckManager.getDeck(editingDeckId);
+    return deck?.name || '';
   };
 
   // v1.9.5 新增：加载卡组配置
@@ -374,12 +431,6 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
             🎴 我的卡组 ({decks.length})
           </button>
           <button
-            onClick={() => setActiveTab('edit')}
-            className={`card-deck-tab-btn ${activeTab === 'edit' ? 'active' : ''}`}
-          >
-            ✏️ 编辑卡组
-          </button>
-          <button
             onClick={() => setActiveTab('collection')}
             className={`card-deck-tab-btn ${activeTab === 'collection' ? 'active' : ''}`}
           >
@@ -473,6 +524,14 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                         )}
                       </div>
                       <div className="deck-actions">
+                        {/* v1.9.11: 添加编辑按钮 */}
+                        <button
+                          onClick={() => handleOpenEdit(deck.id)}
+                          className="deck-action-btn edit"
+                          title="编辑卡组"
+                        >
+                          ✏️
+                        </button>
                         <button
                           onClick={() => handleSetActiveDeck(deck.id)}
                           className={`deck-action-btn use ${isActive ? 'active' : ''} ${!usable ? 'disabled' : ''}`}
@@ -517,103 +576,102 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
           </>
         )}
 
-        {/* v1.9.5 新增：卡组编辑标签页 */}
-        {activeTab === 'edit' && (
-          <div className="deck-edit-container">
-            <div className="deck-edit-header">
-              <h3 className="deck-edit-title">自定义卡组配置</h3>
-              <p className="deck-edit-subtitle">
-                调整每种方块的数量（0-3），构建属于你的专属卡组
-              </p>
-            </div>
-
-            {/* 卡组总数显示 */}
-            <div className="deck-edit-stats">
-              <div className="deck-edit-stat-item">
-                <span className="stat-label">当前卡组总数：</span>
-                <span className={`stat-value ${getTotalCardCount() < DEFAULT_DECK_CONFIG.minDeckSize ? 'warning' : 'success'}`}>
-                  {getTotalCardCount()} 张
-                </span>
-              </div>
-              {getTotalCardCount() < DEFAULT_DECK_CONFIG.minDeckSize ? (
-                <div className="deck-edit-warning">
-                  ⚠️ 卡组至少需要 {DEFAULT_DECK_CONFIG.minDeckSize} 张卡牌才能使用（当前可保存）
-                </div>
-              ) : (
-                <div className="deck-edit-success">
-                  ✅ 卡组已满足使用要求
-                </div>
-              )}
-            </div>
-
-            {/* 方块配置列表 */}
-            <div className="deck-edit-list">
-              {allCards.map(card => {
-                const count = deckConfig[card.id] ?? 1;
-                const cardColor = getCardColor(card.id);
-                
-                return (
-                  <div key={card.id} className="deck-edit-item">
-                    <div className="deck-edit-card-info">
-                      <div 
-                        className="deck-edit-card-icon"
-                        style={{ color: cardColor }}
-                      >
-                        {getCardIcon(card.id)}
-                      </div>
-                      <div className="deck-edit-card-name">
-                        {card.name}
-                      </div>
-                    </div>
-                    
-                    <div className="deck-edit-controls">
-                      <button
-                        onClick={() => handleSetCardCount(card.id, count - 1)}
-                        className="deck-edit-btn minus"
-                        disabled={count <= 0}
-                        aria-label="减少数量"
-                      >
-                        −
-                      </button>
-                      
-                      <div className="deck-edit-count">
-                        <span className={`count-value ${count === 0 ? 'zero' : ''}`}>
-                          {count}
-                        </span>
-                        {count > 0 && (
-                          <span className="count-label">张</span>
-                        )}
-                      </div>
-                      
-                      <button
-                        onClick={() => handleSetCardCount(card.id, count + 1)}
-                        className="deck-edit-btn plus"
-                        disabled={count >= 3}
-                        aria-label="增加数量"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* 操作按钮 */}
-            <div className="deck-edit-actions">
-              <button
-                onClick={handleResetDeckConfig}
-                className="deck-edit-action-btn reset"
-              >
-                🔄 重置为默认
-              </button>
+        {/* v1.9.11 新增：编辑卡组弹窗 */}
+        {editingDeckId && (
+          <div
+            onClick={handleCancelEdit}
+            className="card-deck-modal-overlay"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="card-deck-modal-content common"
+            >
+              <h3 className="card-deck-modal-title">编辑卡组配置：{getEditingDeckName()}</h3>
               
-              <button
-                onClick={handleSaveDeckConfig}
-                className="deck-edit-action-btn save"
-              >
-                💾 保存并返回
-              </button>
+              {/* 卡组总数显示 */}
+              <div className="deck-edit-stats">
+                <div className="deck-edit-stat-item">
+                  <span className="stat-label">当前卡组总数：</span>
+                  <span className={`stat-value ${Object.values(editConfig).reduce((sum, count) => sum + count, 0) < 3 ? 'warning' : 'success'}`}>
+                    {Object.values(editConfig).reduce((sum, count) => sum + count, 0)} 张
+                  </span>
+                </div>
+                {Object.values(editConfig).reduce((sum, count) => sum + count, 0) < 3 && (
+                  <div className="deck-edit-warning">
+                    ⚠️ 卡组至少需要 3 张卡牌才能使用
+                  </div>
+                )}
+              </div>
+
+              {/* 方块配置列表 */}
+              <div className="deck-edit-list">
+                {allCards.map(card => {
+                  const count = editConfig[card.id] ?? 1;
+                  const cardColor = getCardColor(card.id);
+                  
+                  return (
+                    <div key={card.id} className="deck-edit-item">
+                      <div className="deck-edit-card-info">
+                        <div 
+                          className="deck-edit-card-icon"
+                          style={{ color: cardColor }}
+                        >
+                          {getCardIcon(card.id)}
+                        </div>
+                        <div className="deck-edit-card-name">
+                          {card.name}
+                        </div>
+                      </div>
+                      
+                      <div className="deck-edit-controls">
+                        <button
+                          onClick={() => handleEditSetCardCount(card.id, count - 1)}
+                          className="deck-edit-btn minus"
+                          disabled={count <= 0}
+                          aria-label="减少数量"
+                        >
+                          −
+                        </button>
+                        
+                        <div className="deck-edit-count">
+                          <span className={`count-value ${count === 0 ? 'zero' : ''}`}>
+                            {count}
+                          </span>
+                          {count > 0 && (
+                            <span className="count-label">张</span>
+                          )}
+                        </div>
+                        
+                        <button
+                          onClick={() => handleEditSetCardCount(card.id, count + 1)}
+                          className="deck-edit-btn plus"
+                          disabled={count >= 3}
+                          aria-label="增加数量"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 操作按钮 */}
+              <div className="deck-edit-actions">
+                <button
+                  onClick={handleCancelEdit}
+                  className="deck-edit-action-btn close"
+                >
+                  取消
+                </button>
+                
+                <button
+                  onClick={handleSaveEdit}
+                  className="deck-edit-action-btn save"
+                >
+                  💾 保存
+                </button>
+              </div>
             </div>
           </div>
         )}

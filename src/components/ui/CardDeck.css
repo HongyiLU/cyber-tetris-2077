@@ -411,6 +411,17 @@
   background: rgba(0, 255, 128, 0.3);
 }
 
+/* v1.9.11: 编辑按钮样式 */
+.deck-action-btn.edit {
+  background: rgba(0, 255, 255, 0.2);
+  border: 2px solid #00ffff;
+  color: #00ffff;
+}
+
+.deck-action-btn.edit:hover {
+  background: rgba(0, 255, 255, 0.3);
+}
+
 .deck-action-btn.copy:hover {
   background: rgba(0, 255, 255, 0.2);
   border-color: #00ffff;
