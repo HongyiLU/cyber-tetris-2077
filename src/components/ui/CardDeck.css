@@ -167,6 +167,30 @@
   border: 2px solid #ffd700;
 }
 
+/* v1.9.11: 全局卡组编辑按钮 */
+.card-deck-edit-action {
+  margin-bottom: 20px;
+  text-align: right;
+}
+
+.card-deck-edit-global-btn {
+  padding: 10px 25px;
+  background: rgba(255, 0, 255, 0.2);
+  border: 2px solid #ff00ff;
+  border-radius: 6px;
+  color: #ff00ff;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: Orbitron, monospace;
+  transition: all 0.3s;
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+}
+
+.card-deck-edit-global-btn:hover {
+  background: rgba(255, 0, 255, 0.3);
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
+}
+
 /* 卡组操作按钮 */
 .card-deck-actions {
   display: flex;
@@ -905,6 +929,18 @@
   cursor: not-allowed;
   border-color: #666;
   color: #666;
+}
+
+.deck-edit-action-btn.close {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #888;
+  color: #aaa;
+}
+
+.deck-edit-action-btn.close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #aaa;
+  color: #fff;
 }
 
 /* 移动端适配 */

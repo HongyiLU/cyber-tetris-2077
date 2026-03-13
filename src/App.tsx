@@ -258,10 +258,20 @@ const App: React.FC = () => {
   const handleBackToTitle = useCallback(() => {
     setGameEnded(false);
     setGameStarted(false);
-    setGameEnded(false);
     // 重置游戏引擎
     gameEngine.init();
     setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
+
+  // 挑战下一关卡
+  const handleNextLevel = useCallback(() => {
+    setGameEnded(false);
+    setGameStarted(false);
+    // 重置游戏状态，进入下一关
+    gameEngine.init();
+    setGameState(gameEngine.getGameState());
+    // 显示敌人选择界面（可以选择下一关的敌人）
+    setShowEnemySelect(true);
   }, [gameEngine]);
 
   // 音频控制回调
@@ -666,7 +676,7 @@ const App: React.FC = () => {
         fontSize: 'clamp(9px, 2.5vw, 10px)',
         color: '#666',
       }}>
-        v1.9.4 - 画布优化（移除虚拟按键）
+        v1.9.11 - 卡组编辑功能（删除编辑页签并添加弹窗）
       </div>
 
       {/* 卡组管理界面 */}
@@ -1039,7 +1049,10 @@ const App: React.FC = () => {
         combo={gameState?.combo ?? 0}
         maxCombo={gameState?.maxCombo ?? 0}
         isVictory={gameState?.battleState === BattleState.WON}
+        enemyName={selectedEnemy}
+        isFinalBoss={false}
         onRestart={handleRestartGame}
+        onNextLevel={handleNextLevel}
         onBackToTitle={handleBackToTitle}
       />
     </ResponsiveLayout>

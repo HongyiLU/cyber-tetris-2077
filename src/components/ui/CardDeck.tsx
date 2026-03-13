@@ -75,6 +75,7 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
     try {
       // 保存配置
       deckManager.saveDeckConfig();
+      setShowEditModal(false);
       setEditingDeckId(null);
       setDecks(deckManager.listDecks());
       // 刷新配置显示
@@ -88,13 +89,14 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
 
   // v1.9.11 新增：取消编辑
   const handleCancelEdit = () => {
+    setShowEditModal(false);
     setEditingDeckId(null);
     // 重置配置
     const config = deckManager.getDeckConfig();
     setEditConfig(config);
   };
 
-  // v1.9.11 新增：修改配置
+  // v1.9.11 新增：修改配置（弹窗内）
   const handleEditSetCardCount = (pieceType: string, count: number) => {
     setEditConfig({ ...editConfig, [pieceType]: count });
   };
@@ -292,28 +294,28 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
     }
   };
 
-  // v1.9.5 新增：卡组编辑功能
+  // v1.9.5 新增：卡组编辑功能（弹窗内使用临时配置）
   const handleSetCardCount = (pieceType: string, count: number) => {
-    try {
-      deckManager.setCardCount(pieceType, count);
-      const config = deckManager.getDeckConfig();
-      setDeckConfig(config);
-    } catch (error) {
-      console.error('设置方块数量失败:', error);
-      if (error instanceof Error) {
-        alert(`设置失败：${error.message}`);
-      }
-    }
+    setEditConfig({ ...editConfig, [pieceType]: count });
   };
 
   const handleSaveDeckConfig = () => {
     try {
+      // v1.9.11: 保存弹窗中的编辑配置
+      // 首先应用临时配置到 DeckManager
+      Object.entries(editConfig).forEach(([pieceType, count]) => {
+        deckManager.setCardCount(pieceType, count);
+      });
+      
       const result = deckManager.saveDeckConfig();
       if (result.success) {
         alert('卡组配置已保存！');
-        if (onClose) {
-          onClose();
-        }
+        setShowEditModal(false);
+        setEditingDeckId(null);
+        // 刷新显示
+        const config = deckManager.getDeckConfig();
+        setDeckConfig(config);
+        setDecks(deckManager.listDecks());
       } else {
         alert(`保存失败：${result.error}`);
       }
@@ -329,7 +331,7 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
     if (confirm('确定要重置为默认卡组配置吗？')) {
       deckManager.resetDeckConfig();
       const config = deckManager.getDeckConfig();
-      setDeckConfig(config);
+      setEditConfig(config);
     }
   };
 
@@ -437,6 +439,18 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
             📚 卡牌收藏
           </button>
         </div>
+
+        {/* v1.9.11: 全局卡组编辑按钮（移除编辑页签，改为弹窗） */}
+        {activeTab === 'deck' && activeDeckId && (
+          <div className="card-deck-edit-action">
+            <button
+              onClick={() => handleOpenEdit(activeDeckId)}
+              className="card-deck-edit-global-btn"
+            >
+              ✏️ 编辑当前卡组配置
+            </button>
+          </div>
+        )}
 
         {/* 预设卡组标签页 */}
         {activeTab === 'presets' && (
@@ -577,7 +591,7 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
         )}
 
         {/* v1.9.11 新增：编辑卡组弹窗 */}
-        {editingDeckId && (
+        {showEditModal && editingDeckId && (
           <div
             onClick={handleCancelEdit}
             className="card-deck-modal-overlay"
@@ -666,7 +680,7 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                 </button>
                 
                 <button
-                  onClick={handleSaveEdit}
+                  onClick={handleSaveDeckConfig}
                   className="deck-edit-action-btn save"
                 >
                   💾 保存

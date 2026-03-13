@@ -1,6 +1,7 @@
 // ==================== 游戏结束弹窗组件 ====================
 
 import React from 'react';
+import './GameEndModal.css';
 
 interface GameEndModalProps {
   /** 是否可见 */
@@ -17,8 +18,14 @@ interface GameEndModalProps {
   onRestart: () => void;
   /** 返回标题页回调 */
   onBackToTitle: () => void;
+  /** 挑战下一关卡回调 */
+  onNextLevel?: () => void;
   /** 战斗胜利状态 */
   isVictory?: boolean;
+  /** 敌人名称 */
+  enemyName?: string;
+  /** 是否为最终 BOSS */
+  isFinalBoss?: boolean;
 }
 
 const GameEndModal: React.FC<GameEndModalProps> = ({
@@ -29,177 +36,55 @@ const GameEndModal: React.FC<GameEndModalProps> = ({
   maxCombo = 0,
   onRestart,
   onBackToTitle,
+  onNextLevel,
   isVictory = false,
+  enemyName,
+  isFinalBoss = false,
 }) => {
   if (!visible) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0, 0, 0, 0.9)',
-        zIndex: 3000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        animation: 'modalFadeIn 0.4s ease-out',
-      }}
-    >
-      <div
-        style={{
-          position: 'relative',
-          background: 'rgba(0, 20, 40, 0.95)',
-          border: '3px solid var(--neon-cyan, #00ffff)',
-          borderRadius: '20px',
-          padding: '40px',
-          width: '100%',
-          maxWidth: '500px',
-          boxShadow: '0 0 60px rgba(0, 255, 255, 0.4), inset 0 0 40px rgba(0, 255, 255, 0.1)',
-          animation: 'modalSlideIn 0.5s ease-out',
-        }}
-      >
+    <div className="game-end-modal-overlay">
+      <div className="game-end-modal-content">
         {/* 标题 */}
-        <div
-          style={{
-            textAlign: 'center',
-            marginBottom: '30px',
-          }}
-        >
-          <h2
-            style={{
-              fontSize: 'clamp(28px, 8vw, 42px)',
-              fontFamily: 'Orbitron, monospace',
-              fontWeight: 'bold',
-              color: isVictory ? '#f39c12' : '#ff4444',
-              textShadow: isVictory
-                ? '0 0 20px rgba(243, 156, 18, 0.8), 0 0 40px rgba(243, 156, 18, 0.5)'
-                : '0 0 20px rgba(255, 68, 68, 0.8), 0 0 40px rgba(255, 68, 68, 0.5)',
-              margin: '0 0 10px 0',
-              letterSpacing: '3px',
-            }}
-          >
+        <div className="game-end-modal-header">
+          <h2 className={`game-end-modal-title ${isVictory ? '' : 'game-over'}`}>
             {isVictory ? '🎉 战斗胜利!' : '💀 游戏结束'}
           </h2>
-          <p
-            style={{
-              fontSize: 'clamp(14px, 4vw, 16px)',
-              color: 'rgba(255, 255, 255, 0.7)',
-              fontFamily: 'Orbitron, monospace',
-              margin: 0,
-            }}
-          >
-            {isVictory ? '恭喜击败敌人!' : '再接再厉，下次一定行!'}
+          <p className="game-end-modal-subtitle">
+            {isVictory && enemyName ? `恭喜击败 ${enemyName}!` : isVictory ? '恭喜击败敌人!' : '再接再厉，下次一定行!'}
           </p>
         </div>
 
         {/* 统计信息 */}
-        <div
-          style={{
-            background: 'rgba(0, 255, 255, 0.05)',
-            border: '2px solid rgba(0, 255, 255, 0.3)',
-            borderRadius: '12px',
-            padding: '25px',
-            marginBottom: '30px',
-          }}
-        >
+        <div className="game-end-modal-stats">
           {/* 得分 */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '15px',
-              paddingBottom: '15px',
-              borderBottom: '1px solid rgba(0, 255, 255, 0.2)',
-            }}
-          >
-            <span
-              style={{
-                fontSize: 'clamp(16px, 4vw, 18px)',
-                color: '#fff',
-                fontFamily: 'Orbitron, monospace',
-              }}
-            >
+          <div className="game-end-modal-stat-row">
+            <span className="game-end-modal-stat-label">
               🎯 得分
             </span>
-            <span
-              style={{
-                fontSize: 'clamp(24px, 6vw, 32px)',
-                color: 'var(--neon-cyan, #00ffff)',
-                fontFamily: 'Orbitron, monospace',
-                fontWeight: 'bold',
-                textShadow: '0 0 10px rgba(0, 255, 255, 0.5)',
-              }}
-            >
+            <span className="game-end-modal-stat-value">
               {score.toLocaleString()}
             </span>
           </div>
 
           {/* 消除行数 */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '15px',
-              paddingBottom: '15px',
-              borderBottom: '1px solid rgba(0, 255, 255, 0.2)',
-            }}
-          >
-            <span
-              style={{
-                fontSize: 'clamp(16px, 4vw, 18px)',
-                color: '#fff',
-                fontFamily: 'Orbitron, monospace',
-              }}
-            >
+          <div className="game-end-modal-stat-row">
+            <span className="game-end-modal-stat-label">
               📊 消除行数
             </span>
-            <span
-              style={{
-                fontSize: 'clamp(20px, 5vw, 24px)',
-                color: '#2ecc71',
-                fontFamily: 'Orbitron, monospace',
-                fontWeight: 'bold',
-                textShadow: '0 0 10px rgba(46, 204, 113, 0.5)',
-              }}
-            >
+            <span className="game-end-modal-stat-value lines">
               {lines}
             </span>
           </div>
 
           {/* 连击信息 (如果有) */}
           {maxCombo > 1 && (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 'clamp(16px, 4vw, 18px)',
-                  color: '#fff',
-                  fontFamily: 'Orbitron, monospace',
-                }}
-              >
+            <div className="game-end-modal-stat-row">
+              <span className="game-end-modal-stat-label">
                 🔥 最大连击
               </span>
-              <span
-                style={{
-                  fontSize: 'clamp(20px, 5vw, 24px)',
-                  color: '#f39c12',
-                  fontFamily: 'Orbitron, monospace',
-                  fontWeight: 'bold',
-                  textShadow: '0 0 10px rgba(243, 156, 18, 0.5)',
-                }}
-              >
+              <span className="game-end-modal-stat-value combo">
                 {maxCombo}x
               </span>
             </div>
@@ -207,151 +92,30 @@ const GameEndModal: React.FC<GameEndModalProps> = ({
         </div>
 
         {/* 按钮组 */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '15px',
-            flexDirection: 'column',
-          }}
-        >
-          {/* 重新挑战按钮 */}
+        <div className="game-end-modal-buttons">
+          {/* 重新挑战/挑战下一关按钮 */}
           <button
-            onClick={onRestart}
-            style={{
-              padding: 'clamp(14px, 4vw, 18px)',
-              fontSize: 'clamp(16px, 4vw, 20px)',
-              background: 'rgba(0, 255, 255, 0.15)',
-              border: '3px solid var(--neon-cyan, #00ffff)',
-              borderRadius: '12px',
-              color: 'var(--neon-cyan, #00ffff)',
-              cursor: 'pointer',
-              fontFamily: 'Orbitron, monospace',
-              fontWeight: 'bold',
-              boxShadow: '0 0 30px rgba(0, 255, 255, 0.4)',
-              transition: 'all 0.3s',
-              textShadow: '0 0 5px rgba(0, 255, 255, 0.5)',
-              letterSpacing: '2px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(0, 255, 255, 0.3)';
-              e.currentTarget.style.boxShadow = '0 0 60px rgba(0, 255, 255, 0.8)';
-              e.currentTarget.style.transform = 'scale(1.02)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(0, 255, 255, 0.15)';
-              e.currentTarget.style.boxShadow = '0 0 30px rgba(0, 255, 255, 0.4)';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
+            onClick={!isVictory ? onRestart : onNextLevel}
+            className="game-end-modal-btn"
           >
-            🔄 重新挑战
+            {!isVictory ? '🔄 再次挑战' : '⚔️ 挑战下一怪物'}
           </button>
 
           {/* 回到标题页按钮 */}
           <button
             onClick={onBackToTitle}
-            style={{
-              padding: 'clamp(14px, 4vw, 18px)',
-              fontSize: 'clamp(16px, 4vw, 20px)',
-              background: 'rgba(255, 68, 68, 0.15)',
-              border: '3px solid #ff4444',
-              borderRadius: '12px',
-              color: '#ff4444',
-              cursor: 'pointer',
-              fontFamily: 'Orbitron, monospace',
-              fontWeight: 'bold',
-              boxShadow: '0 0 30px rgba(255, 68, 68, 0.4)',
-              transition: 'all 0.3s',
-              textShadow: '0 0 5px rgba(255, 68, 68, 0.5)',
-              letterSpacing: '2px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 68, 68, 0.3)';
-              e.currentTarget.style.boxShadow = '0 0 60px rgba(255, 68, 68, 0.8)';
-              e.currentTarget.style.transform = 'scale(1.02)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 68, 68, 0.15)';
-              e.currentTarget.style.boxShadow = '0 0 30px rgba(255, 68, 68, 0.4)';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
+            className="game-end-modal-btn back"
           >
             🏠 回到标题页
           </button>
         </div>
 
         {/* 赛博朋克风格装饰角标 */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '-2px',
-            left: '-2px',
-            width: '30px',
-            height: '30px',
-            borderTop: '4px solid var(--neon-cyan, #00ffff)',
-            borderLeft: '4px solid var(--neon-cyan, #00ffff)',
-            borderRadius: '20px 0 0 0',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            top: '-2px',
-            right: '-2px',
-            width: '30px',
-            height: '30px',
-            borderTop: '4px solid var(--neon-cyan, #00ffff)',
-            borderRight: '4px solid var(--neon-cyan, #00ffff)',
-            borderRadius: '0 20px 0 0',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '-2px',
-            left: '-2px',
-            width: '30px',
-            height: '30px',
-            borderBottom: '4px solid var(--neon-cyan, #00ffff)',
-            borderLeft: '4px solid var(--neon-cyan, #00ffff)',
-            borderRadius: '0 0 0 20px',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '-2px',
-            right: '-2px',
-            width: '30px',
-            height: '30px',
-            borderBottom: '4px solid var(--neon-cyan, #00ffff)',
-            borderRight: '4px solid var(--neon-cyan, #00ffff)',
-            borderRadius: '0 0 20px 0',
-          }}
-        />
+        <div className="game-end-modal-corner top-left" />
+        <div className="game-end-modal-corner top-right" />
+        <div className="game-end-modal-corner bottom-left" />
+        <div className="game-end-modal-corner bottom-right" />
       </div>
-
-      {/* CSS 动画定义 */}
-      <style>{`
-        @keyframes modalFadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        @keyframes modalSlideIn {
-          from {
-            transform: translateY(-50px) scale(0.9);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 };

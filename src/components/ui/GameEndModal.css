@@ -1,0 +1,211 @@
+/* ==================== 游戏结束弹窗样式 ==================== */
+
+/* 弹窗容器 */
+.game-end-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: modalFadeIn 0.4s ease-out;
+}
+
+/* 弹窗主体 */
+.game-end-modal-content {
+  position: relative;
+  background: rgba(0, 20, 40, 0.95);
+  border: 3px solid var(--neon-cyan, #00ffff);
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 0 60px rgba(0, 255, 255, 0.4), inset 0 0 40px rgba(0, 255, 255, 0.1);
+  animation: modalSlideIn 0.5s ease-out;
+}
+
+/* 标题区域 */
+.game-end-modal-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.game-end-modal-title {
+  font-size: clamp(28px, 8vw, 42px);
+  font-family: Orbitron, monospace;
+  font-weight: bold;
+  color: #f39c12;
+  text-shadow: 0 0 20px rgba(243, 156, 18, 0.8), 0 0 40px rgba(243, 156, 18, 0.5);
+  margin: 0 0 10px 0;
+  letter-spacing: 3px;
+}
+
+.game-end-modal-title.game-over {
+  color: #ff4444;
+  text-shadow: 0 0 20px rgba(255, 68, 68, 0.8), 0 0 40px rgba(255, 68, 68, 0.5);
+}
+
+.game-end-modal-subtitle {
+  font-size: clamp(14px, 4vw, 16px);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: Orbitron, monospace;
+  margin: 0;
+}
+
+/* 统计信息区域 */
+.game-end-modal-stats {
+  background: rgba(0, 255, 255, 0.05);
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+}
+
+.game-end-modal-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.game-end-modal-stat-row:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.game-end-modal-stat-label {
+  font-size: clamp(16px, 4vw, 18px);
+  color: #fff;
+  font-family: Orbitron, monospace;
+}
+
+.game-end-modal-stat-value {
+  font-size: clamp(24px, 6vw, 32px);
+  color: var(--neon-cyan, #00ffff);
+  font-family: Orbitron, monospace;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.game-end-modal-stat-value.lines {
+  font-size: clamp(20px, 5vw, 24px);
+  color: #2ecc71;
+  text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+}
+
+.game-end-modal-stat-value.combo {
+  font-size: clamp(20px, 5vw, 24px);
+  color: #f39c12;
+  text-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
+}
+
+/* 按钮组 */
+.game-end-modal-buttons {
+  display: flex;
+  gap: 15px;
+  flex-direction: column;
+}
+
+.game-end-modal-btn {
+  padding: clamp(14px, 4vw, 18px);
+  font-size: clamp(16px, 4vw, 20px);
+  background: rgba(0, 255, 255, 0.15);
+  border: 3px solid var(--neon-cyan, #00ffff);
+  border-radius: 12px;
+  color: var(--neon-cyan, #00ffff);
+  cursor: pointer;
+  font-family: Orbitron, monospace;
+  font-weight: bold;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+  transition: all 0.3s;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+  letter-spacing: 2px;
+}
+
+.game-end-modal-btn:hover {
+  background: rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 60px rgba(0, 255, 255, 0.8);
+  transform: scale(1.02);
+}
+
+.game-end-modal-btn.back {
+  background: rgba(255, 68, 68, 0.15);
+  border: 3px solid #ff4444;
+  color: #ff4444;
+  box-shadow: 0 0 30px rgba(255, 68, 68, 0.4);
+  text-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
+}
+
+.game-end-modal-btn.back:hover {
+  background: rgba(255, 68, 68, 0.3);
+  box-shadow: 0 0 60px rgba(255, 68, 68, 0.8);
+}
+
+/* 赛博朋克风格装饰角标 */
+.game-end-modal-corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 4px solid var(--neon-cyan, #00ffff);
+  border-radius: 20px 0 0 0;
+}
+
+.game-end-modal-corner.top-left {
+  top: -2px;
+  left: -2px;
+  border-top: 4px solid var(--neon-cyan, #00ffff);
+  border-left: 4px solid var(--neon-cyan, #00ffff);
+}
+
+.game-end-modal-corner.top-right {
+  top: -2px;
+  right: -2px;
+  border-top: 4px solid var(--neon-cyan, #00ffff);
+  border-right: 4px solid var(--neon-cyan, #00ffff);
+  border-radius: 0 20px 0 0;
+}
+
+.game-end-modal-corner.bottom-left {
+  bottom: -2px;
+  left: -2px;
+  border-bottom: 4px solid var(--neon-cyan, #00ffff);
+  border-left: 4px solid var(--neon-cyan, #00ffff);
+  border-radius: 0 0 0 20px;
+}
+
+.game-end-modal-corner.bottom-right {
+  bottom: -2px;
+  right: -2px;
+  border-bottom: 4px solid var(--neon-cyan, #00ffff);
+  border-right: 4px solid var(--neon-cyan, #00ffff);
+  border-radius: 0 0 20px 0;
+}
+
+/* 动画定义 */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-50px) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
