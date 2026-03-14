@@ -201,7 +201,8 @@ describe('GameStartCountdown', () => {
       />
     );
     
-    const container = screen.getByText('3').parentElement;
+    // 获取外层容器（带有 z-index 样式的 div）
+    const container = document.querySelector('div[style*="position: fixed"]');
     expect(container).toHaveStyle('z-index: 3000');
   });
 
@@ -312,7 +313,8 @@ describe('GameStartCountdown', () => {
       />
     );
     
-    const container = screen.getByText('3').parentElement;
+    // 获取外层容器（带有背景样式的 div）
+    const container = document.querySelector('div[style*="position: fixed"]');
     expect(container).toHaveStyle('background: rgba(0, 0, 0, 0.85)');
   });
 

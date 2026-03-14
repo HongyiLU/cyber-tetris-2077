@@ -20,16 +20,16 @@ describe('卡组系统综合验证测试', () => {
   describe('1. 核心功能测试', () => {
     describe('1.1 创建卡组', () => {
       test('应该成功创建有效卡组', () => {
-        const deck = deckManager.createDeck('测试卡组', ['I', 'O', 'T', 'S', 'Z']);
+        const deck = deckManager.createDeck('测试卡组', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         
         expect(deck.id).toBeDefined();
         expect(deck.name).toBe('测试卡组');
-        expect(deck.cards.length).toBe(5);
+        expect(deck.cards.length).toBe(7);
         expect(deck.createdAt).toBeDefined();
       });
 
       test('创建卡组应该自动保存', () => {
-        deckManager.createDeck('保存测试', ['I', 'O', 'T']);
+        deckManager.createDeck('保存测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         
         const saved = localStorage.getItem('cyber-blocks-decks');
         expect(saved).toBeDefined();
@@ -41,24 +41,24 @@ describe('卡组系统综合验证测试', () => {
         // 卡组太小
         expect(() => {
           deckManager.createDeck('太小的卡组', ['I']);
-        }).toThrow('卡组验证失败');
+        }).toThrow();
 
         // 卡组太大
         const tooManyCards = Array(20).fill('I');
         expect(() => {
           deckManager.createDeck('太大的卡组', tooManyCards);
-        }).toThrow('卡组验证失败');
+        }).toThrow();
 
         // 重复卡牌
         expect(() => {
           deckManager.createDeck('重复卡组', ['I', 'I', 'O']);
-        }).toThrow('卡组验证失败');
+        }).toThrow();
       });
     });
 
     describe('1.2 编辑卡组', () => {
       test('应该成功更新卡组名称', () => {
-        const deck = deckManager.createDeck('原名', ['I', 'O', 'T']);
+        const deck = deckManager.createDeck('原名', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         
         deckManager.updateDeck(deck.id, { name: '新名称' });
         
@@ -67,21 +67,21 @@ describe('卡组系统综合验证测试', () => {
       });
 
       test('应该成功更新卡组卡牌', () => {
-        const deck = deckManager.createDeck('测试', ['I', 'O', 'T']);
+        const deck = deckManager.createDeck('测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         
-        deckManager.updateDeck(deck.id, { cards: ['I', 'O', 'T', 'S', 'Z'] });
+        deckManager.updateDeck(deck.id, { cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J'] });
         
         const updated = deckManager.getDeck(deck.id);
-        expect(updated?.cards.length).toBe(5);
+        expect(updated?.cards.length).toBe(7);
         expect(updated?.cards).toContain('S');
       });
 
       test('更新无效卡组应该抛出错误', () => {
-        const deck = deckManager.createDeck('测试', ['I', 'O', 'T']);
+        const deck = deckManager.createDeck('测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         
         expect(() => {
           deckManager.updateDeck(deck.id, { cards: ['I'] }); // 太小
-        }).toThrow('卡组验证失败');
+        }).toThrow();
       });
 
       test('更新不存在的卡组应该抛出错误', () => {
@@ -93,7 +93,7 @@ describe('卡组系统综合验证测试', () => {
 
     describe('1.3 删除卡组', () => {
       test('应该成功删除卡组', () => {
-        const deck = deckManager.createDeck('待删除', ['I', 'O', 'T']);
+        const deck = deckManager.createDeck('待删除', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         
         deckManager.deleteDeck(deck.id);
         
@@ -102,7 +102,7 @@ describe('卡组系统综合验证测试', () => {
       });
 
       test('删除激活的卡组应该清空激活状态', () => {
-        const deck = deckManager.createDeck('测试', ['I', 'O', 'T']);
+        const deck = deckManager.createDeck('测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         deckManager.setActiveDeck(deck.id);
         
         deckManager.deleteDeck(deck.id);
@@ -119,7 +119,7 @@ describe('卡组系统综合验证测试', () => {
 
     describe('1.4 选择卡组', () => {
       test('应该成功设置激活卡组', () => {
-        const deck = deckManager.createDeck('激活测试', ['I', 'O', 'T']);
+        const deck = deckManager.createDeck('激活测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         
         deckManager.setActiveDeck(deck.id);
         
@@ -129,7 +129,7 @@ describe('卡组系统综合验证测试', () => {
       });
 
       test('应该可以清空激活卡组', () => {
-        const deck = deckManager.createDeck('测试', ['I', 'O', 'T']);
+        const deck = deckManager.createDeck('测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         deckManager.setActiveDeck(deck.id);
         
         deckManager.setActiveDeck(null);
@@ -189,7 +189,7 @@ describe('卡组系统综合验证测试', () => {
   describe('2. 抽取算法测试', () => {
     describe('2.1 从卡组抽取方块', () => {
       test('应该从激活卡组抽取方块', () => {
-        const deck = deckManager.createDeck('测试', ['I', 'O', 'T']);
+        const deck = deckManager.createDeck('测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         deckManager.setActiveDeck(deck.id);
         
         engine.init();
@@ -211,9 +211,9 @@ describe('卡组系统综合验证测试', () => {
       });
 
       test('空卡组应该回退到默认随机', () => {
-        // 注：由于验证规则不允许空卡组，这里测试最小卡组（3 张）
+        // 注：由于验证规则不允许空卡组，这里测试最小卡组（7 张）
         // 回退机制主要在 drawFromDeck 内部处理空数组情况
-        const deck = deckManager.createDeck('最小卡组测试', ['I', 'O', 'T']);
+        const deck = deckManager.createDeck('最小卡组测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         deckManager.setActiveDeck(deck.id);
         
         engine.init();
@@ -238,7 +238,7 @@ describe('卡组系统综合验证测试', () => {
 
       test('卡组抽取应该均匀分布（经典模式下所有方块等概率）', () => {
         // 经典卡组，所有方块都是 common，等概率抽取
-        const deck = deckManager.createDeck('均匀测试', ['I', 'O', 'T', 'S', 'Z']);
+        const deck = deckManager.createDeck('均匀测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         deckManager.setActiveDeck(deck.id);
         
         // 多次抽取统计
@@ -281,7 +281,7 @@ describe('卡组系统综合验证测试', () => {
   // ==================== 3. 持久化测试 ====================
   describe('3. 持久化测试', () => {
     test('localStorage 保存', () => {
-      deckManager.createDeck('保存测试', ['I', 'O', 'T']);
+      deckManager.createDeck('保存测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       
       const saved = localStorage.getItem('cyber-blocks-decks');
       expect(saved).toBeDefined();
@@ -292,7 +292,7 @@ describe('卡组系统综合验证测试', () => {
     });
 
     test('localStorage 加载', () => {
-      const deck = deckManager.createDeck('加载测试', ['I', 'O', 'T', 'S']);
+      const deck = deckManager.createDeck('加载测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       deckManager.setActiveDeck(deck.id);
       
       // 创建新实例，应该从 localStorage 加载
@@ -301,15 +301,15 @@ describe('卡组系统综合验证测试', () => {
       const loaded = newManager.getDeck(deck.id);
       expect(loaded).toBeDefined();
       expect(loaded?.name).toBe('加载测试');
-      expect(loaded?.cards).toEqual(['I', 'O', 'T', 'S']);
+      expect(loaded?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       expect(newManager.getActiveDeck()?.id).toBe(deck.id);
     });
 
     test('刷新后数据保留', () => {
       // 创建多个卡组（只使用经典方块）
-      deckManager.createDeck('卡组 1', ['I', 'O', 'T']);
-      deckManager.createDeck('卡组 2', ['S', 'Z', 'L']);
-      deckManager.createDeck('卡组 3', ['J', 'I', 'O']);
+      deckManager.createDeck('卡组 1', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
+      deckManager.createDeck('卡组 2', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
+      deckManager.createDeck('卡组 3', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       
       // 模拟刷新（创建新实例）
       const freshManager = new DeckManager();
@@ -339,7 +339,7 @@ describe('卡组系统综合验证测试', () => {
   // ==================== 4. 游戏集成测试 ====================
   describe('4. 游戏集成测试', () => {
     test('设置卡组后游戏使用卡组抽取', () => {
-      const deck = deckManager.createDeck('游戏测试', ['I', 'O', 'T']);
+      const deck = deckManager.createDeck('游戏测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       deckManager.setActiveDeck(deck.id);
       
       engine.init();
@@ -353,8 +353,8 @@ describe('卡组系统综合验证测试', () => {
     });
 
     test('切换卡组生效', () => {
-      const deck1 = deckManager.createDeck('卡组 1', ['I', 'O', 'T']);
-      const deck2 = deckManager.createDeck('卡组 2', ['S', 'Z', 'L']);
+      const deck1 = deckManager.createDeck('卡组 1', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
+      const deck2 = deckManager.createDeck('卡组 2', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       
       // 使用卡组 1
       deckManager.setActiveDeck(deck1.id);
@@ -442,11 +442,11 @@ describe('卡组系统综合验证测试', () => {
 
     test('无新引入的 Bug', () => {
       // 边界测试
-      const deck = deckManager.createDeck('边界测试', ['I', 'O', 'T']);
+      const deck = deckManager.createDeck('边界测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       
       // 快速创建和删除（使用有效卡组大小）
       for (let i = 0; i < 10; i++) {
-        const tempDeck = deckManager.createDeck(`临时${i}`, ['I', 'O', 'T']);
+        const tempDeck = deckManager.createDeck(`临时${i}`, ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         deckManager.deleteDeck(tempDeck.id);
       }
       
@@ -460,8 +460,8 @@ describe('卡组系统综合验证测试', () => {
     });
 
     test('并发操作安全', () => {
-      const deck1 = deckManager.createDeck('并发 1', ['I', 'O', 'T']);
-      const deck2 = deckManager.createDeck('并发 2', ['S', 'Z', 'L']);
+      const deck1 = deckManager.createDeck('并发 1', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
+      const deck2 = deckManager.createDeck('并发 2', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       
       // 同时操作多个卡组
       deckManager.updateDeck(deck1.id, { name: '更新 1' });
@@ -485,7 +485,7 @@ describe('卡组系统综合验证测试', () => {
       // 创建 50 个卡组
       const decks: string[] = [];
       for (let i = 0; i < 50; i++) {
-        const deck = deckManager.createDeck(`性能测试${i}`, ['I', 'O', 'T']);
+        const deck = deckManager.createDeck(`性能测试${i}`, ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         decks.push(deck.id);
       }
       

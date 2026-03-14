@@ -22,8 +22,8 @@ describe('牌堆模式 + 抽空惩罚集成测试', () => {
   });
 
   test('完整流程：抽卡 → 抽空 → 洗牌 → 惩罚', () => {
-    // 1. 创建小型测试卡组（3 张卡）
-    const testDeck = deckManager.createDeck('测试牌堆', ['I', 'O', 'T']);
+    // 1. 创建小型测试卡组（7 张卡）
+    const testDeck = deckManager.createDeck('测试牌堆', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
     deckManager.setActiveDeck(testDeck.id);
 
     // 2. 初始化游戏
@@ -138,8 +138,8 @@ describe('牌堆模式 + 抽空惩罚集成测试', () => {
   });
 
   test('牌堆抽空后应该能继续游戏', () => {
-    // 创建最小组卡组（3 张卡）
-    const smallDeck = deckManager.createDeck('超小牌堆', ['I', 'O', 'T']);
+    // 创建最小组卡组（7 张卡）
+    const smallDeck = deckManager.createDeck('超小牌堆', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
     deckManager.setActiveDeck(smallDeck.id);
     
     engine.init();

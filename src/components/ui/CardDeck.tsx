@@ -721,10 +721,11 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
           <div className="card-deck-grid">
             {filterCards(allCards).map(card => {
               // v1.9.14: 将 CardData 转换为 Card 类型
+              // v1.9.15-fix2: 添加默认值防止 undefined
               const cardData: CardType = {
                 pieceType: card.id,
                 name: card.name,
-                description: card.desc,
+                description: card.desc || '',
                 rarity: card.rarity,
                 color: card.color || GAME_CONFIG.COLORS[card.id as keyof typeof GAME_CONFIG.COLORS] || '#ffffff',
               };

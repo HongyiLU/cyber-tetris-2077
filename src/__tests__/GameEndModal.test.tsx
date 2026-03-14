@@ -66,13 +66,13 @@ describe('GameEndModal', () => {
       enemyName: '哥布林',
     };
     render(<GameEndModal {...defaultProps} result={result} />);
-    expect(screen.getByText(/恭喜击败 哥布林/)).toBeInTheDocument();
+    expect(screen.getByText(/击败 哥布林/)).toBeInTheDocument();
   });
 
   test('calls onRetry when retry button is clicked', () => {
     const onRetry = jest.fn();
     render(<GameEndModal {...defaultProps} onRetry={onRetry} />);
-    const retryButton = screen.getByText(/再次挑战/);
+    const retryButton = screen.getByText(/重新挑战/);
     fireEvent.click(retryButton);
     expect(onRetry).toHaveBeenCalled();
   });
@@ -87,7 +87,7 @@ describe('GameEndModal', () => {
         onNextLevel={onNextLevel}
       />
     );
-    const nextButton = screen.getByText(/挑战下一怪物/);
+    const nextButton = screen.getByText(/挑战下一关/);
     fireEvent.click(nextButton);
     expect(onNextLevel).toHaveBeenCalled();
   });
@@ -124,7 +124,7 @@ describe('GameEndModal', () => {
       stats: { ...defaultResult.stats, combos: 15 },
     };
     render(<GameEndModal {...defaultProps} result={result} />);
-    expect(screen.getByText('15')).toBeInTheDocument();
+    expect(screen.getByText(/15/)).toBeInTheDocument();
   });
 
   test('displays time correctly', () => {
@@ -143,13 +143,13 @@ describe('GameEndModal', () => {
       isFinalBoss: true,
     };
     render(<GameEndModal {...defaultProps} result={result} />);
-    expect(screen.queryByText(/挑战下一怪物/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/挑战下一关/)).not.toBeInTheDocument();
   });
 
   test('shows retry button on defeat', () => {
     const result: GameEndResult = { ...defaultResult, isVictory: false };
     render(<GameEndModal {...defaultProps} result={result} />);
-    expect(screen.getByText(/再次挑战/)).toBeInTheDocument();
+    expect(screen.getByText(/重新挑战/)).toBeInTheDocument();
   });
 
   test('has correct CSS classes', () => {

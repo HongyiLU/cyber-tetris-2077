@@ -295,7 +295,7 @@ describe('GameEngine', () => {
   describe('牌堆模式集成', () => {
     test('应该支持牌堆模式（无放回抽样）', () => {
       const deckManager = engine.getDeckManager();
-      const testDeck = deckManager.createDeck('测试牌堆', ['I', 'O', 'T']);
+      const testDeck = deckManager.createDeck('测试牌堆', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       deckManager.setActiveDeck(testDeck.id);
       
       // 重新创建 engine 以使用更新后的 DeckManager
@@ -311,7 +311,7 @@ describe('GameEngine', () => {
       const state = newEngine.getGameState();
       expect(state.currentPiece).toBeDefined();
       // 验证方块类型在卡组中
-      const validTypes = ['I', 'O', 'T'];
+      const validTypes = ['I', 'O', 'T', 'S', 'Z', 'L', 'J'];
       expect(validTypes).toContain(state.currentPiece!.type);
     });
   });

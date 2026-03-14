@@ -1,0 +1,559 @@
+/* 卡组容器 */
+.card-deck-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 头部 */
+.card-deck-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-deck-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  font-family: Orbitron, monospace;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  margin: 0;
+}
+
+.card-deck-create-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #00ffff 0%, #0088ff 100%);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-weight: bold;
+  font-family: Orbitron, monospace;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.card-deck-create-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+/* 响应式网格布局 */
+.card-deck-grid {
+  display: grid;
+  gap: 16px;
+  min-height: 400px;
+}
+
+/* 移动端优化 (< 640px) */
+@media (max-width: 639px) {
+  .card-deck-container {
+    padding: 12px;
+  }
+
+  .card-deck-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .card-deck-title {
+    font-size: 18px;
+  }
+
+  .card-deck-create-btn {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .card-deck-grid {
+    gap: 12px;
+  }
+
+  .card-deck-item {
+    padding: 12px;
+  }
+
+  .card-deck-item-name {
+    font-size: 14px;
+  }
+
+  .card-deck-item-footer {
+    font-size: 11px;
+  }
+}
+
+/* 平板端优化 (640px - 1024px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .card-deck-container {
+    padding: 16px;
+  }
+
+  .card-deck-title {
+    font-size: 20px;
+  }
+
+  .card-deck-grid {
+    gap: 14px;
+  }
+
+  .card-deck-item {
+    padding: 14px;
+  }
+}
+
+/* 桌面端优化 (> 1024px) */
+@media (min-width: 1024px) {
+  .card-deck-container {
+    padding: 24px;
+  }
+
+  .card-deck-title {
+    font-size: 28px;
+  }
+
+  .card-deck-grid {
+    gap: 20px;
+  }
+
+  .card-deck-item {
+    padding: 18px;
+  }
+}
+
+/* 卡组项 */
+.card-deck-item {
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-deck-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00ffff, #ff00ff, #00ffff);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.card-deck-item:hover {
+  border-color: rgba(0, 255, 255, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.card-deck-item:hover::before {
+  opacity: 1;
+}
+
+.card-deck-item.selected {
+  border-color: #00ffff;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.card-deck-item.selected::before {
+  opacity: 1;
+}
+
+/* 卡组项头部 */
+.card-deck-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-deck-item-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  font-family: Orbitron, monospace;
+  margin: 0;
+  flex: 1;
+}
+
+.card-deck-item-actions {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.card-deck-item:hover .card-deck-item-actions {
+  opacity: 1;
+}
+
+.card-deck-action-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-deck-action-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.card-deck-action-delete:hover {
+  background: rgba(255, 68, 68, 0.3);
+}
+
+/* 卡组预览 */
+.card-deck-item-preview {
+  margin-bottom: 12px;
+  min-height: 60px;
+}
+
+.deck-blocks-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.deck-preview-more {
+  font-size: 12px;
+  color: #888;
+  font-family: Orbitron, monospace;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* 卡组项底部 */
+.card-deck-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-deck-item-count {
+  font-size: 12px;
+  color: #00ffff;
+  font-family: Orbitron, monospace;
+}
+
+.card-deck-item-date {
+  font-size: 12px;
+  color: #888;
+  font-family: Orbitron, monospace;
+}
+
+/* 空状态 */
+.card-deck-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #888;
+  text-align: center;
+}
+
+.card-deck-empty p {
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-family: Orbitron, monospace;
+}
+
+.card-deck-create-empty-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #00ffff 0%, #0088ff 100%);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-weight: bold;
+  font-family: Orbitron, monospace;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.card-deck-create-empty-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+/* 编辑弹窗 */
+.deck-edit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.deck-edit-modal {
+  background: rgba(10, 10, 20, 0.95);
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.2);
+}
+
+.deck-edit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.deck-edit-header h2 {
+  font-size: 20px;
+  color: #fff;
+  font-family: Orbitron, monospace;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.deck-edit-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deck-edit-close:hover {
+  background: rgba(255, 68, 68, 0.3);
+  transform: rotate(90deg);
+}
+
+.deck-edit-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.deck-edit-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deck-edit-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.deck-edit-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.deck-edit-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deck-edit-card-name {
+  font-size: 14px;
+  color: #fff;
+  font-family: Orbitron, monospace;
+}
+
+.deck-edit-card-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.deck-edit-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deck-edit-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.deck-edit-btn-add {
+  background: linear-gradient(135deg, #00ff00 0%, #00aa00 100%);
+  color: #000;
+}
+
+.deck-edit-btn-add:not(:disabled):hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.deck-edit-btn-remove {
+  background: linear-gradient(135deg, #ff4444 0%, #aa0000 100%);
+  color: #fff;
+}
+
+.deck-edit-btn-remove:not(:disabled):hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+.deck-edit-card-count {
+  font-size: 14px;
+  color: #00ffff;
+  font-family: Orbitron, monospace;
+  min-width: 60px;
+  text-align: center;
+}
+
+.deck-edit-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.deck-edit-btn-cancel {
+  padding: 10px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: Orbitron, monospace;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.deck-edit-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.deck-edit-btn-save {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #00ffff 0%, #0088ff 100%);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-family: Orbitron, monospace;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.deck-edit-btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+/* 滚动优化 */
+.deck-edit-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.deck-edit-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.deck-edit-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.deck-edit-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.5);
+}
+
+/* 响应式编辑弹窗 */
+@media (max-width: 639px) {
+  .deck-edit-modal {
+    max-height: 95vh;
+  }
+
+  .deck-edit-header {
+    padding: 16px;
+  }
+
+  .deck-edit-header h2 {
+    font-size: 16px;
+  }
+
+  .deck-edit-content {
+    padding: 16px;
+  }
+
+  .deck-edit-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .deck-edit-card-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .deck-edit-footer {
+    padding: 16px;
+    flex-direction: column;
+  }
+
+  .deck-edit-btn-cancel,
+  .deck-edit-btn-save {
+    width: 100%;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .deck-edit-modal {
+    max-width: 600px;
+  }
+}
