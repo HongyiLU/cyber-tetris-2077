@@ -1,0 +1,301 @@
+/* ==================== 卡牌样式 ==================== */
+/* v1.9.14 - 赛博朋克风格卡牌 */
+
+/* 卡牌基础样式 */
+.cyber-card {
+  position: relative;
+  border-radius: 8px;
+  border: 2px solid;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* 尺寸变体 */
+.cyber-card--small {
+  padding: 8px;
+  font-size: 10px;
+}
+
+.cyber-card--medium {
+  padding: 12px;
+  font-size: 12px;
+}
+
+.cyber-card--large {
+  padding: 16px;
+  font-size: 14px;
+}
+
+/* 稀有度样式 */
+.cyber-card-common {
+  border-color: #e5e5e5;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.cyber-card-uncommon {
+  border-color: #00cc00;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+}
+
+.cyber-card-rare {
+  border-color: #0066cc;
+  box-shadow: 0 0 25px rgba(0, 136, 255, 0.5);
+}
+
+.cyber-card-epic {
+  border-color: #7e22ce;
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+}
+
+.cyber-card-legendary {
+  border-color: #cc6600;
+  box-shadow: 0 0 35px rgba(255, 136, 0, 0.7);
+  animation: legendary-glow 2s ease-in-out infinite;
+}
+
+/* 传说卡牌发光动画 */
+@keyframes legendary-glow {
+  0%, 100% {
+    box-shadow: 0 0 35px rgba(255, 136, 0, 0.7),
+                0 0 50px rgba(255, 136, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(255, 136, 0, 0.9),
+                0 0 65px rgba(255, 136, 0, 0.7);
+  }
+}
+
+/* 稀有度徽章 */
+.cyber-card-rarity {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  text-shadow: 0 0 5px currentColor;
+  z-index: 2;
+}
+
+.cyber-card--small .cyber-card-rarity {
+  top: 4px;
+  right: 4px;
+  font-size: 8px;
+}
+
+.rarity-icon {
+  font-size: 12px;
+}
+
+.cyber-card--small .rarity-icon {
+  font-size: 10px;
+}
+
+.rarity-name {
+  opacity: 0.9;
+}
+
+/* 卡名 */
+.cyber-card-name {
+  width: 100%;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.cyber-card--small .cyber-card-name {
+  margin-top: 16px;
+}
+
+.cyber-card-name h3 {
+  margin: 0;
+  font-size: 1em;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.5px;
+}
+
+.cyber-card--small .cyber-card-name h3 {
+  font-size: 0.9em;
+}
+
+/* 卡面 */
+.cyber-card-face {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0;
+  position: relative;
+}
+
+.cyber-card-face::before {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.cyber-card--small .cyber-card-face::before {
+  width: 60px;
+  height: 60px;
+}
+
+/* 效果描述 */
+.cyber-card-description {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.cyber-card-description p {
+  margin: 0;
+  font-size: 0.85em;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.cyber-card--small .cyber-card-description p {
+  font-size: 0.75em;
+  line-height: 1.3;
+}
+
+/* 边框装饰 */
+.cyber-card-border-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cyber-card-common .cyber-card-border-decoration {
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.cyber-card-uncommon .cyber-card-border-decoration {
+  box-shadow: inset 0 0 15px rgba(0, 255, 0, 0.3);
+}
+
+.cyber-card-rare .cyber-card-border-decoration {
+  box-shadow: inset 0 0 20px rgba(0, 136, 255, 0.4);
+}
+
+.cyber-card-epic .cyber-card-border-decoration {
+  box-shadow: inset 0 0 25px rgba(168, 85, 247, 0.5);
+}
+
+.cyber-card-legendary .cyber-card-border-decoration {
+  box-shadow: inset 0 0 30px rgba(255, 136, 0, 0.6);
+}
+
+/* 悬停效果 */
+.cyber-card[role="button"]:hover {
+  transform: translateY(-4px) scale(1.02);
+  filter: brightness(1.1);
+}
+
+.cyber-card--small[role="button"]:hover {
+  transform: translateY(-2px) scale(1.05);
+}
+
+.cyber-card-legendary[role="button"]:hover {
+  animation: legendary-hover 0.5s ease-in-out;
+}
+
+@keyframes legendary-hover {
+  0%, 100% {
+    transform: translateY(-4px) scale(1.02);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.03);
+  }
+}
+
+/* 点击效果 */
+.cyber-card[role="button"]:active {
+  transform: translateY(-2px) scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* 赛博朋克风格背景 */
+.cyber-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 255, 0.03) 2px,
+    rgba(0, 255, 255, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 0;
+  animation: scanline 10s linear infinite;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .cyber-card--medium {
+    width: 100px;
+    height: 150px;
+    padding: 10px;
+    font-size: 10px;
+  }
+
+  .cyber-card--large {
+    width: 140px;
+    height: 200px;
+    padding: 14px;
+    font-size: 12px;
+  }
+}
+
+/* 卡组预览中的卡牌 */
+.deck-card-preview {
+  display: inline-block;
+  margin: 4px;
+}
+
+/* 编辑模式卡牌 */
+.deck-editor-card {
+  cursor: grab;
+  user-select: none;
+}
+
+.deck-editor-card:active {
+  cursor: grabbing;
+}

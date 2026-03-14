@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VirtualButtons v1.9.1 功能测试页</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Orbitron', monospace, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+      color: #00ffff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .test-header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 20px;
+      border: 2px solid #00ffff;
+      border-radius: 10px;
+      background: rgba(0, 255, 255, 0.05);
+    }
+
+    .test-header h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px #00ffff;
+    }
+
+    .test-header p {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .test-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .test-section h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #ff00ff;
+      text-shadow: 0 0 5px #ff00ff;
+    }
+
+    .test-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    .test-btn {
+      padding: 10px 20px;
+      border: 2px solid #00ff80;
+      border-radius: 5px;
+      background: rgba(0, 255, 128, 0.1);
+      color: #00ff80;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .test-btn:hover {
+      background: rgba(0, 255, 128, 0.2);
+      box-shadow: 0 0 10px #00ff80;
+    }
+
+    .test-btn.active {
+      background: #00ff80;
+      color: #000;
+    }
+
+    .log-container {
+      background: #000;
+      border: 1px solid #333;
+      border-radius: 5px;
+      padding: 10px;
+      height: 200px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .log-entry {
+      margin-bottom: 5px;
+      padding: 3px 5px;
+      border-left: 3px solid #00ffff;
+      background: rgba(0, 255, 255, 0.05);
+    }
+
+    .log-entry.error {
+      border-left-color: #ff0055;
+      background: rgba(255, 0, 85, 0.05);
+    }
+
+    .log-entry.success {
+      border-left-color: #00ff80;
+      background: rgba(0, 255, 128, 0.05);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .stat-item {
+      padding: 10px;
+      border: 1px solid #ffa600;
+      border-radius: 5px;
+      text-align: center;
+      background: rgba(255, 166, 0, 0.05);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #ffa600;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+
+    .virtual-buttons-container {
+      margin-top: 20px;
+    }
+
+    .test-note {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 10px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-header">
+    <h1>🎮 VirtualButtons v1.9.1 功能测试</h1>
+    <p>交互式功能验证页面 | 2026-03-11</p>
+  </div>
+
+  <div class="test-section">
+    <h2>📊 测试统计</h2>
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-value" id="totalEvents">0</div>
+        <div class="stat-label">总事件数</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="clickEvents">0</div>
+        <div class="stat-label">点击事件</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="touchEvents">0</div>
+        <div class="stat-label">触摸事件</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="gestureEvents">0</div>
+        <div class="stat-label">手势事件</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>🎯 组件控制</h2>
+    <div class="test-controls">
+      <button class="test-btn" onclick="toggleDisabled()">切换禁用状态</button>
+      <button class="test-btn" onclick="setSize('small')">Small 尺寸</button>
+      <button class="test-btn" onclick="setSize('medium')">Medium 尺寸</button>
+      <button class="test-btn" onclick="setSize('large')">Large 尺寸</button>
+      <button class="test-btn" onclick="setOpacity(0.5)">透明度 50%</button>
+      <button class="test-btn" onclick="setOpacity(0.9)">透明度 90%</button>
+      <button class="test-btn" onclick="setOpacity(1.0)">透明度 100%</button>
+      <button class="test-btn" onclick="clearLog()">清空日志</button>
+    </div>
+    <div class="test-note">当前状态：禁用=<span id="disabledStatus">false</span> | 尺寸=<span id="sizeStatus">medium</span> | 透明度=<span id="opacityStatus">0.9</span></div>
+  </div>
+
+  <div class="test-section">
+    <h2>🎮 VirtualButtons 组件</h2>
+    <div id="virtualButtonsRoot" class="virtual-buttons-container"></div>
+    <div class="test-note">提示：可以直接点击/触摸上方的虚拟按钮进行测试</div>
+  </div>
+
+  <div class="test-section">
+    <h2>📝 事件日志</h2>
+    <div class="log-container" id="logContainer">
+      <div class="log-entry success">测试页面已加载 - 等待操作...</div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== 测试日志系统 ====================
+    const stats = {
+      total: 0,
+      click: 0,
+      touch: 0,
+      gesture: 0
+    };
+
+    function log(message, type = 'info') {
+      const container = document.getElementById('logContainer');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      const timestamp = new Date().toLocaleTimeString('zh-CN');
+      entry.textContent = `[${timestamp}] ${message}`;
+      container.appendChild(entry);
+      container.scrollTop = container.scrollHeight;
+      
+      stats.total++;
+      document.getElementById('totalEvents').textContent = stats.total;
+    }
+
+    function logEvent(eventType, detail) {
+      log(`${eventType}: ${detail}`, 'success');
+      
+      if (eventType.includes('点击') || eventType.includes('按下')) {
+        stats.click++;
+        document.getElementById('clickEvents').textContent = stats.click;
+      } else if (eventType.includes('触摸') || eventType.includes('滑动')) {
+        stats.touch++;
+        document.getElementById('touchEvents').textContent = stats.touch;
+      } else if (eventType.includes('手势') || eventType.includes('双击')) {
+        stats.gesture++;
+        document.getElementById('gestureEvents').textContent = stats.gesture;
+      }
+    }
+
+    function clearLog() {
+      document.getElementById('logContainer').innerHTML = '<div class="log-entry success">日志已清空</div>';
+      log('手动清空日志');
+    }
+
+    // ==================== 测试状态 ====================
+    let isDisabled = false;
+    let currentSize = 'medium';
+    let currentOpacity = 0.9;
+
+    function toggleDisabled() {
+      isDisabled = !isDisabled;
+      document.getElementById('disabledStatus').textContent = isDisabled;
+      renderVirtualButtons();
+      log(`禁用状态已${isDisabled ? '开启' : '关闭'}`, 'info');
+    }
+
+    function setSize(size) {
+      currentSize = size;
+      document.getElementById('sizeStatus').textContent = size;
+      renderVirtualButtons();
+      log(`尺寸已设置为：${size}`, 'info');
+    }
+
+    function setOpacity(opacity) {
+      currentOpacity = opacity;
+      document.getElementById('opacityStatus').textContent = opacity;
+      renderVirtualButtons();
+      log(`透明度已设置为：${opacity * 100}%`, 'info');
+    }
+
+    // ==================== VirtualButtons 组件实现 ====================
+    function renderVirtualButtons() {
+      const root = document.getElementById('virtualButtonsRoot');
+      root.innerHTML = '';
+
+      const container = document.createElement('div');
+      container.className = `virtual-buttons size-${currentSize}`;
+      container.style.opacity = currentOpacity;
+
+      // 触摸区域
+      const touchArea = document.createElement('div');
+      touchArea.className = 'touch-area';
+      touchArea.innerHTML = '<div class="touch-hint">滑动控制 | 双击硬降</div>';
+      
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let lastTapTime = 0;
+
+      touchArea.addEventListener('touchstart', (e) => {
+        if (isDisabled) return;
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        logEvent('触摸开始', `位置：(${Math.round(touch.clientX)}, ${Math.round(touch.clientY)})`);
+      });
+
+      touchArea.addEventListener('touchmove', (e) => {
+        if (isDisabled) return;
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - touchStartX;
+        const deltaY = touch.clientY - touchStartY;
+        
+        if (Math.abs(deltaX) > 30) {
+          const direction = deltaX > 0 ? '右' : '左';
+          logEvent('滑动手势', `水平${direction}移 (ΔX: ${Math.round(deltaX)}px)`);
+          touchStartX = touch.clientX;
+        }
+        
+        if (deltaY > 30) {
+          logEvent('滑动手势', `垂直下滑 (ΔY: ${Math.round(deltaY)}px)`);
+          touchStartY = touch.clientY;
+        }
+      });
+
+      touchArea.addEventListener('touchend', () => {
+        if (isDisabled) return;
+        logEvent('触摸结束', '释放');
+      });
+
+      touchArea.addEventListener('click', () => {
+        if (isDisabled) return;
+        const now = Date.now();
+        if (now - lastTapTime < 300) {
+          logEvent('双击手势', '触发硬降落！', 'gesture');
+        }
+        lastTapTime = now;
+      });
+
+      container.appendChild(touchArea);
+
+      // 按钮行 1
+      const row1 = document.createElement('div');
+      row1.className = 'button-row';
+      
+      const buttons1 = [
+        { id: 'left', icon: '⬅️', label: '左移' },
+        { id: 'rotate', icon: '🔄', label: '旋转' },
+        { id: 'right', icon: '➡️', label: '右移' }
+      ];
+
+      buttons1.forEach(btn => {
+        const button = document.createElement('button');
+        button.className = `btn btn-cyan`;
+        button.textContent = btn.icon;
+        
+        button.addEventListener('mousedown', () => {
+          if (isDisabled) return;
+          logEvent('按钮点击', `${btn.label} - 按下`);
+          button.classList.add('active');
+        });
+        
+        button.addEventListener('mouseup', () => {
+          if (isDisabled) return;
+          logEvent('按钮释放', `${btn.label} - 释放`);
+          button.classList.remove('active');
+        });
+        
+        button.addEventListener('mouseleave', () => {
+          button.classList.remove('active');
+        });
+
+        row1.appendChild(button);
+      });
+
+      container.appendChild(row1);
+
+      // 按钮行 2
+      const row2 = document.createElement('div');
+      row2.className = 'button-row';
+      
+      const buttons2 = [
+        { id: 'softDrop', icon: '⬇️', label: '软降', color: 'green' },
+        { id: 'hardDrop', icon: '💥', label: '硬降', color: 'orange' }
+      ];
+
+      buttons2.forEach(btn => {
+        const button = document.createElement('button');
+        button.className = `btn btn-${btn.color}`;
+        button.textContent = btn.icon;
+        
+        button.addEventListener('mousedown', () => {
+          if (isDisabled) return;
+          logEvent('按钮点击', `${btn.label} - 按下`);
+          button.classList.add('active');
+        });
+        
+        button.addEventListener('mouseup', () => {
+          if (isDisabled) return;
+          logEvent('按钮释放', `${btn.label} - 释放`);
+          button.classList.remove('active');
+        });
+
+        row2.appendChild(button);
+      });
+
+      container.appendChild(row2);
+      root.appendChild(container);
+    }
+
+    // ==================== 初始化 ====================
+    log('初始化 VirtualButtons 组件...');
+    renderVirtualButtons();
+    log('组件渲染完成', 'success');
+    log('准备就绪 - 请开始测试', 'success');
+  </script>
+</body>
+</html>

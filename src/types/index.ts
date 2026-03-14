@@ -137,6 +137,7 @@ export interface CardData {
   type: 'basic' | 'special';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   desc: string;
+  color?: string;  // v1.9.14 新增
 }
 
 /**

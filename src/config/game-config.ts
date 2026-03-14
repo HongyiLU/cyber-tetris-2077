@@ -69,14 +69,64 @@ export const GAME_CONFIG = {
   },
   
   // ==================== 卡牌数据 ====================
+  // v1.9.14 - 完整卡牌系统（卡名、效果、稀有度）
   CARDS: [
-    { id: 'I', name: 'I-方块', type: 'basic', rarity: 'common', desc: '直线方块' },
-    { id: 'O', name: 'O-方块', type: 'basic', rarity: 'common', desc: '方形方块' },
-    { id: 'T', name: 'T-方块', type: 'basic', rarity: 'common', desc: 'T 型方块' },
-    { id: 'S', name: 'S-方块', type: 'basic', rarity: 'common', desc: 'S 型方块' },
-    { id: 'Z', name: 'Z-方块', type: 'basic', rarity: 'common', desc: 'Z 型方块' },
-    { id: 'L', name: 'L-方块', type: 'basic', rarity: 'common', desc: 'L 型方块' },
-    { id: 'J', name: 'J-方块', type: 'basic', rarity: 'common', desc: 'J 型方块' },
+    { 
+      id: 'I', 
+      name: '直线冲击', 
+      type: 'basic', 
+      rarity: 'epic', 
+      desc: '消除整行，造成穿透伤害',
+      color: '#00ffff',
+    },
+    { 
+      id: 'O', 
+      name: '坚固壁垒', 
+      type: 'basic', 
+      rarity: 'common', 
+      desc: '稳定下落，不易被打断',
+      color: '#ffff00',
+    },
+    { 
+      id: 'T', 
+      name: '旋转突击', 
+      type: 'basic', 
+      rarity: 'uncommon', 
+      desc: '可旋转，灵活应对各种局面',
+      color: '#da70d6',
+    },
+    { 
+      id: 'S', 
+      name: '曲折前进', 
+      type: 'basic', 
+      rarity: 'rare', 
+      desc: '连续消除获得连击加成',
+      color: '#00ff00',
+    },
+    { 
+      id: 'Z', 
+      name: '反向突袭', 
+      type: 'basic', 
+      rarity: 'rare', 
+      desc: '反向移动时速度提升',
+      color: '#ff4444',
+    },
+    { 
+      id: 'L', 
+      name: '角落专家', 
+      type: 'basic', 
+      rarity: 'uncommon', 
+      desc: '擅长填充角落空隙',
+      color: '#ff8c00',
+    },
+    { 
+      id: 'J', 
+      name: '镜像战士', 
+      type: 'basic', 
+      rarity: 'uncommon', 
+      desc: '与 L 方块对称，效果相同',
+      color: '#4169e1',
+    },
   ],
   
   // ==================== 卡组系统配置 ====================

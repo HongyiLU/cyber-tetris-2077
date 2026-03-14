@@ -1,4 +1,5 @@
 // ==================== 卡组管理界面组件 ====================
+// v1.9.14 - 卡牌视觉优化
 
 import React, { useState, useEffect } from 'react';
 import Card from './Card';
@@ -6,6 +7,8 @@ import BlockVisual from './BlockVisual';
 import type { CardData, Deck } from '../../types';
 import { isDeckValidForUse, getDeckStatusText, DEFAULT_DECK_CONFIG } from '../../types/deck';
 import type { DeckManager } from '../../engine/DeckManager';
+import type { Card as CardType } from '../../types/card';
+import { GAME_CONFIG } from '../../config/game-config';
 import './CardDeck.css';
 
 interface CardDeckProps {
@@ -712,15 +715,25 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
         {/* 卡牌网格（收藏标签页） */}
         {activeTab === 'collection' && (
           <div className="card-deck-grid">
-            {filterCards(allCards).map(card => (
-              <Card
-                key={card.id}
-                card={card}
-                collected={true}
-                onClick={() => setSelectedCard(card)}
-                selected={selectedCard?.id === card.id}
-              />
-            ))}
+            {filterCards(allCards).map(card => {
+              // v1.9.14: 将 CardData 转换为 Card 类型
+              const cardData: CardType = {
+                pieceType: card.id,
+                name: card.name,
+                description: card.desc,
+                rarity: card.rarity,
+                color: card.color || GAME_CONFIG.COLORS[card.id as keyof typeof GAME_CONFIG.COLORS] || '#ffffff',
+              };
+              return (
+                <Card
+                  key={card.id}
+                  card={cardData}
+                  size="medium"
+                  clickable={true}
+                  onClick={() => setSelectedCard(card)}
+                />
+              );
+            })}
           </div>
         )}
 

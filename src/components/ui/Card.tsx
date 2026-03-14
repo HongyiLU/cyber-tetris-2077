@@ -1,196 +1,116 @@
-// ==================== 卡牌显示组件 ====================
+// ==================== 卡牌组件 ====================
+// v1.9.14 - 完整卡牌显示（卡名、卡面、效果、稀有度）
 
 import React from 'react';
-import { GAME_CONFIG } from '../../config/game-config';
-import type { CardData } from '../../types';
+import type { Rarity } from '../../types/card';
+import { Card, CardProps, getRarityConfig } from '../../types/card';
+import BlockVisual from './BlockVisual';
+import './Card.css';
 
-interface CardProps {
-  card: CardData;
-  collected?: boolean;
-  onClick?: () => void;
-  selected?: boolean;
-  small?: boolean;
-}
-
-const Card: React.FC<CardProps> = ({ 
-  card, 
-  collected = true,
+/**
+ * 卡牌组件
+ * 显示完整的卡牌信息：卡名、卡面、效果描述、稀有度
+ */
+const CardComponent: React.FC<CardProps> = ({
+  card,
+  size = 'medium',
+  showBorder = true,
+  showShadow = true,
+  clickable = false,
   onClick,
-  selected = false,
-  small = false
+  className = '',
+  style,
 }) => {
-  const getRarityColor = (rarity: string): string => {
-    const colors: Record<string, string> = {
-      common: '#888888',
-      uncommon: '#00cc66',
-      rare: '#0099ff',
-      epic: '#bf00ff',
-      legendary: '#ffd700',
-    };
-    return colors[rarity] || '#888888';
+  const rarityConfig = getRarityConfig(card.rarity);
+
+  // 卡牌尺寸映射
+  const sizeMap = {
+    small: { width: 100, height: 150 },
+    medium: { width: 120, height: 180 },
+    large: { width: 160, height: 240 },
   };
 
-  const getBlockColor = (pieceId: string): string => {
-    const colors = GAME_CONFIG.COLORS as Record<string, string>;
-    return colors[pieceId] || '#ffffff';
-  };
+  const { width, height } = sizeMap[size];
 
-  const getShapeSize = (pieceId: string): number => {
-    const shapes = GAME_CONFIG.SHAPES as Record<string, number[][]>;
-    const shape = shapes[pieceId];
-    return shape ? shape[0].length : 2;
-  };
-
-  const getShapeBlocks = (pieceId: string, color: string): string[] => {
-    const shapes = GAME_CONFIG.SHAPES as Record<string, number[][]>;
-    const shape = shapes[pieceId];
-    if (!shape) return [];
-    
-    const blocks: string[] = [];
-    shape.forEach(row => {
-      row.forEach(cell => {
-        blocks.push(cell ? color : 'transparent');
-      });
-    });
-    return blocks;
-  };
-
-  const size = small ? {
-    width: '80px',
-    height: '120px',
-    fontSize: '10px',
-  } : {
-    width: '140px',
-    height: '200px',
-    fontSize: '12px',
+  // 处理点击事件
+  const handleClick = () => {
+    if (clickable && onClick) {
+      onClick();
+    }
   };
 
   return (
     <div
-      onClick={onClick}
+      className={`cyber-card cyber-card--${size} cyber-card-${card.rarity} ${className}`}
       style={{
-        width: size.width,
-        height: size.height,
-        background: collected 
-          ? 'linear-gradient(135deg, rgba(20, 20, 40, 0.9), rgba(40, 40, 80, 0.9))'
-          : 'linear-gradient(135deg, rgba(40, 40, 40, 0.5), rgba(60, 60, 60, 0.5))',
-        border: selected 
-          ? '3px solid #00ffff' 
-          : `${card.rarity === 'legendary' ? '3px' : card.rarity === 'epic' ? '3px' : '2px'} solid ${getRarityColor(card.rarity)}`,
-        borderRadius: '8px',
-        padding: '10px',
-        cursor: onClick ? 'pointer' : 'default',
-        transition: 'all 0.3s',
-        transform: selected ? 'scale(1.05)' : 'scale(1)',
-        boxShadow: selected 
-          ? '0 0 20px rgba(0, 255, 255, 0.6)' 
-          : collected 
-            ? `0 0 10px ${getRarityColor(card.rarity)}40`
-            : 'none',
-        opacity: collected ? 1 : 0.5,
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        width,
+        height,
+        borderColor: showBorder ? rarityConfig.borderColor : 'transparent',
+        boxShadow: showShadow ? `0 0 20px ${rarityConfig.glowColor}` : 'none',
+        background: rarityConfig.background,
+        cursor: clickable ? 'pointer' : 'default',
+        ...style,
       }}
-      onMouseEnter={onClick ? (e) => {
-        e.currentTarget.style.transform = 'scale(1.08)';
-      } : undefined}
-      onMouseLeave={onClick ? (e) => {
-        e.currentTarget.style.transform = selected ? 'scale(1.05)' : 'scale(1)';
-      } : undefined}
+      onClick={handleClick}
+      role={clickable ? 'button' : 'img'}
+      aria-label={`${card.name} - ${rarityConfig.name}`}
+      tabIndex={clickable ? 0 : -1}
     >
-      {/* 稀有度标识 */}
-      <div style={{
-        position: 'absolute',
-        top: '5px',
-        right: '5px',
-        fontSize: '8px',
-        color: getRarityColor(card.rarity),
-        textTransform: 'uppercase',
-        letterSpacing: '1px',
-      }}>
-        {card.rarity}
+      {/* 稀有度徽章 */}
+      <div className="cyber-card-rarity">
+        <span className="rarity-icon">{rarityConfig.icon}</span>
+        <span className="rarity-name">{rarityConfig.name}</span>
       </div>
 
-      {/* 卡牌类型标识 */}
-      <div style={{
-        position: 'absolute',
-        top: '5px',
-        left: '5px',
-        fontSize: '8px',
-        color: card.type === 'special' ? '#ff00ff' : '#00ffff',
-      }}>
-        {card.type === 'special' ? '⚡' : '🎮'}
+      {/* 卡名 */}
+      <div className="cyber-card-name">
+        <h3>{card.name}</h3>
       </div>
 
-      {/* 卡牌名称 */}
-      <div style={{
-        fontSize: small ? '12px' : '16px',
-        fontWeight: 'bold',
-        color: collected ? '#fff' : '#666',
-        textAlign: 'center',
-        marginTop: '15px',
-        textShadow: collected ? '0 0 5px rgba(255,255,255,0.5)' : 'none',
-      }}>
-        {card.name}
+      {/* 卡面（方块形状） */}
+      <div className="cyber-card-face">
+        <BlockVisual
+          pieceType={card.pieceType}
+          size={size === 'small' ? 40 : size === 'medium' ? 56 : 80}
+          showBorder={true}
+          showShadow={true}
+        />
       </div>
 
-      {/* 卡牌图标/类型 - 使用方块形状 */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${getShapeSize(card.id)}, ${small ? '8px' : '12px'})`,
-        gap: '2px',
-        margin: '10px 0',
-        filter: collected ? 'none' : 'grayscale(100%)',
-      }}>
-        {getShapeBlocks(card.id, card.type === 'special' ? getRarityColor(card.rarity) : getBlockColor(card.id)).map((color, index) => (
-          <div
-            key={index}
-            style={{
-              width: small ? '8px' : '12px',
-              height: small ? '8px' : '12px',
-              background: color,
-              borderRadius: '1px',
-              boxShadow: `inset 1px 1px 2px rgba(255,255,255,0.3), inset -1px -1px 2px rgba(0,0,0,0.3)`,
-            }}
-          />
-        ))}
+      {/* 效果描述 */}
+      <div className="cyber-card-description">
+        <p>{card.description}</p>
       </div>
 
-      {/* 卡牌描述 */}
-      <div style={{
-        fontSize: size.fontSize,
-        color: collected ? '#aaa' : '#444',
-        textAlign: 'center',
-        lineHeight: '1.4',
-        padding: '0 5px',
-      }}>
-        {card.desc}
-      </div>
-
-      {/* 未收集遮罩 */}
-      {!collected && (
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.7)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '24px',
-          color: '#666',
-        }}>
-          🔒
-        </div>
-      )}
+      {/* 稀有度边框装饰 */}
+      <div className="cyber-card-border-decoration"></div>
     </div>
   );
 };
 
-export default Card;
+/**
+ * 创建卡牌数据
+ * @param pieceType 方块类型
+ * @param name 卡名
+ * @param description 效果描述
+ * @param rarity 稀有度
+ * @param color 方块颜色
+ * @returns 卡牌对象
+ */
+export function createCard(
+  pieceType: string,
+  name: string,
+  description: string,
+  rarity: Rarity,
+  color: string
+): Card {
+  return {
+    pieceType,
+    name,
+    description,
+    rarity,
+    color,
+  };
+}
+
+export default CardComponent;
