@@ -995,14 +995,47 @@
 
 /* ==================== v1.9.15 卡组编辑界面卡牌样式 ==================== */
 
-/* 卡组编辑卡片网格布局 */
+/* 卡组编辑卡片网格布局 - 响应式 */
 .deck-edit-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 20px;
-  padding: 20px;
+  /* 桌面端：8 列 */
+  grid-template-columns: repeat(8, 1fr);
+  gap: 16px;
+  padding: 16px;
   max-height: 500px;
   overflow-y: auto;
+}
+
+/* 平板端：5 列 */
+@media (max-width: 1200px) {
+  .deck-edit-cards-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    padding: 14px;
+  }
+}
+
+/* 移动端：3 列 */
+@media (max-width: 768px) {
+  .deck-edit-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .deck-edit-card-controls .deck-edit-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+  }
+  
+  .deck-edit-card-controls .deck-edit-count {
+    min-width: 50px;
+  }
+  
+  .deck-edit-card-controls .count-value {
+    font-size: 16px;
+  }
 }
 
 /* 卡组编辑卡片项 */
