@@ -47,7 +47,7 @@ const CardComponent: React.FC<CardProps> = ({
         height,
         borderColor: showBorder ? rarityConfig.borderColor : 'transparent',
         boxShadow: showShadow ? `0 0 20px ${rarityConfig.glowColor}` : 'none',
-        background: rarityConfig.background,
+        background: `linear-gradient(135deg, ${rarityConfig.glowColor}10 0%, ${rarityConfig.glowColor}20 100%)`,
         cursor: clickable ? 'pointer' : 'default',
         ...style,
       }}

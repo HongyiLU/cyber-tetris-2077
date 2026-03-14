@@ -992,3 +992,110 @@
     padding: 14px 20px;
   }
 }
+
+/* ==================== v1.9.15 卡组编辑界面卡牌样式 ==================== */
+
+/* 卡组编辑卡片网格布局 */
+.deck-edit-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* 卡组编辑卡片项 */
+.deck-edit-card-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+/* 卡组编辑卡片控制按钮 */
+.deck-edit-card-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.deck-edit-card-controls .deck-edit-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--neon-cyan, #00ffff);
+  background: rgba(0, 255, 255, 0.1);
+  color: var(--neon-cyan, #00ffff);
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.deck-edit-card-controls .deck-edit-btn:hover:not(:disabled) {
+  background: var(--neon-cyan, #00ffff);
+  color: #000;
+  box-shadow: 0 0 15px var(--neon-cyan, #00ffff);
+  transform: scale(1.1);
+}
+
+.deck-edit-card-controls .deck-edit-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: #666;
+}
+
+.deck-edit-card-controls .deck-edit-count {
+  min-width: 60px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.deck-edit-card-controls .count-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--neon-cyan, #00ffff);
+  display: block;
+}
+
+.deck-edit-card-controls .count-value.zero {
+  color: #666;
+}
+
+.deck-edit-card-controls .count-label {
+  font-size: 10px;
+  color: #888;
+  margin-left: 2px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .deck-edit-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 15px;
+    padding: 10px;
+  }
+  
+  .deck-edit-card-controls .deck-edit-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+  }
+  
+  .deck-edit-card-controls .deck-edit-count {
+    min-width: 50px;
+  }
+  
+  .deck-edit-card-controls .count-value {
+    font-size: 16px;
+  }
+}

@@ -299,6 +299,7 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
   };
 
   // v1.9.5 新增：卡组编辑功能（弹窗内使用临时配置）
+  // v1.9.15 修复 P0-2: 注释说明 - 临时配置仅在保存时同步到 DeckManager，避免频繁更新导致性能问题
   const handleSetCardCount = (pieceType: string, count: number) => {
     setEditConfig({ ...editConfig, [pieceType]: count });
   };
@@ -622,58 +623,61 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                 )}
               </div>
 
-              {/* 方块配置列表 */}
+              {/* 方块配置列表 - v1.9.15 使用卡牌样式 */}
               <div className="deck-edit-list">
-                {allCards.map(card => {
-                  const count = editConfig[card.id] ?? 1;
-                  const cardColor = getCardColor(card.id);
-                  
-                  return (
-                    <div key={card.id} className="deck-edit-item">
-                      <div className="deck-edit-card-info">
-                        {/* v1.9.13: 使用方块形状可视化组件代替图标 */}
-                        <BlockVisual
-                          pieceType={card.id}
-                          size={32}
-                          showBorder={true}
-                          showShadow={true}
+                <div className="deck-edit-cards-grid">
+                  {allCards.map(card => {
+                    const count = editConfig[card.id] ?? 1;
+                    // v1.9.15 修复 P0-1: 添加类型转换验证
+                    const cardData: import('../../types/card').Card = {
+                      pieceType: card.id,
+                      name: card.name,
+                      description: card.desc || '', // 添加默认值防止 undefined
+                      rarity: card.rarity,
+                      color: card.color || GAME_CONFIG.COLORS[card.id as keyof typeof GAME_CONFIG.COLORS] || '#ffffff',
+                    };
+                    
+                    return (
+                      <div key={card.id} className="deck-edit-card-item">
+                        <Card
+                          card={cardData}
+                          size="small"
+                          clickable={true}
+                          onClick={() => handleEditSetCardCount(card.id, count > 0 ? 0 : 1)}
                         />
-                        <div className="deck-edit-card-name">
-                          {card.name}
+                        
+                        <div className="deck-edit-card-controls">
+                          <button
+                            onClick={() => handleEditSetCardCount(card.id, count - 1)}
+                            className="deck-edit-btn minus"
+                            disabled={count <= 0}
+                            aria-label="减少数量"
+                          >
+                            −
+                          </button>
+                          
+                          <div className="deck-edit-count">
+                            <span className={`count-value ${count === 0 ? 'zero' : ''}`}>
+                              {count}
+                            </span>
+                            {count > 0 && (
+                              <span className="count-label">张</span>
+                            )}
+                          </div>
+                          
+                          <button
+                            onClick={() => handleEditSetCardCount(card.id, count + 1)}
+                            className="deck-edit-btn plus"
+                            disabled={count >= 3}
+                            aria-label="增加数量"
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
-                      
-                      <div className="deck-edit-controls">
-                        <button
-                          onClick={() => handleEditSetCardCount(card.id, count - 1)}
-                          className="deck-edit-btn minus"
-                          disabled={count <= 0}
-                          aria-label="减少数量"
-                        >
-                          −
-                        </button>
-                        
-                        <div className="deck-edit-count">
-                          <span className={`count-value ${count === 0 ? 'zero' : ''}`}>
-                            {count}
-                          </span>
-                          {count > 0 && (
-                            <span className="count-label">张</span>
-                          )}
-                        </div>
-                        
-                        <button
-                          onClick={() => handleEditSetCardCount(card.id, count + 1)}
-                          className="deck-edit-btn plus"
-                          disabled={count >= 3}
-                          aria-label="增加数量"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
 
               {/* 操作按钮 */}
