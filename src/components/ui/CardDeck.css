@@ -607,6 +607,34 @@
 .card-deck-modal-content.common {
   border: 3px solid #888;
   box-shadow: 0 0 40px rgba(136, 136, 136, 0.6);
+  /* 桌面端：大窗口 */
+  width: 90vw;
+  max-width: 1400px;
+  height: 85vh;
+  max-height: 800px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 平板端：中等窗口 */
+@media (max-width: 1200px) {
+  .card-deck-modal-content.common {
+    width: 90vw;
+    max-width: 900px;
+    height: 80vh;
+    max-height: 650px;
+  }
+}
+
+/* 移动端：小窗口 */
+@media (max-width: 768px) {
+  .card-deck-modal-content.common {
+    width: 95vw;
+    max-width: 500px;
+    height: 85vh;
+    max-height: 550px;
+    padding: 20px;
+  }
 }
 
 .card-deck-modal-title {
@@ -995,6 +1023,42 @@
 
 /* ==================== v1.9.15 卡组编辑界面卡牌样式 ==================== */
 
+/* 卡组编辑弹窗内容区域 - 弹性布局 */
+.card-deck-modal-content.common {
+  /* 已在上面定义响应式尺寸 */
+}
+
+/* 卡组编辑统计区域 */
+.deck-edit-stats {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 15px 0;
+  padding: 12px 20px;
+  background: rgba(0, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+/* 卡组编辑列表区域 - 可滚动 */
+.deck-edit-list {
+  flex: 1;
+  overflow-y: auto;
+  margin: 10px 0;
+  padding: 10px;
+  min-height: 0;
+}
+
+/* 卡组编辑操作按钮区域 */
+.deck-edit-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-shrink: 0;
+}
+
 /* 卡组编辑卡片网格布局 - 响应式 */
 .deck-edit-cards-grid {
   display: grid;
@@ -1004,6 +1068,22 @@
   padding: 16px;
   max-height: 500px;
   overflow-y: auto;
+}
+
+/* 平板端：中等窗口 */
+@media (max-width: 1200px) {
+  .deck-edit-modal-content {
+    width: 90vw;
+    max-width: 900px;
+    height: 80vh;
+    max-height: 650px;
+  }
+  
+  .deck-edit-cards-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    padding: 14px;
+  }
 }
 
 /* 平板端：5 列 */
