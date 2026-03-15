@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import BlockVisual from './BlockVisual';
-import { BlockId } from '../../config/game';
+import GAME_CONFIG from '../../config/game-config';
+
+type BlockId = keyof typeof GAME_CONFIG.SHAPES;
 import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import './CardDeck.css';
 

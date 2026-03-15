@@ -49,7 +49,7 @@ export const GAME_CONFIG = {
     Z: [[1,1,0],[0,1,1],[0,0,0]],
     L: [[0,0,1],[1,1,1],[0,0,0]],
     J: [[1,0,0],[1,1,1],[0,0,0]],
-    // v1.9.16 特殊效果方块（单格形状）
+    // v1.9.17 特殊效果方块（单格）
     BOMB: [[1]],
     TIME: [[1]],
     HEAL: [[1]],
@@ -64,7 +64,7 @@ export const GAME_CONFIG = {
   
   // ==================== 方块颜色 ====================
   COLORS: {
-    // 经典 7 块
+    // 经典 7 块 - 使用高对比度颜色
     I: '#00ffff',    // 青色
     O: '#ffff00',    // 黄色
     T: '#da70d6',    // 兰花紫
@@ -73,16 +73,16 @@ export const GAME_CONFIG = {
     L: '#ff8c00',    // 深橙色
     J: '#4169e1',    // 宝蓝色
     // v1.9.16 特殊效果方块颜色
-    BOMB: '#ff6600',     // 橙色
-    TIME: '#00ccff',     // 天蓝色
-    HEAL: '#ff69b4',     // 粉红色
-    SHIELD: '#cccccc',   // 银灰色
-    COMBO: '#9932cc',    // 紫色
-    CLEAR: '#ffd700',    // 金色
-    LUCKY: '#32cd32',    // 草绿色
-    FREEZE: '#87ceeb',   // 天蓝色
-    FIRE: '#ff4500',     // 橙红色
-    LIGHTNING: '#ffff00',// 黄色
+    BOMB: '#ff6600',
+    TIME: '#00ccff',
+    HEAL: '#ff69b4',
+    SHIELD: '#cccccc',
+    COMBO: '#9932cc',
+    CLEAR: '#ffd700',
+    LUCKY: '#32cd32',
+    FREEZE: '#87ceeb',
+    FIRE: '#ff4500',
+    LIGHTNING: '#ffff00',
   },
   
   // ==================== 方块类型映射 ====================
@@ -240,9 +240,31 @@ export const GAME_CONFIG = {
 };
 
 // 分数倍率（根据方块大小）
-// 经典 7 种方块都是 4 格
+// 经典 7 种方块都是 4 格，特殊方块是 1 格
 export const PIECE_SIZE_MULTIPLIER: Record<number, number> = {
   4: 1.0,   // 4 格方块（经典 7 种）
+  1: 0.5,   // 1 格方块（特殊效果方块）
+};
+
+// 方块名称映射
+export const BLOCK_NAMES: Record<string, string> = {
+  I: 'I-Block',
+  O: 'O-Block',
+  T: 'T-Block',
+  S: 'S-Block',
+  Z: 'Z-Block',
+  L: 'L-Block',
+  J: 'J-Block',
+  BOMB: '💣 炸弹方块',
+  TIME: '⏰ 时间停止',
+  HEAL: '💖 生命偷取',
+  SHIELD: '🛡️ 防御护盾',
+  COMBO: '📈 连击增幅',
+  CLEAR: '🌟 全屏清除',
+  LUCKY: '7️⃣ 幸运七',
+  FREEZE: '❄️ 寒冰冻结',
+  FIRE: '🔥 火焰燃烧',
+  LIGHTNING: '⚡ 雷电连锁',
 };
 
 export default GAME_CONFIG;

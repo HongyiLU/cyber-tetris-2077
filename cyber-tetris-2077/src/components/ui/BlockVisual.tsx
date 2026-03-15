@@ -1,6 +1,8 @@
 import React from 'react';
-import { GAME_CONFIG, BlockId } from '../../config/game';
+import GAME_CONFIG, { BLOCK_NAMES } from '../../config/game-config';
 import './BlockVisual.css';
+
+type BlockId = keyof typeof GAME_CONFIG.SHAPES;
 
 export interface BlockVisualProps {
   blockId: string;
@@ -27,7 +29,7 @@ const BlockVisual: React.FC<BlockVisualProps> = ({
 }) => {
   const shape = GAME_CONFIG.SHAPES[blockId as BlockId] || [];
   const color = GAME_CONFIG.COLORS[blockId as BlockId] || '#888';
-  const name = GAME_CONFIG.BLOCK_NAMES[blockId as BlockId] || blockId;
+  const name = BLOCK_NAMES[blockId as BlockId] || blockId;
 
   // 计算紧凑形状（移除空行和空列）
   const compactShape = shape.map((row) => row.filter((cell) => cell !== 0));
