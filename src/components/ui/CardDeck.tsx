@@ -1,5 +1,6 @@
 // ==================== 卡组管理界面组件 ====================
 // v1.9.14 - 卡牌视觉优化
+// v1.9.16 - 添加特殊效果显示
 
 import React, { useState, useEffect } from 'react';
 import Card from './Card';
@@ -10,6 +11,17 @@ import type { DeckManager } from '../../engine/DeckManager';
 import type { Card as CardType } from '../../types/card';
 import { GAME_CONFIG } from '../../config/game-config';
 import './CardDeck.css';
+
+// v1.9.16 方块特殊效果映射表
+const BLOCK_EFFECTS: Record<string, { name: string; icon: string; description: string }> = {
+  'I': { name: '时间停止', icon: '⏰', description: '暂停敌人攻击 10 秒' },
+  'O': { name: '防御护盾', icon: '🛡️', description: '抵挡下一次攻击' },
+  'T': { name: '炸弹方块', icon: '💣', description: '消除 3x3 区域' },
+  'S': { name: '寒冰冻结', icon: '❄️', description: '冻结敌人 3 秒' },
+  'Z': { name: '火焰燃烧', icon: '🔥', description: '持续伤害 10 点（5 秒）' },
+  'L': { name: '雷电连锁', icon: '⚡', description: '连锁消除相邻方块' },
+  'J': { name: '生命偷取', icon: '💖', description: '恢复 5 点生命值' },
+};
 
 interface CardDeckProps {
   deckManager: DeckManager;
@@ -629,10 +641,14 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                   {allCards.map(card => {
                     const count = editConfig[card.id] ?? 1;
                     // v1.9.15 修复 P0-1: 添加类型转换验证
+                    // v1.9.16 新增：获取方块的特殊效果
+                    const blockEffect = BLOCK_EFFECTS[card.id];
                     const cardData: import('../../types/card').Card = {
                       pieceType: card.id,
                       name: card.name,
-                      description: card.desc || '', // 添加默认值防止 undefined
+                      description: blockEffect 
+                        ? `${card.desc || ''}\n✨ ${blockEffect.icon} ${blockEffect.name}: ${blockEffect.description}`
+                        : (card.desc || ''),
                       rarity: card.rarity,
                       color: card.color || GAME_CONFIG.COLORS[card.id as keyof typeof GAME_CONFIG.COLORS] || '#ffffff',
                     };
