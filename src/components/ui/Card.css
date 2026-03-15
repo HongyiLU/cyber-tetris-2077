@@ -157,6 +157,48 @@
   height: 60px;
 }
 
+/* v1.9.16 特殊效果方块效果图标 */
+.cyber-card-effect-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.effect-icon-emoji {
+  font-size: 32px;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))
+          drop-shadow(0 0 20px currentColor);
+  animation: effect-icon-pulse 2s ease-in-out infinite;
+}
+
+.cyber-card--small .effect-icon-emoji {
+  font-size: 24px;
+}
+
+.cyber-card--large .effect-icon-emoji {
+  font-size: 40px;
+}
+
+/* 效果图标脉冲动画 */
+@keyframes effect-icon-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))
+            drop-shadow(0 0 20px currentColor);
+  }
+  50% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 1))
+            drop-shadow(0 0 30px currentColor);
+  }
+}
+
 /* 效果描述 */
 .cyber-card-description {
   width: 100%;

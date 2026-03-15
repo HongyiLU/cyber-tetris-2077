@@ -1,11 +1,26 @@
 // ==================== 卡牌组件 ====================
 // v1.9.14 - 完整卡牌显示（卡名、卡面、效果、稀有度）
+// v1.9.16 - 特殊效果方块添加效果图标
 
 import React from 'react';
 import type { Rarity } from '../../types/card';
 import { Card, CardProps, getRarityConfig } from '../../types/card';
 import BlockVisual from './BlockVisual';
 import './Card.css';
+
+// v1.9.16 特殊效果方块的效果图标映射
+const SPECIAL_BLOCK_EFFECTS: Record<string, string> = {
+  'BOMB': '💣',
+  'TIME': '⏰',
+  'HEAL': '💖',
+  'SHIELD': '🛡️',
+  'COMBO': '📈',
+  'CLEAR': '🌟',
+  'LUCKY': '7️⃣',
+  'FREEZE': '❄️',
+  'FIRE': '🔥',
+  'LIGHTNING': '⚡',
+};
 
 /**
  * 卡牌组件
@@ -22,6 +37,10 @@ const CardComponent: React.FC<CardProps> = ({
   style,
 }) => {
   const rarityConfig = getRarityConfig(card.rarity);
+  
+  // v1.9.16 判断是否为特殊效果方块
+  const isSpecialBlock = card.pieceType in SPECIAL_BLOCK_EFFECTS;
+  const effectIcon = SPECIAL_BLOCK_EFFECTS[card.pieceType];
 
   // 卡牌尺寸映射
   const sizeMap = {
@@ -67,7 +86,7 @@ const CardComponent: React.FC<CardProps> = ({
         <h3>{card.name}</h3>
       </div>
 
-      {/* 卡面（方块形状） */}
+      {/* 卡面（方块形状 + 效果图标） */}
       <div className="cyber-card-face">
         <BlockVisual
           pieceType={card.pieceType}
@@ -75,6 +94,12 @@ const CardComponent: React.FC<CardProps> = ({
           showBorder={true}
           showShadow={true}
         />
+        {/* v1.9.16 特殊效果方块效果图标 */}
+        {isSpecialBlock && effectIcon && (
+          <div className="cyber-card-effect-icon">
+            <span className="effect-icon-emoji">{effectIcon}</span>
+          </div>
+        )}
       </div>
 
       {/* 效果描述 */}
