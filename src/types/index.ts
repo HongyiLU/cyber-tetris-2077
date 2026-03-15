@@ -56,7 +56,7 @@ export interface GameState {
  * 注意：只包含 GAME_CONFIG.CARDS 中定义的方块类型
  */
 export enum PieceType {
-  // 经典 7 种
+  // 经兵 7 种
   I = 'I',
   O = 'O',
   T = 'T',
@@ -64,8 +64,19 @@ export enum PieceType {
   Z = 'Z',
   L = 'L',
   J = 'J',
-  // 特殊方块（默认解锁）
+  // v1.9.16 特殊效果方块
   BOMB = 'BOMB',
+  TIME = 'TIME',
+  HEAL = 'HEAL',
+  SHIELD = 'SHIELD',
+  COMBO = 'COMBO',
+  CLEAR = 'CLEAR',
+  LUCKY = 'LUCKY',
+  FREEZE = 'FREEZE',
+  FIRE = 'FIRE',
+  LIGHTNING = 'LIGHTNING',
+  // 特殊方块（默认解锁）
+  BOMB_OLD = 'BOMB',
   ROW = 'ROW',
   COL = 'COL',
   RAINBOW = 'RAINBOW',
