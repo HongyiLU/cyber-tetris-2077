@@ -26,7 +26,14 @@ export const {
 // ==================== 方块效果映射（v1.9.16 预留） ====================
 // Note: This is a stub for future implementation
 // Maps basic blocks to their associated effects
-import { EffectTrigger } from '../types/effects';
+
+// 临时定义 EffectTrigger 枚举（避免导入不存在的模块）
+enum EffectTrigger {
+  ON_PLACE = 'onPlace',
+  ON_CLEAR = 'onClear',
+  PASSIVE = 'passive',
+  ON_COMBO = 'onCombo',
+}
 
 export const getBlockEffect = (blockId: string): any => {
   const blockEffects: Record<string, any> = {
