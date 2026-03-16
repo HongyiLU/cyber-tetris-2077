@@ -262,7 +262,12 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
       const deck = deckManager.getDeck(targetDeckId);
       if (!deck) return;
 
-      if (deck.cards.includes(cardId)) {
+      // v1.9.19 修复：检查 DeckCard[] 类型
+      const cardExists = deck.cards.some(c => 
+        typeof c === 'string' ? c === cardId : c.cardId === cardId
+      );
+      
+      if (cardExists) {
         alert('该卡牌已在卡组中');
         return;
       }
@@ -273,7 +278,8 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
       }
 
       deckManager.updateDeck(targetDeckId, {
-        cards: [...deck.cards, cardId],
+        // v1.9.19 修复：添加 DeckCard 对象
+        cards: [...deck.cards, { cardId, count: 1 }],
       });
       setDecks(deckManager.listDecks());
     } catch (error) {
@@ -291,7 +297,10 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
       if (!deck) return;
 
       deckManager.updateDeck(deckId, {
-        cards: deck.cards.filter(id => id !== cardId),
+        // v1.9.19 修复：过滤 DeckCard[] 类型
+        cards: deck.cards.filter(c => 
+          typeof c === 'string' ? c !== cardId : c.cardId !== cardId
+        ),
       });
       setDecks(deckManager.listDecks());
     } catch (error) {
@@ -533,7 +542,10 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                         </div>
                         <div className="deck-cards-preview">
                           {deck.cards.length > 0 ? (
-                            deck.cards.slice(0, 7).map(id => getCardIcon(id)).join(' · ')
+                            deck.cards.slice(0, 7).map(card => {
+                              const cardId = typeof card === 'string' ? card : card.cardId;
+                              return getCardIcon(cardId);
+                            }).join(' · ')
                           ) : (
                             <span className="empty-deck">空卡组</span>
                           )}

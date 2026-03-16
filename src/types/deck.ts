@@ -14,7 +14,7 @@ export interface DeckCard {
 /**
  * 卡组接口
  * 表示玩家自定义的方块卡组
- * v1.9.19 升级：cards 从 string[] 改为 DeckCard[] 以支持数量配置
+ * v1.9.19 升级：cards 支持 string[] 或 DeckCard[] 以向后兼容
  */
 export interface Deck {
   /** 卡组唯一标识符 */
@@ -23,8 +23,8 @@ export interface Deck {
   name: string;
   /** 卡组描述（可选） */
   description?: string;
-  /** 卡组卡牌列表（支持数量配置） */
-  cards: DeckCard[];
+  /** 卡组卡牌列表（支持 string[] 或 DeckCard[]） */
+  cards: (string | DeckCard)[];
   /** 创建时间戳 */
   createdAt: number;
   /** 最后更新时间戳 */

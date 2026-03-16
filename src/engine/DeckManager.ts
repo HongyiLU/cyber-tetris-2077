@@ -302,21 +302,32 @@ export class DeckManager {
   /**
    * 创建新卡组
    * v1.9.9 优化：创建时不验证最小组牌数，允许保存空卡组
+   * v1.9.19 升级：支持 (string | DeckCard)[] 类型（向后兼容）
    * @param name 卡组名称
-   * @param cards 方块 ID 列表
+   * @param cards 方块 ID 列表（支持 string[] 或 DeckCard[]）
    * @param description 卡组描述（可选）
    * @returns 创建的卡组对象，如果验证失败则抛出错误
    */
-  public createDeck(name: string, cards: string[] = [], description?: string): Deck {
+  public createDeck(name: string, cards: (string | DeckCard)[] = [], description?: string): Deck {
     // 生成唯一 ID
     const id = `deck_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     const now = Date.now();
+    
+    // v1.9.19 修复：统一转换为 DeckCard[] 格式
+    const normalizedCards: DeckCard[] = cards.map(card => {
+      if (typeof card === 'string') {
+        return { cardId: card, count: 1 };
+      } else {
+        return { ...card, count: Math.max(1, card.count) };
+      }
+    });
+    
     const deck: Deck = {
       id,
       name,
       description: description?.trim() || undefined,
-      cards: [...cards],
+      cards: normalizedCards,
       createdAt: now,
       updatedAt: now,
     };
@@ -349,6 +360,7 @@ export class DeckManager {
     }
 
     const deckName = newName || `${originalDeck.name} 副本`;
+    // v1.9.19 修复：传递 (string | DeckCard)[] 给 createDeck
     return this.createDeck(deckName, [...originalDeck.cards], originalDeck.description);
   }
 
@@ -519,7 +531,8 @@ export class DeckManager {
 
     // 检查所有卡牌是否有效
     const validCardIds = GAME_CONFIG.CARDS.map(card => card.id);
-    for (const cardId of deck.cards) {
+    for (const card of deck.cards) {
+      const cardId = typeof card === 'string' ? card : card.cardId;
       if (!validCardIds.includes(cardId)) {
         errors.push(`无效的卡牌 ID: ${cardId}`);
       }
@@ -800,12 +813,23 @@ export class DeckManager {
     
     this.currentDrawPool = [];
     
-    // v1.9.19 修复：遍历 DeckCard[]，使用实际的 count 字段
-    deck.cards.forEach((deckCard) => {
-      // 确保数量至少为 1
-      const poolCount = Math.max(1, deckCard.count);
+    // v1.9.19 修复：遍历 (string | DeckCard)[]，支持两种类型
+    deck.cards.forEach((card) => {
+      let cardId: string;
+      let poolCount: number;
+      
+      if (typeof card === 'string') {
+        // 向后兼容：string[] 格式
+        cardId = card;
+        poolCount = 1;
+      } else {
+        // DeckCard[] 格式，使用实际数量
+        cardId = card.cardId;
+        poolCount = Math.max(1, card.count);
+      }
+      
       for (let i = 0; i < poolCount; i++) {
-        this.currentDrawPool.push(deckCard.cardId);
+        this.currentDrawPool.push(cardId);
       }
     });
     
