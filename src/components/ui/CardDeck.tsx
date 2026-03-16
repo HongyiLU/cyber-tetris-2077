@@ -85,12 +85,19 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
   };
 
   // v1.9.11 新增：保存编辑
+  // v1.9.20 修复：使用 updateDeck 更新卡组，而不是 saveDeckConfig
   const handleSaveEdit = () => {
     if (!editingDeckId) return;
     
     try {
-      // 保存配置
-      deckManager.saveDeckConfig();
+      // v1.9.20 修复：将编辑配置转换为 DeckCard[] 格式并更新卡组
+      const cards: (string | DeckCard)[] = Object.entries(editConfig)
+        .filter(([_, count]) => count > 0)  // 只保存数量>0 的卡牌
+        .map(([cardId, count]) => ({ cardId, count }));
+      
+      // 使用 updateDeck 更新卡组
+      deckManager.updateDeck(editingDeckId, { cards });
+      
       setShowEditModal(false);
       setEditingDeckId(null);
       setDecks(deckManager.listDecks());
@@ -99,7 +106,11 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
       setDeckConfig(config);
     } catch (error) {
       console.error('保存编辑失败:', error);
-      alert('保存失败');
+      if (error instanceof Error) {
+        alert(`保存失败：${error.message}`);
+      } else {
+        alert('保存失败');
+      }
     }
   };
 
