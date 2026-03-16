@@ -792,7 +792,7 @@ export class DeckManager {
   /**
    * 重新填充抽取池（洗牌）
    * 从激活的卡组中构建抽取池，使用 Fisher-Yates 洗牌算法
-   * v1.9.5 修改：使用配置的卡组数量构建牌堆
+   * v1.9.19 修复：使用 DeckCard[] 类型的实际数量配置
    */
   private refillDrawPool(): void {
     const deck = this.getActiveDeck();
@@ -800,12 +800,12 @@ export class DeckManager {
     
     this.currentDrawPool = [];
     
-    // 遍历卡组中的每张卡牌
-    deck.cards.forEach((cardId) => {
-      // v1.9.5 修改：使用配置的数量，默认为 1
-      const poolCount = this.deckConfig[cardId] ?? 1;
+    // v1.9.19 修复：遍历 DeckCard[]，使用实际的 count 字段
+    deck.cards.forEach((deckCard) => {
+      // 确保数量至少为 1
+      const poolCount = Math.max(1, deckCard.count);
       for (let i = 0; i < poolCount; i++) {
-        this.currentDrawPool.push(cardId);
+        this.currentDrawPool.push(deckCard.cardId);
       }
     });
     

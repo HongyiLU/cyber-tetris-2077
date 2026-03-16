@@ -1,8 +1,20 @@
 // ==================== 卡组系统类型定义 ====================
 
 /**
+ * 卡组卡牌接口（支持数量配置）
+ * v1.9.19 新增：支持每张卡牌的数量配置
+ */
+export interface DeckCard {
+  /** 卡牌 ID */
+  cardId: string;
+  /** 卡牌数量（默认 1） */
+  count: number;
+}
+
+/**
  * 卡组接口
  * 表示玩家自定义的方块卡组
+ * v1.9.19 升级：cards 从 string[] 改为 DeckCard[] 以支持数量配置
  */
 export interface Deck {
   /** 卡组唯一标识符 */
@@ -11,8 +23,8 @@ export interface Deck {
   name: string;
   /** 卡组描述（可选） */
   description?: string;
-  /** 方块 ID 列表 */
-  cards: string[];
+  /** 卡组卡牌列表（支持数量配置） */
+  cards: DeckCard[];
   /** 创建时间戳 */
   createdAt: number;
   /** 最后更新时间戳 */
