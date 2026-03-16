@@ -1,6 +1,6 @@
 {
   "name": "cyber-tetris-2077",
-  "version": "1.9.19",
+  "version": "1.9.20",
   "description": "赛博方块 2077 - Cyberpunk Tetris with Particle Effects & Audio System",
   "private": true,
   "type": "module",

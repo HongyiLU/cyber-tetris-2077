@@ -242,13 +242,14 @@ describe('DeckManager - v1.9.5 卡组编辑功能', () => {
       expect(deck.length).toBe(0);
     });
 
-    test('最大配置时牌堆应该有 21 张牌（7 种 × 3）', () => {
-      ['I', 'O', 'T', 'S', 'Z', 'L', 'J'].forEach(piece => {
+    test('最大配置时牌堆应该有 51 张牌（7 种基础 × 3 + 10 种特殊 × 3）', () => {
+      // 设置所有卡牌（包括特殊方块）为最大数量 3
+      ['I', 'O', 'T', 'S', 'Z', 'L', 'J', 'BOMB', 'TIME', 'HEAL', 'SHIELD', 'COMBO', 'CLEAR', 'LUCKY', 'FREEZE', 'FIRE', 'LIGHTNING'].forEach(piece => {
         deckManager.setCardCount(piece, 3);
       });
       
       const deck = deckManager.buildDeck();
-      expect(deck.length).toBe(21);
+      expect(deck.length).toBe(51); // 17 种 × 3
     });
   });
 

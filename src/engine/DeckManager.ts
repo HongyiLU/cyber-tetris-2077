@@ -87,9 +87,11 @@ export class DeckManager {
     {
       id: 'preset-complete',
       name: '全卡卡组',
-      description: '只包含经典 7 种方块（特殊方块已移除）',
-      // 只包含经典 7 种
-      cards: ['I', 'O', 'T', 'S', 'Z', 'L', 'J'],
+      description: '包含所有基础方块和特殊方块',
+      cards: GAME_CONFIG.CARDS.map(card => ({
+        cardId: card.id,
+        count: card.type === 'basic' ? 1 : 2  // 特殊方块给 2 个
+      })),
     },
   ];
 
@@ -523,8 +525,9 @@ export class DeckManager {
       errors.push(`卡组最多容纳 ${this.config.maxDeckSize} 张卡牌（当前：${deck.cards.length}）`);
     }
 
-    // 检查是否有重复的卡牌
-    const uniqueCards = new Set(deck.cards);
+    // 检查是否有重复的卡牌（支持 string[] 和 DeckCard[] 两种格式）
+    const cardIds = deck.cards.map(card => typeof card === 'string' ? card : card.cardId);
+    const uniqueCards = new Set(cardIds);
     if (uniqueCards.size !== deck.cards.length) {
       errors.push('卡组中包含重复的卡牌');
     }
@@ -611,14 +614,16 @@ export class DeckManager {
       
       // 恢复卡组（过滤掉无效的卡牌 ID）
       // v1.9.9 优化：保留所有卡组，包括不满足最小组牌数的卡组
+      // v1.9.20 修复：支持 string[] 和 DeckCard[] 两种格式
       if (parsed.decks && Array.isArray(parsed.decks)) {
         const cleanedDecks: Array<[string, Deck]> = [];
         let hasInvalidCards = false;
         
         for (const [deckId, deck] of parsed.decks) {
           const originalCards = deck.cards;
-          // 过滤掉无效的卡牌 ID
-          const filteredCards = deck.cards.filter((cardId: string) => {
+          // 过滤掉无效的卡牌 ID（支持 string[] 和 DeckCard[] 两种格式）
+          const filteredCards = deck.cards.filter((card: string | DeckCard) => {
+            const cardId = typeof card === 'string' ? card : card.cardId;
             const isValid = validCardIds.has(cardId);
             if (!isValid) {
               hasInvalidCards = true;
@@ -987,12 +992,14 @@ export class DeckManager {
   public buildDeck(): string[] {
     const deck: string[] = [];
     
-    // 遍历所有方块类型
-    const validPieceTypes = GAME_CONFIG.CARDS.map(card => card.id);
-    for (const pieceType of validPieceTypes) {
-      const count = this.deckConfig[pieceType] ?? 1;
-      for (let i = 0; i < count; i++) {
-        deck.push(pieceType);
+    // 只遍历 deckConfig 中配置的方块类型
+    for (const [pieceType, count] of Object.entries(this.deckConfig)) {
+      // 验证方块类型是否有效
+      const validPieceTypes = GAME_CONFIG.CARDS.map(card => card.id);
+      if (validPieceTypes.includes(pieceType) && count > 0) {
+        for (let i = 0; i < count; i++) {
+          deck.push(pieceType);
+        }
       }
     }
     

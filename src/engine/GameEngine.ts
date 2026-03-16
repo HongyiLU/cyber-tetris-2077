@@ -216,6 +216,9 @@ export class GameEngine {
     
     // 获取激活的卡组
     this.activeDeck = this.deckManager.getActiveDeck();
+    console.log('[GameEngine] 激活的卡组:', this.activeDeck);
+    console.log('[GameEngine] 卡组卡牌:', this.activeDeck?.cards);
+    console.log('[GameEngine] 抽取池大小:', this.deckManager.getDrawPoolSize());
     
     // 初始化抽取池（开始新的牌堆，不触发抽空惩罚）
     if (this.activeDeck) {

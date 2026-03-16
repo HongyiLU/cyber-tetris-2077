@@ -38,11 +38,7 @@ describe('卡组系统综合验证测试', () => {
       });
 
       test('创建无效卡组应该抛出错误', () => {
-        // 卡组太小
-        expect(() => {
-          deckManager.createDeck('太小的卡组', ['I']);
-        }).toThrow();
-
+        // v1.9.9 优化：创建时不检查最小组牌数，允许保存任意大小的卡组
         // 卡组太大
         const tooManyCards = Array(20).fill('I');
         expect(() => {
@@ -79,8 +75,10 @@ describe('卡组系统综合验证测试', () => {
       test('更新无效卡组应该抛出错误', () => {
         const deck = deckManager.createDeck('测试', ['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
         
+        // v1.9.9 优化：更新时不检查最小组牌数，允许保存任意大小的卡组
+        // 测试其他验证（如无效卡牌 ID）
         expect(() => {
-          deckManager.updateDeck(deck.id, { cards: ['I'] }); // 太小
+          deckManager.updateDeck(deck.id, { cards: ['INVALID_CARD'] });
         }).toThrow();
       });
 
@@ -174,13 +172,17 @@ describe('卡组系统综合验证测试', () => {
         expect(beginner?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       });
 
-      test('全卡卡组应该只包含经典 7 种（特殊方块已移除）', () => {
+      test('全卡卡组应该包含所有基础方块和特殊方块', () => {
         const presets = deckManager.getPresetDecks();
         const complete = presets.find(p => p.id === 'preset-complete');
         
         expect(complete).toBeDefined();
-        expect(complete?.cards.length).toBe(7); // 只包含经典 7 种
-        expect(complete?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
+        // 7 个基础方块 × 1 + 10 个特殊方块 × 2 = 27 张卡牌
+        expect(complete?.cards.length).toBe(17); // 17 种不同的卡牌
+        // 验证包含基础方块
+        const cardIds = complete?.cards.map(card => typeof card === 'string' ? card : card.cardId);
+        expect(cardIds).toContain('I');
+        expect(cardIds).toContain('BOMB'); // 特殊方块
       });
     });
   });
@@ -197,7 +199,8 @@ describe('卡组系统综合验证测试', () => {
         
         // 抽取的方块应该在卡组中
         expect(state.currentPiece).toBeDefined();
-        expect(deck.cards).toContain(state.currentPiece!.type);
+        const cardIds = deck.cards.map(card => typeof card === 'string' ? card : card.cardId);
+        expect(cardIds).toContain(state.currentPiece!.type);
       });
 
       test('未设置卡组时应该使用默认随机', () => {
@@ -221,7 +224,8 @@ describe('卡组系统综合验证测试', () => {
         
         // 应该能从卡组抽取
         expect(state.currentPiece).toBeDefined();
-        expect(deck.cards).toContain(state.currentPiece!.type);
+        const cardIds = deck.cards.map(card => typeof card === 'string' ? card : card.cardId);
+        expect(cardIds).toContain(state.currentPiece!.type);
       });
     });
 
@@ -301,7 +305,9 @@ describe('卡组系统综合验证测试', () => {
       const loaded = newManager.getDeck(deck.id);
       expect(loaded).toBeDefined();
       expect(loaded?.name).toBe('加载测试');
-      expect(loaded?.cards).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
+      // 支持 string[] 和 DeckCard[] 两种格式
+      const loadedCardIds = loaded?.cards.map(card => typeof card === 'string' ? card : card.cardId);
+      expect(loadedCardIds).toEqual(['I', 'O', 'T', 'S', 'Z', 'L', 'J']);
       expect(newManager.getActiveDeck()?.id).toBe(deck.id);
     });
 
@@ -347,7 +353,9 @@ describe('卡组系统综合验证测试', () => {
       // 多次生成方块，都应该来自卡组
       for (let i = 0; i < 10; i++) {
         const state = engine.getGameState();
-        expect(deck.cards).toContain(state.currentPiece!.type);
+        // 支持 string[] 和 DeckCard[] 两种格式
+        const cardIds = deck.cards.map(card => typeof card === 'string' ? card : card.cardId);
+        expect(cardIds).toContain(state.currentPiece!.type);
         engine.hardDrop();
       }
     });
@@ -361,14 +369,16 @@ describe('卡组系统综合验证测试', () => {
       engine.init();
       
       let state = engine.getGameState();
-      expect(deck1.cards).toContain(state.currentPiece!.type);
+      const cardIds1 = deck1.cards.map(card => typeof card === 'string' ? card : card.cardId);
+      expect(cardIds1).toContain(state.currentPiece!.type);
       
       // 切换到卡组 2
       deckManager.setActiveDeck(deck2.id);
       engine.init(); // 重新初始化
       
       state = engine.getGameState();
-      expect(deck2.cards).toContain(state.currentPiece!.type);
+      const cardIds2 = deck2.cards.map(card => typeof card === 'string' ? card : card.cardId);
+      expect(cardIds2).toContain(state.currentPiece!.type);
     });
 
     test('无卡组时使用默认逻辑', () => {

@@ -494,7 +494,10 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                     <h4 className="preset-deck-name">{preset.name}</h4>
                     <p className="preset-deck-desc">{preset.description}</p>
                     <div className="preset-deck-cards">
-                      包含：{preset.cards.map(id => getCardIcon(id)).join(' · ')}
+                      包含：{preset.cards.map(card => {
+                        const cardId = typeof card === 'string' ? card : card.cardId;
+                        return getCardIcon(cardId);
+                      }).join(' · ')}
                     </div>
                   </div>
                   <button
