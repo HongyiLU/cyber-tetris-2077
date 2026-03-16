@@ -61,13 +61,24 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
   };
 
   // v1.9.11 新增：打开编辑弹窗
+  // v1.9.19 修复：确保加载的是当前卡组的数据
   const handleOpenEdit = (deckId: string) => {
     const deck = deckManager.getDeck(deckId);
-    if (!deck) return;
+    if (!deck) {
+      console.error('卡组不存在:', deckId);
+      alert('卡组不存在，请刷新页面后重试');
+      return;
+    }
     
-    // 加载当前卡组配置
-    const config = deckManager.getDeckConfig();
-    setEditConfig(config);
+    // v1.9.19 修复：从卡组数据加载配置，而不是全局配置
+    const cardCounts: { [pieceType: string]: number } = {};
+    deck.cards.forEach(card => {
+      const cardId = typeof card === 'string' ? card : card.cardId;
+      const count = typeof card === 'string' ? 1 : card.count;
+      cardCounts[cardId] = count;
+    });
+    
+    setEditConfig(cardCounts);
     setEditingDeckId(deckId);
     setEditDeckName(deck.name);
     setShowEditModal(true);
