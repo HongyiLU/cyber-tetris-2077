@@ -168,6 +168,18 @@ export class GameEngine {
 
     // 获取卡牌对象（用于特殊效果）
     this.currentCard = cardId ? CARD_DATABASE.getCard(cardId) || null : null;
+    
+    // 🔧 DEBUG: 特殊方块数据流追踪
+    console.log('[GameEngine.createPiece] DEBUG:', {
+      cardId,
+      pieceType,
+      hasShape: !!shape,
+      hasColor: !!color,
+      currentCardId: this.currentCard?.id,
+      currentCardName: this.currentCard?.name,
+      currentCardSpecial: this.currentCard?.special,
+      blockType: this.currentCard?.blockType,
+    });
 
     return {
       type: pieceType,
@@ -432,7 +444,19 @@ export class GameEngine {
       
       // 🔧 触发特殊效果
       if (this.currentCard?.special && clearedLines > 0) {
+        console.log('[GameEngine.lockPiece] 触发特殊效果:', {
+          cardId: this.currentCard.id,
+          cardName: this.currentCard.name,
+          special: this.currentCard.special,
+          clearedLines,
+        });
         this.triggerSpecialEffect(this.currentCard.special, clearedLines);
+      } else {
+        console.log('[GameEngine.lockPiece] 未触发特殊效果:', {
+          hasCard: !!this.currentCard,
+          hasSpecial: !!this.currentCard?.special,
+          clearedLines,
+        });
       }
       
       // 检查胜利

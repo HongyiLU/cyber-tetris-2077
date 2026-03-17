@@ -7,7 +7,8 @@ export { GAME_CONFIG, BLOCK_NAMES };
 // ==================== 方块 ID 类型 ====================
 export type BlockId = 
   | 'I' | 'O' | 'T' | 'S' | 'Z' | 'L' | 'J'
-  | 'BOMB' | 'TIME' | 'HEAL' | 'SHIELD' | 'COMBO' | 'CLEAR' | 'LUCKY' | 'FREEZE' | 'FIRE' | 'LIGHTNING';
+  | 'bomb_block' | 'time_stop' | 'heal_block' | 'shield_block' | 'combo_block' 
+  | 'clear_block' | 'lucky_block' | 'freeze_block' | 'fire_block' | 'lightning_block';
 
 // 重新导出游戏配置中的所有常量
 export const {
