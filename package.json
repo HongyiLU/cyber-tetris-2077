@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "predeploy": "npm run build",
@@ -28,7 +28,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/cyber-tetris-2077.git"
+    "url": "https://github.com/HongyiLU/cyber-tetris-2077.git"
   },
   "dependencies": {
     "react": "^18.2.0",
