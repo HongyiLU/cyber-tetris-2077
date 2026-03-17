@@ -11,6 +11,9 @@ import type { EnemyType } from '../types/enemy';
 import { getEnemyType } from '../config/enemy-config';
 import { createEmptyBoard, checkCollision, rotateShape, copyBoard, copyShape } from '../utils/game-utils';
 import { ParticleEffect } from '../system/ParticleEffect';
+import { SpecialEffectSystem, triggerSpecialEffect } from '../system/SpecialEffectSystem';
+import type { Card } from '../types/card.v2';
+import { CARD_DATABASE } from '../core/CardDatabase';
 import type { GameEndResult, GameStats } from '../types/game';
 
 /**
@@ -37,6 +40,7 @@ export class GameEngine {
   private activeDeck: Deck | null = null; // 当前激活的卡组
   private pieceLocked: boolean = false; // 标记方块是否已锁定
   private lastDrawnCard: { id: string } | null = null; // 记录上次抽取的卡牌
+  private currentCard: Card | null = null; // 当前卡牌对象（用于特殊效果）
   // 战斗系统血量属性
   private playerHp: number = 100;
   private playerMaxHp: number = 100;
@@ -58,6 +62,16 @@ export class GameEngine {
   // 粒子特效系统
   private particleEffect: ParticleEffect | null = null;
   private onParticleSpawn?: (x: number, y: number, color: string, lines: number) => void;
+  
+  // 特殊效果状态
+  private enemyPaused: boolean = false;
+  private enemyPauseEndTime: number = 0;
+  private playerShield: number = 0;
+  private burnDamagePending: number = 0;
+  private burnEndTime: number = 0;
+  private luckyMode: boolean = false;
+  private luckyEliminationCount: number = 0;
+  private garbageRowsToClear: number = 0;
   
   // 音频管理器
   private audioManager: AudioManager;
@@ -128,6 +142,7 @@ export class GameEngine {
    */
   private createPiece(type?: string): Piece {
     let pieceType: string;
+    let cardId: string | undefined;
 
     if (this.activeDeck && this.activeDeck.cards.length > 0) {
       // 从卡组中抽取（牌堆模式：无放回抽样）
@@ -139,15 +154,20 @@ export class GameEngine {
       }
       
       this.lastDrawnCard = drawResult.card;
-      pieceType = drawResult.card?.id || 'T';
+      cardId = drawResult.card?.id;
+      pieceType = cardId || 'T';
     } else {
       // 使用所有方块类型（当前逻辑）
       const types = Object.keys(GAME_CONFIG.SHAPES);
       pieceType = type || types[Math.floor(Math.random() * types.length)];
+      cardId = pieceType;
     }
 
     const shape = GAME_CONFIG.SHAPES[pieceType as keyof typeof GAME_CONFIG.SHAPES];
     const color = GAME_CONFIG.COLORS[pieceType as keyof typeof GAME_CONFIG.COLORS];
+
+    // 获取卡牌对象（用于特殊效果）
+    this.currentCard = cardId ? CARD_DATABASE.getCard(cardId) || null : null;
 
     return {
       type: pieceType,
@@ -212,7 +232,18 @@ export class GameEngine {
     this.paused = false;
     this.pieceLocked = false;
     this.lastDrawnCard = null;
+    this.currentCard = null;
     this.elapsedTime = 0;
+    
+    // 重置特殊效果状态
+    this.enemyPaused = false;
+    this.enemyPauseEndTime = 0;
+    this.playerShield = 0;
+    this.burnDamagePending = 0;
+    this.burnEndTime = 0;
+    this.luckyMode = false;
+    this.luckyEliminationCount = 0;
+    this.garbageRowsToClear = 0;
     
     // 获取激活的卡组
     this.activeDeck = this.deckManager.getActiveDeck();
@@ -398,6 +429,11 @@ export class GameEngine {
       const damage = Math.floor(baseDamage * comboMultiplier);
       
       this.enemyTakeDamage(damage);
+      
+      // 🔧 触发特殊效果
+      if (this.currentCard?.special && clearedLines > 0) {
+        this.triggerSpecialEffect(this.currentCard.special, clearedLines);
+      }
       
       // 检查胜利
       if (this.isEnemyDead()) {
@@ -647,6 +683,187 @@ export class GameEngine {
     return damageTable[lines] || 0;
   }
 
+  // ==================== 特殊效果系统 ====================
+
+  /**
+   * 触发特殊效果
+   * @param effectId 效果 ID
+   * @param linesCleared 消除行数
+   */
+  private triggerSpecialEffect(effectId: string, linesCleared: number): void {
+    if (!this.currentCard) return;
+
+    console.log('[DEBUG] 触发特殊效果', {
+      specialId: effectId,
+      cardId: this.currentCard.id,
+      cardName: this.currentCard.name,
+      linesCleared,
+    });
+
+    // 初始化特殊效果系统
+    SpecialEffectSystem.initialize();
+
+    // 创建战斗状态上下文
+    const stateContext = {
+      playerHp: this.playerHp,
+      playerMaxHp: this.playerMaxHp,
+      enemyHp: this.enemyHp,
+      enemyMaxHp: this.enemyMaxHp,
+      combo: this.combo,
+      paused: this.enemyPaused,
+      
+      // 回调函数
+      healPlayer: (amount: number) => {
+        this.playerHp = Math.min(this.playerHp + amount, this.playerMaxHp);
+        console.log(`[特效] 玩家恢复 ${amount} 点生命值，当前 HP: ${this.playerHp}`);
+      },
+      
+      damageEnemy: (amount: number) => {
+        this.enemyTakeDamage(amount);
+        console.log(`[特效] 敌人受到 ${amount} 点伤害，剩余 HP: ${this.enemyHp}`);
+      },
+      
+      damagePlayer: (amount: number) => {
+        if (this.playerShield > 0) {
+          const shieldAbsorb = Math.min(this.playerShield, amount);
+          this.playerShield -= shieldAbsorb;
+          const remainingDamage = amount - shieldAbsorb;
+          if (remainingDamage > 0) {
+            this.takeDamage(remainingDamage);
+          }
+          console.log(`[特效] 护盾抵挡 ${shieldAbsorb} 点伤害`);
+        } else {
+          this.takeDamage(amount);
+        }
+      },
+      
+      setEnemyPaused: (paused: boolean, duration?: number) => {
+        if (paused && duration) {
+          this.enemyPaused = true;
+          this.enemyPauseEndTime = Date.now() + duration;
+          console.log(`[特效] 敌人被暂停 ${duration / 1000} 秒`);
+        } else {
+          this.enemyPaused = false;
+        }
+      },
+      
+      setPlayerShield: (amount: number) => {
+        this.playerShield = amount;
+        console.log(`[特效] 玩家获得 ${amount} 点护盾`);
+      },
+      
+      clearGarbageRows: (): number => {
+        // 清除底部垃圾行（没有缺口的行）
+        let cleared = 0;
+        for (let row = this.rows - 1; row >= 0; row--) {
+          // 检查是否是垃圾行（只有一个缺口或没有缺口）
+          const emptyCells = this.board[row].filter(cell => cell === 0).length;
+          if (emptyCells <= 1) {
+            this.board.splice(row, 1);
+            this.board.unshift(Array(this.cols).fill(0));
+            cleared++;
+            row++;
+          }
+        }
+        console.log(`[特效] 清除了 ${cleared} 行垃圾行`);
+        return cleared;
+      },
+      
+      eliminate3x3: (boardX: number, boardY: number): number => {
+        // 消除 3x3 区域
+        let eliminated = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const x = boardX + dx;
+            const y = boardY + dy;
+            if (x >= 0 && x < this.cols && y >= 0 && y < this.rows) {
+              if (this.board[y][x] !== 0) {
+                this.board[y][x] = 0;
+                eliminated++;
+              }
+            }
+          }
+        }
+        console.log(`[特效] 消除了 ${eliminated} 个方块（3x3 区域）`);
+        return eliminated;
+      },
+      
+      triggerLightningChain: () => {
+        // 雷电连锁：随机消除一些方块
+        let eliminated = 0;
+        for (let row = 0; row < this.rows; row++) {
+          for (let col = 0; col < this.cols; col++) {
+            if (this.board[row][col] !== 0 && Math.random() < 0.3) {
+              this.board[row][col] = 0;
+              eliminated++;
+            }
+          }
+        }
+        console.log(`[特效] 雷电连锁消除了 ${eliminated} 个方块`);
+      },
+      
+      applyBurnDamage: (amount: number, duration: number) => {
+        this.burnDamagePending = amount;
+        this.burnEndTime = Date.now() + duration;
+        console.log(`[特效] 施加燃烧效果：${amount} 点伤害（${duration / 1000}秒）`);
+      },
+      
+      freezeEnemy: (duration: number) => {
+        this.enemyPaused = true;
+        this.enemyPauseEndTime = Date.now() + duration;
+        console.log(`[特效] 敌人被冻结 ${duration / 1000} 秒`);
+      },
+      
+      setLuckyMode: (enabled: boolean) => {
+        this.luckyMode = enabled;
+        if (enabled) {
+          this.luckyEliminationCount = 0;
+        }
+        console.log(`[特效] 幸运模式：${enabled ? '激活' : '关闭'}`);
+      },
+      
+      addCombo: (amount: number) => {
+        this.combo += amount;
+        if (this.combo > this.maxCombo) {
+          this.maxCombo = this.combo;
+        }
+        console.log(`[特效] 连击数 +${amount}，当前连击：${this.combo}`);
+      },
+    };
+
+    // 触发特殊效果
+    triggerSpecialEffect(effectId, this.currentCard, stateContext);
+  }
+
+  /**
+   * 更新特殊效果状态（每帧调用）
+   * @param currentTime 当前时间戳
+   */
+  public updateSpecialEffects(currentTime: number): void {
+    // 检查敌人暂停是否结束
+    if (this.enemyPaused && currentTime >= this.enemyPauseEndTime) {
+      this.enemyPaused = false;
+      console.log('[特效] 敌人暂停结束');
+    }
+
+    // 处理燃烧伤害
+    if (this.burnDamagePending > 0 && currentTime >= this.burnEndTime) {
+      this.enemyTakeDamage(this.burnDamagePending);
+      console.log(`[特效] 燃烧伤害结算：${this.burnDamagePending} 点`);
+      this.burnDamagePending = 0;
+    }
+
+    // 处理幸运七计数
+    if (this.luckyMode) {
+      this.luckyEliminationCount++;
+      if (this.luckyEliminationCount >= 7) {
+        this.luckyEliminationCount = 0;
+        this.luckyMode = false;
+        console.log('[特效] 幸运七触发：2x 伤害加成！');
+      }
+    }
+  }
+
   // ==================== 敌人 AI 系统 ====================
 
   /**
@@ -655,6 +872,14 @@ export class GameEngine {
    */
   public updateEnemyAI(currentTime: number): void {
     if (this.battleState !== BattleState.FIGHTING) return;
+    
+    // 更新特殊效果状态
+    this.updateSpecialEffects(currentTime);
+    
+    // 如果敌人被暂停，跳过攻击
+    if (this.enemyPaused) {
+      return;
+    }
     
     if (currentTime - this.lastEnemyAttackTime >= this.enemyAttackInterval) {
       this.executeEnemyAttack();
