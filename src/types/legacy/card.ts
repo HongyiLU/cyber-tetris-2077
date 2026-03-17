@@ -1,8 +1,13 @@
+// ⚠️ DEPRECATED: v1.9.x 向后兼容版本
+// 仅用于现有 UI 组件，新代码请使用 '../card'
+// 计划移除日期：2026-06-01 (v2.2.0)
+
 // ==================== 卡牌类型定义 ====================
-// v1.9.14 - 卡牌稀有度系统
+// v1.9.x - 向后兼容版本
+// 用于现有 UI 组件和测试
 
 /**
- * 稀有度枚举
+ * @deprecated Use `CardRarity` from '../card' instead
  */
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
@@ -27,10 +32,10 @@ export interface RarityConfig {
 }
 
 /**
- * 卡牌接口
+ * 卡牌接口（v1.9.x 简化版）
  */
 export interface Card {
-  /** 方块类型 (I, O, T, S, Z, L, J) */
+  /** 方块类型 (I, O, T, S, Z, L, J, BOMB, TIME, etc.) */
   pieceType: string;
   /** 卡名 */
   name: string;

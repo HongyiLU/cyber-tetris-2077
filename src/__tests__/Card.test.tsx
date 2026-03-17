@@ -5,7 +5,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Card, { createCard } from '../components/ui/Card';
-import { Card as CardType } from '../types/card';
+import { Card as CardType } from '../types/legacy/card';
 
 describe('Card Component', () => {
   // 测试用卡牌数据
