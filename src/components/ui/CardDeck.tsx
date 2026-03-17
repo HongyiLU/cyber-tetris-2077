@@ -8,7 +8,7 @@ import BlockVisual from './BlockVisual';
 import type { CardData, Deck } from '../../types';
 import { isDeckValidForUse, getDeckStatusText, DEFAULT_DECK_CONFIG } from '../../types/deck';
 import type { DeckManager } from '../../engine/DeckManager';
-import type { Card as CardType } from '../../types/card';
+import type { Card as CardType } from '../../types/legacy/card';
 import { GAME_CONFIG } from '../../config/game-config';
 import './CardDeck.css';
 
@@ -630,7 +630,7 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                   {allCards.map(card => {
                     const count = editConfig[card.id] ?? 1;
                     // v1.9.15 修复 P0-1: 添加类型转换验证
-                    const cardData: import('../../types/card').Card = {
+                    const cardData: import('../../types/legacy/card').Card = {
                       pieceType: card.id,
                       name: card.name,
                       description: card.desc || '',

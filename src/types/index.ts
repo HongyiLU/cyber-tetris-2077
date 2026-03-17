@@ -1,5 +1,13 @@
 // ==================== 游戏核心类型定义 ====================
 
+// 导出卡牌系统类型（v2.0.0）
+export type { Card, UpgradedCard } from './card.v2';
+export { CardType, CardRarity, type BlockType } from './card.v2';
+
+// 导出 legacy 版本（向后兼容，已弃用）
+export type { Rarity, RarityConfig, Card as LegacyCard, CardProps } from './legacy/card';
+export { RARITY_CONFIG, getRarityConfig, getRarityClassName } from './legacy/card';
+
 /**
  * 方块位置接口
  */
@@ -156,4 +164,3 @@ export { LEADERBOARD_NAMES, LEADERBOARD_ICONS, DEFAULT_LEADERBOARD_CONFIG } from
 
 // 导出方块类型定义（v1.9.16）
 export type { BasicBlockId, SpecialBlockId } from './block-types';
-export { PieceType as BlockType } from './block-types';

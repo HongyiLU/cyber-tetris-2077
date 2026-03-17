@@ -3,8 +3,8 @@
 // v1.9.16 - 特殊效果方块添加效果图标
 
 import React from 'react';
-import type { Rarity } from '../../types/card';
-import { Card, CardProps, getRarityConfig } from '../../types/card';
+import type { Rarity } from '../../types/legacy/card';
+import { Card, CardProps, getRarityConfig } from '../../types/legacy/card';
 import BlockVisual from './BlockVisual';
 import './Card.css';
 
