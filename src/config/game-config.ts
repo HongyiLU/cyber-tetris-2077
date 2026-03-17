@@ -50,16 +50,17 @@ export const GAME_CONFIG = {
     L: [[0,0,1],[1,1,1],[0,0,0]],
     J: [[1,0,0],[1,1,1],[0,0,0]],
     // v1.9.17 特殊效果方块（单格）
-    BOMB: [[1]],
-    TIME: [[1]],
-    HEAL: [[1]],
-    SHIELD: [[1]],
-    COMBO: [[1]],
-    CLEAR: [[1]],
-    LUCKY: [[1]],
-    FREEZE: [[1]],
-    FIRE: [[1]],
-    LIGHTNING: [[1]],
+    // 注意：键名必须与卡牌 ID 一致（小写 + 下划线）
+    bomb_block: [[1]],
+    time_stop: [[1]],
+    heal_block: [[1]],
+    shield_block: [[1]],
+    combo_block: [[1]],
+    clear_block: [[1]],
+    lucky_block: [[1]],
+    freeze_block: [[1]],
+    fire_block: [[1]],
+    lightning_block: [[1]],
   },
   
   // ==================== 方块颜色 ====================
@@ -73,16 +74,17 @@ export const GAME_CONFIG = {
     L: '#ff8c00',    // 深橙色
     J: '#4169e1',    // 宝蓝色
     // v1.9.16 特殊效果方块颜色
-    BOMB: '#ff6600',
-    TIME: '#00ccff',
-    HEAL: '#ff69b4',
-    SHIELD: '#cccccc',
-    COMBO: '#9932cc',
-    CLEAR: '#ffd700',
-    LUCKY: '#32cd32',
-    FREEZE: '#87ceeb',
-    FIRE: '#ff4500',
-    LIGHTNING: '#ffff00',
+    // 注意：键名必须与卡牌 ID 一致（小写 + 下划线）
+    bomb_block: '#ff6600',
+    time_stop: '#00ccff',
+    heal_block: '#ff69b4',
+    shield_block: '#cccccc',
+    combo_block: '#9932cc',
+    clear_block: '#ffd700',
+    lucky_block: '#32cd32',
+    freeze_block: '#87ceeb',
+    fire_block: '#ff4500',
+    lightning_block: '#ffff00',
   },
   
   // ==================== 方块类型映射 ====================
@@ -150,8 +152,9 @@ export const GAME_CONFIG = {
       color: '#4169e1',
     },
     // v1.9.16 特殊效果方块卡牌（独立的方块类型）
+    // 注意：id 必须与 CardDatabase 中的卡牌 ID 一致（小写 + 下划线格式）
     { 
-      id: 'BOMB', 
+      id: 'bomb_block', 
       name: '💣 炸弹方块', 
       type: 'special', 
       rarity: 'epic', 
@@ -159,7 +162,7 @@ export const GAME_CONFIG = {
       color: '#ff6600',
     },
     { 
-      id: 'TIME', 
+      id: 'time_stop', 
       name: '⏰ 时间停止', 
       type: 'special', 
       rarity: 'legendary', 
@@ -167,7 +170,7 @@ export const GAME_CONFIG = {
       color: '#00ccff',
     },
     { 
-      id: 'HEAL', 
+      id: 'heal_block', 
       name: '💖 生命偷取', 
       type: 'special', 
       rarity: 'rare', 
@@ -175,7 +178,7 @@ export const GAME_CONFIG = {
       color: '#ff69b4',
     },
     { 
-      id: 'SHIELD', 
+      id: 'shield_block', 
       name: '🛡️ 防御护盾', 
       type: 'special', 
       rarity: 'uncommon', 
@@ -183,7 +186,7 @@ export const GAME_CONFIG = {
       color: '#cccccc',
     },
     { 
-      id: 'COMBO', 
+      id: 'combo_block', 
       name: '📈 连击增幅', 
       type: 'special', 
       rarity: 'epic', 
@@ -191,7 +194,7 @@ export const GAME_CONFIG = {
       color: '#9932cc',
     },
     { 
-      id: 'CLEAR', 
+      id: 'clear_block', 
       name: '🌟 全屏清除', 
       type: 'special', 
       rarity: 'legendary', 
@@ -199,7 +202,7 @@ export const GAME_CONFIG = {
       color: '#ffd700',
     },
     { 
-      id: 'LUCKY', 
+      id: 'lucky_block', 
       name: '7️⃣ 幸运七', 
       type: 'special', 
       rarity: 'uncommon', 
@@ -207,7 +210,7 @@ export const GAME_CONFIG = {
       color: '#32cd32',
     },
     { 
-      id: 'FREEZE', 
+      id: 'freeze_block', 
       name: '❄️ 寒冰冻结', 
       type: 'special', 
       rarity: 'rare', 
@@ -215,7 +218,7 @@ export const GAME_CONFIG = {
       color: '#87ceeb',
     },
     { 
-      id: 'FIRE', 
+      id: 'fire_block', 
       name: '🔥 火焰燃烧', 
       type: 'special', 
       rarity: 'uncommon', 
@@ -223,7 +226,7 @@ export const GAME_CONFIG = {
       color: '#ff4500',
     },
     { 
-      id: 'LIGHTNING', 
+      id: 'lightning_block', 
       name: '⚡ 雷电连锁', 
       type: 'special', 
       rarity: 'epic', 
@@ -255,16 +258,16 @@ export const BLOCK_NAMES: Record<string, string> = {
   Z: 'Z-Block',
   L: 'L-Block',
   J: 'J-Block',
-  BOMB: '💣 炸弹方块',
-  TIME: '⏰ 时间停止',
-  HEAL: '💖 生命偷取',
-  SHIELD: '🛡️ 防御护盾',
-  COMBO: '📈 连击增幅',
-  CLEAR: '🌟 全屏清除',
-  LUCKY: '7️⃣ 幸运七',
-  FREEZE: '❄️ 寒冰冻结',
-  FIRE: '🔥 火焰燃烧',
-  LIGHTNING: '⚡ 雷电连锁',
+  bomb_block: '💣 炸弹方块',
+  time_stop: '⏰ 时间停止',
+  heal_block: '💖 生命偷取',
+  shield_block: '🛡️ 防御护盾',
+  combo_block: '📈 连击增幅',
+  clear_block: '🌟 全屏清除',
+  lucky_block: '7️⃣ 幸运七',
+  freeze_block: '❄️ 寒冰冻结',
+  fire_block: '🔥 火焰燃烧',
+  lightning_block: '⚡ 雷电连锁',
 };
 
 export default GAME_CONFIG;
