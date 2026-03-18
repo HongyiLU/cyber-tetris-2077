@@ -24,6 +24,14 @@ export interface Piece {
   shape: number[][];
   position: Position;
   color: string;
+  /** 卡牌对象引用（用于特殊效果），v1.9.22 新增 */
+  card?: {
+    id: string;
+    name: string;
+    special?: string;
+    damage?: number;
+    block?: number;
+  };
 }
 
 /**

@@ -181,6 +181,15 @@ export class GameEngine {
       blockType: this.currentCard?.blockType,
     });
 
+    // v1.9.22 修复：将卡牌数据存储在方块上，避免被覆盖
+    const cardData = this.currentCard ? {
+      id: this.currentCard.id,
+      name: this.currentCard.name,
+      special: this.currentCard.special,
+      damage: this.currentCard.damage,
+      block: this.currentCard.block,
+    } : undefined;
+
     return {
       type: pieceType,
       shape,
@@ -189,6 +198,7 @@ export class GameEngine {
         y: 0,
       },
       color,
+      card: cardData,
     };
   }
 
@@ -442,21 +452,25 @@ export class GameEngine {
       
       this.enemyTakeDamage(damage);
       
-      // 🔧 触发特殊效果
-      if (this.currentCard?.special && clearedLines > 0) {
+      // 🔧 v1.9.22 修复：使用 currentPiece 上的 card 数据，而不是 this.currentCard
+      // v1.9.22 之前：this.currentCard 在 init() 时被 nextPiece 的 createPiece() 覆盖
+      const pieceCard = this.currentPiece?.card;
+      if (pieceCard?.special && clearedLines > 0) {
         console.log('[GameEngine.lockPiece] 触发特殊效果:', {
-          cardId: this.currentCard.id,
-          cardName: this.currentCard.name,
-          special: this.currentCard.special,
+          pieceType: this.currentPiece?.type,
+          cardId: pieceCard.id,
+          cardName: pieceCard.name,
+          special: pieceCard.special,
           clearedLines,
         });
-        this.triggerSpecialEffect(this.currentCard.special, clearedLines);
+        this.triggerSpecialEffect(pieceCard.special, clearedLines, pieceCard);
       } else {
         console.log('[GameEngine.lockPiece] 未触发特殊效果:', {
-          hasCard: !!this.currentCard,
-          hasSpecial: !!(this.currentCard?.special),
+          pieceType: this.currentPiece?.type,
+          hasCard: !!pieceCard,
+          hasSpecial: !!pieceCard?.special,
           clearedLines,
-          currentCardId: this.currentCard?.id,
+          cardId: pieceCard?.id,
         });
       }
       
@@ -713,16 +727,23 @@ export class GameEngine {
 
   /**
    * 触发特殊效果
+   * v1.9.22 修复：使用 pieceCard 参数，不再依赖 this.currentCard
    * @param effectId 效果 ID
    * @param linesCleared 消除行数
+   * @param pieceCard 方块上的卡牌数据（可选）
    */
-  private triggerSpecialEffect(effectId: string, linesCleared: number): void {
-    if (!this.currentCard) return;
+  private triggerSpecialEffect(effectId: string, linesCleared: number, pieceCard?: { id: string; name: string; special?: string }): void {
+    // v1.9.22 修复：使用传入的 pieceCard，不再依赖 this.currentCard
+    const card = pieceCard || this.currentPiece?.card;
+    if (!card) {
+      console.warn('[DEBUG] 触发特殊效果失败：没有卡牌数据', { effectId });
+      return;
+    }
 
     console.log('[DEBUG] 触发特殊效果', {
       specialId: effectId,
-      cardId: this.currentCard.id,
-      cardName: this.currentCard.name,
+      cardId: card.id,
+      cardName: card.name,
       linesCleared,
     });
 
@@ -858,7 +879,7 @@ export class GameEngine {
     };
 
     // 触发特殊效果
-    triggerSpecialEffect(effectId, this.currentCard, stateContext);
+    triggerSpecialEffect(effectId, card, stateContext);
   }
 
   /**
