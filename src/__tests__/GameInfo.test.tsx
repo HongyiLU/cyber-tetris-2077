@@ -66,31 +66,31 @@ describe('GameInfo Component', () => {
     it('应该能找到特殊方块卡牌数据', () => {
       const gameState = createMockGameState({
         nextPiece: {
-          type: 'BOMB',
-          shape: GAME_CONFIG.SHAPES.BOMB,
+          type: 'bomb_block',
+          shape: GAME_CONFIG.SHAPES.bomb_block,
           position: { x: 0, y: 0 },
-          color: GAME_CONFIG.COLORS.BOMB,
+          color: GAME_CONFIG.COLORS.bomb_block,
         },
       });
 
       render(<GameInfo gameState={gameState} />);
 
-      // BOMB 是特殊方块，应该显示名称
+      // bomb_block 是特殊方块，应该显示名称
       expect(screen.getByText('💣 炸弹方块')).toBeInTheDocument();
     });
 
     it('应该为所有特殊方块找到卡牌数据', () => {
       const specialBlocks = [
-        { type: 'BOMB', name: '💣 炸弹方块' },
-        { type: 'TIME', name: '⏰ 时间停止' },
-        { type: 'HEAL', name: '💖 生命偷取' },
-        { type: 'SHIELD', name: '🛡️ 防御护盾' },
-        { type: 'COMBO', name: '📈 连击增幅' },
-        { type: 'CLEAR', name: '🌟 全屏清除' },
-        { type: 'LUCKY', name: '7️⃣ 幸运七' },
-        { type: 'FREEZE', name: '❄️ 寒冰冻结' },
-        { type: 'FIRE', name: '🔥 火焰燃烧' },
-        { type: 'LIGHTNING', name: '⚡ 雷电连锁' },
+        { type: 'bomb_block', name: '💣 炸弹方块' },
+        { type: 'time_stop', name: '⏰ 时间停止' },
+        { type: 'heal_block', name: '💖 生命偷取' },
+        { type: 'shield_block', name: '🛡️ 防御护盾' },
+        { type: 'combo_block', name: '📈 连击增幅' },
+        { type: 'clear_block', name: '🌟 全屏清除' },
+        { type: 'lucky_block', name: '7️⃣ 幸运七' },
+        { type: 'freeze_block', name: '❄️ 寒冰冻结' },
+        { type: 'fire_block', name: '🔥 火焰燃烧' },
+        { type: 'lightning_block', name: '⚡ 雷电连锁' },
       ];
 
       specialBlocks.forEach(({ type, name }) => {
@@ -113,10 +113,10 @@ describe('GameInfo Component', () => {
     it('特殊方块应该显示名称和效果描述', () => {
       const gameState = createMockGameState({
         nextPiece: {
-          type: 'BOMB',
-          shape: GAME_CONFIG.SHAPES.BOMB,
+          type: 'bomb_block',
+          shape: GAME_CONFIG.SHAPES.bomb_block,
           position: { x: 0, y: 0 },
-          color: GAME_CONFIG.COLORS.BOMB,
+          color: GAME_CONFIG.COLORS.bomb_block,
         },
       });
 
@@ -129,10 +129,10 @@ describe('GameInfo Component', () => {
     it('特殊方块应该有粉色边框和发光效果', () => {
       const gameState = createMockGameState({
         nextPiece: {
-          type: 'TIME',
-          shape: GAME_CONFIG.SHAPES.TIME,
+          type: 'time_stop',
+          shape: GAME_CONFIG.SHAPES.time_stop,
           position: { x: 0, y: 0 },
-          color: GAME_CONFIG.COLORS.TIME,
+          color: GAME_CONFIG.COLORS.time_stop,
         },
       });
 
@@ -150,10 +150,10 @@ describe('GameInfo Component', () => {
 
     it('不同特殊方块应该显示不同的效果描述', () => {
       const testCases = [
-        { type: 'TIME', desc: '暂停敌人攻击 10 秒' },
-        { type: 'HEAL', desc: '恢复 5 点生命值' },
-        { type: 'SHIELD', desc: '抵挡下一次攻击' },
-        { type: 'FREEZE', desc: '冻结敌人 3 秒' },
+        { type: 'time_stop', desc: '暂停敌人攻击 10 秒' },
+        { type: 'heal_block', desc: '恢复 5 点生命值' },
+        { type: 'shield_block', desc: '抵挡下一次攻击' },
+        { type: 'freeze_block', desc: '冻结敌人 3 秒' },
       ];
 
       testCases.forEach(({ type, desc }) => {
@@ -280,10 +280,10 @@ describe('GameInfo Component', () => {
     it('桌面端特殊方块应该显示名称和描述', () => {
       const gameState = createMockGameState({
         nextPiece: {
-          type: 'CLEAR',
-          shape: GAME_CONFIG.SHAPES.CLEAR,
+          type: 'clear_block',
+          shape: GAME_CONFIG.SHAPES.clear_block,
           position: { x: 0, y: 0 },
-          color: GAME_CONFIG.COLORS.CLEAR,
+          color: GAME_CONFIG.COLORS.clear_block,
         },
       });
 
@@ -355,10 +355,10 @@ describe('GameInfo Component', () => {
     it('移动端特殊方块应该显示名称和描述', () => {
       const gameState = createMockGameState({
         nextPiece: {
-          type: 'LIGHTNING',
-          shape: GAME_CONFIG.SHAPES.LIGHTNING,
+          type: 'lightning_block',
+          shape: GAME_CONFIG.SHAPES.lightning_block,
           position: { x: 0, y: 0 },
-          color: GAME_CONFIG.COLORS.LIGHTNING,
+          color: GAME_CONFIG.COLORS.lightning_block,
         },
       });
 
@@ -407,16 +407,16 @@ describe('GameInfo Component', () => {
     it('特殊方块应该渲染单格形状', () => {
       const gameState = createMockGameState({
         nextPiece: {
-          type: 'BOMB',
-          shape: GAME_CONFIG.SHAPES.BOMB,
+          type: 'bomb_block',
+          shape: GAME_CONFIG.SHAPES.bomb_block,
           position: { x: 0, y: 0 },
-          color: GAME_CONFIG.COLORS.BOMB,
+          color: GAME_CONFIG.COLORS.bomb_block,
         },
       });
 
       const { container } = render(<GameInfo gameState={gameState} />);
 
-      // BOMB 是 1x1 的方块
+      // bomb_block 是 1x1 的方块
       expect(container.innerHTML).toContain('15px'); // 移动端小尺寸
     });
   });

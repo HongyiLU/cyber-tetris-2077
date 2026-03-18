@@ -97,9 +97,9 @@ describe('CardDatabase', () => {
       expect(attackCards.length).toBe(5);
     });
 
-    it('技能卡数量应该为 5 张', () => {
+    it('技能卡数量应该为 10 张', () => {
       const skillCards = db.getCardsByType(CardType.SKILL);
-      expect(skillCards.length).toBe(5);
+      expect(skillCards.length).toBe(10);
     });
   });
 

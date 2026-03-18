@@ -8,7 +8,7 @@ import type { Piece, Position, GameState } from '../types';
 import { BattleState } from '../types';
 import type { Deck, DrawResult } from '../types/deck';
 import type { EnemyType } from '../types/enemy';
-import { getEnemyType } from '../config/enemy-config';
+import { getEnemyType, getAllEnemies } from '../config/enemy-config';
 import { createEmptyBoard, checkCollision, rotateShape, copyBoard, copyShape } from '../utils/game-utils';
 import { ParticleEffect } from '../system/ParticleEffect';
 import { SpecialEffectSystem, triggerSpecialEffect } from '../system/SpecialEffectSystem';
@@ -454,8 +454,9 @@ export class GameEngine {
       } else {
         console.log('[GameEngine.lockPiece] 未触发特殊效果:', {
           hasCard: !!this.currentCard,
-          hasSpecial: !!this.currentCard?.special,
+          hasSpecial: !!(this.currentCard?.special),
           clearedLines,
+          currentCardId: this.currentCard?.id,
         });
       }
       
@@ -528,10 +529,12 @@ export class GameEngine {
     const color = GAME_CONFIG.COLORS[pieceType as keyof typeof GAME_CONFIG.COLORS] || '#ffffff';
     
     // 计算特效中心位置（棋盘中间）
-    const centerX = (this.cols / 2) * 30; // 假设每个格子 30px
+    const blockSize = GAME_CONFIG.GAME.BLOCK_SIZE;
+    const boardHeight = this.rows * blockSize;
+    const centerX = (this.cols / 2) * blockSize;
     const centerY = clearedRows.length > 0 
-      ? (clearedRows[0] / this.rows) * 600 // 假设棋盘高度 600px
-      : 300;
+      ? (clearedRows[0] / this.rows) * boardHeight
+      : boardHeight / 2;
 
     // 使用回调通知 UI 层生成粒子
     if (this.onParticleSpawn) {
@@ -668,7 +671,6 @@ export class GameEngine {
    * @returns 敌人类型数组
    */
   public getAllEnemyTypes(): EnemyType[] {
-    const { getAllEnemies } = require('../config/enemy-config');
     return getAllEnemies();
   }
 

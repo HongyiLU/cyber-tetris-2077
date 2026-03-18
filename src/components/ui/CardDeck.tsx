@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import Card from './Card';
 import BlockVisual from './BlockVisual';
 import type { CardData, Deck } from '../../types';
-import { isDeckValidForUse, getDeckStatusText, DEFAULT_DECK_CONFIG } from '../../types/deck';
+import { isDeckValidForUse, getDeckStatusText, DEFAULT_DECK_CONFIG, type DeckCard } from '../../types/deck';
 import type { DeckManager } from '../../engine/DeckManager';
 import type { Card as CardType } from '../../types/legacy/card';
 import { GAME_CONFIG } from '../../config/game-config';

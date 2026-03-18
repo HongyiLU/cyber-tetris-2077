@@ -27,9 +27,11 @@ export const GAME_CONFIG = {
   },
   
   // ==================== 特殊方块系统 ====================
-  // 已移除：游戏现在只使用经典 7 种方块
+  // 注意：特殊方块已在 SHAPES 和 COLORS 中定义（bomb_block, time_stop 等）
+  // 此处用于配置特殊方块的全局开关和行为
   SPECIAL: {
-    // 特殊方块系统已禁用
+    ENABLED: true,
+    SPAWN_CHANCE: 0.1, // 特殊方块生成概率
   },
   
   // ==================== 分数系统 ====================
@@ -90,6 +92,10 @@ export const GAME_CONFIG = {
   // ==================== 方块类型映射 ====================
   PIECE_TYPE_MAP: {
     I: 1, O: 2, T: 3, S: 4, Z: 5, L: 6, J: 7,
+    // v1.9.21 新增：特殊方块（8-17）
+    bomb_block: 8, time_stop: 9, heal_block: 10,
+    shield_block: 11, combo_block: 12, clear_block: 13,
+    lucky_block: 14, freeze_block: 15, fire_block: 16, lightning_block: 17,
   },
   
   // ==================== 卡牌数据 ====================
@@ -229,7 +235,7 @@ export const GAME_CONFIG = {
       id: 'lightning_block', 
       name: '⚡ 雷电连锁', 
       type: 'special', 
-      rarity: 'epic', 
+      rarity: 'rare', 
       desc: '连锁消除相邻方块',
       color: '#ffff00',
     },

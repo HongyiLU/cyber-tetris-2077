@@ -25,16 +25,7 @@ export class CardDatabase {
    */
   static getInstance(): CardDatabase {
     if (!CardDatabase.instance) {
-      if (!CardDatabase.isInitializing) {
-        CardDatabase.isInitializing = true;
-        CardDatabase.instance = new CardDatabase();
-        CardDatabase.isInitializing = false;
-      } else {
-        // 等待初始化完成
-        while (!CardDatabase.instance) {
-          // 简单等待，生产环境建议用 Promise
-        }
-      }
+      CardDatabase.instance = new CardDatabase();
     }
     return CardDatabase.instance;
   }

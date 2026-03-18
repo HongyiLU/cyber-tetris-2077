@@ -23,6 +23,8 @@ export enum CardRarity {
   UNCOMMON = 'uncommon',
   /** 稀有 - 金色 */
   RARE = 'rare',
+  /** 史诗 - 紫色 */
+  EPIC = 'epic',
   /** 传说 - 橙色 */
   LEGENDARY = 'legendary',
 }
@@ -38,16 +40,16 @@ export type BlockType =
   | 'Z'
   | 'L'
   | 'J' // 基础 7 种
-  | 'BOMB'
-  | 'TIME'
-  | 'HEAL'
-  | 'SHIELD'
-  | 'COMBO'
-  | 'CLEAR'
-  | 'LUCKY'
-  | 'FREEZE'
-  | 'FIRE'
-  | 'LIGHTNING'; // 特殊 10 种
+  | 'bomb_block'
+  | 'time_stop'
+  | 'heal_block'
+  | 'shield_block'
+  | 'combo_block'
+  | 'clear_block'
+  | 'lucky_block'
+  | 'freeze_block'
+  | 'fire_block'
+  | 'lightning_block'; // 特殊 10 种
 
 /**
  * 卡牌接口

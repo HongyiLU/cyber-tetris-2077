@@ -9,16 +9,16 @@ const { SHAPES, COLORS, CARDS, GAME } = GAME_CONFIG;
 describe('SpecialBlockShapes - v1.9.17', () => {
   // 10 种特殊效果方块 ID
   const SPECIAL_BLOCKS = [
-    'BOMB',
-    'TIME',
-    'HEAL',
-    'SHIELD',
-    'COMBO',
-    'CLEAR',
-    'LUCKY',
-    'FREEZE',
-    'FIRE',
-    'LIGHTNING',
+    'bomb_block',
+    'time_stop',
+    'heal_block',
+    'shield_block',
+    'combo_block',
+    'clear_block',
+    'lucky_block',
+    'freeze_block',
+    'fire_block',
+    'lightning_block',
   ];
 
   // 经典 7 种基础方块 ID
@@ -32,86 +32,86 @@ describe('SpecialBlockShapes - v1.9.17', () => {
       });
     });
 
-    it('BOMB 形状为 [[1]]', () => {
-      expect((SHAPES as any).BOMB).toEqual([[1]]);
+    it('bomb_block 形状为 [[1]]', () => {
+      expect((SHAPES as any).bomb_block).toEqual([[1]]);
     });
 
-    it('TIME 形状为 [[1]]', () => {
-      expect((SHAPES as any).TIME).toEqual([[1]]);
+    it('time_stop 形状为 [[1]]', () => {
+      expect((SHAPES as any).time_stop).toEqual([[1]]);
     });
 
-    it('HEAL 形状为 [[1]]', () => {
-      expect((SHAPES as any).HEAL).toEqual([[1]]);
+    it('heal_block 形状为 [[1]]', () => {
+      expect((SHAPES as any).heal_block).toEqual([[1]]);
     });
 
-    it('SHIELD 形状为 [[1]]', () => {
-      expect((SHAPES as any).SHIELD).toEqual([[1]]);
+    it('shield_block 形状为 [[1]]', () => {
+      expect((SHAPES as any).shield_block).toEqual([[1]]);
     });
 
-    it('COMBO 形状为 [[1]]', () => {
-      expect((SHAPES as any).COMBO).toEqual([[1]]);
+    it('combo_block 形状为 [[1]]', () => {
+      expect((SHAPES as any).combo_block).toEqual([[1]]);
     });
 
-    it('CLEAR 形状为 [[1]]', () => {
-      expect((SHAPES as any).CLEAR).toEqual([[1]]);
+    it('clear_block 形状为 [[1]]', () => {
+      expect((SHAPES as any).clear_block).toEqual([[1]]);
     });
 
-    it('LUCKY 形状为 [[1]]', () => {
-      expect((SHAPES as any).LUCKY).toEqual([[1]]);
+    it('lucky_block 形状为 [[1]]', () => {
+      expect((SHAPES as any).lucky_block).toEqual([[1]]);
     });
 
-    it('FREEZE 形状为 [[1]]', () => {
-      expect((SHAPES as any).FREEZE).toEqual([[1]]);
+    it('freeze_block 形状为 [[1]]', () => {
+      expect((SHAPES as any).freeze_block).toEqual([[1]]);
     });
 
-    it('FIRE 形状为 [[1]]', () => {
-      expect((SHAPES as any).FIRE).toEqual([[1]]);
+    it('fire_block 形状为 [[1]]', () => {
+      expect((SHAPES as any).fire_block).toEqual([[1]]);
     });
 
-    it('LIGHTNING 形状为 [[1]]', () => {
-      expect((SHAPES as any).LIGHTNING).toEqual([[1]]);
+    it('lightning_block 形状为 [[1]]', () => {
+      expect((SHAPES as any).lightning_block).toEqual([[1]]);
     });
   });
 
   describe('特殊方块颜色配置', () => {
-    it('BOMB 颜色应为 #ff6600', () => {
-      expect((COLORS as any).BOMB).toBe('#ff6600');
+    it('bomb_block 颜色应为 #ff6600', () => {
+      expect((COLORS as any).bomb_block).toBe('#ff6600');
     });
 
-    it('TIME 颜色应为 #00ccff', () => {
-      expect((COLORS as any).TIME).toBe('#00ccff');
+    it('time_stop 颜色应为 #00ccff', () => {
+      expect((COLORS as any).time_stop).toBe('#00ccff');
     });
 
-    it('HEAL 颜色应为 #ff69b4', () => {
-      expect((COLORS as any).HEAL).toBe('#ff69b4');
+    it('heal_block 颜色应为 #ff69b4', () => {
+      expect((COLORS as any).heal_block).toBe('#ff69b4');
     });
 
-    it('SHIELD 颜色应为 #cccccc', () => {
-      expect((COLORS as any).SHIELD).toBe('#cccccc');
+    it('shield_block 颜色应为 #cccccc', () => {
+      expect((COLORS as any).shield_block).toBe('#cccccc');
     });
 
-    it('COMBO 颜色应为 #9932cc', () => {
-      expect((COLORS as any).COMBO).toBe('#9932cc');
+    it('combo_block 颜色应为 #9932cc', () => {
+      expect((COLORS as any).combo_block).toBe('#9932cc');
     });
 
-    it('CLEAR 颜色应为 #ffd700', () => {
-      expect((COLORS as any).CLEAR).toBe('#ffd700');
+    it('clear_block 颜色应为 #ffd700', () => {
+      expect((COLORS as any).clear_block).toBe('#ffd700');
     });
 
-    it('LUCKY 颜色应为 #32cd32', () => {
-      expect((COLORS as any).LUCKY).toBe('#32cd32');
+    it('lucky_block 颜色应为 #32cd32', () => {
+      expect((COLORS as any).lucky_block).toBe('#32cd32');
     });
 
-    it('FREEZE 颜色应为 #87ceeb', () => {
-      expect((COLORS as any).FREEZE).toBe('#87ceeb');
+    it('freeze_block 颜色应为 #87ceeb', () => {
+      expect((COLORS as any).freeze_block).toBe('#87ceeb');
     });
 
-    it('FIRE 颜色应为 #ff4500', () => {
-      expect((COLORS as any).FIRE).toBe('#ff4500');
+    it('fire_block 颜色应为 #ff4500', () => {
+      expect((COLORS as any).fire_block).toBe('#ff4500');
     });
 
-    it('LIGHTNING 颜色应为 #ffff00', () => {
-      expect((COLORS as any).LIGHTNING).toBe('#ffff00');
+    it('lightning_block 颜色应为 #ffff00', () => {
+      expect((COLORS as any).lightning_block).toBe('#ffff00');
     });
   });
 

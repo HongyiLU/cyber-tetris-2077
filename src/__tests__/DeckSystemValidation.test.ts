@@ -182,7 +182,7 @@ describe('卡组系统综合验证测试', () => {
         // 验证包含基础方块
         const cardIds = complete?.cards.map(card => typeof card === 'string' ? card : card.cardId);
         expect(cardIds).toContain('I');
-        expect(cardIds).toContain('BOMB'); // 特殊方块
+        expect(cardIds).toContain('bomb_block'); // 特殊方块
       });
     });
   });

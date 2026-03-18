@@ -72,9 +72,9 @@ export class SpecialEffectSystem {
       state.setPlayerShield(5);
     });
 
-    // 🔥 连击强化 - 连击数 +2
-    this.effects.set('combo_plus_2', (card, state) => {
-      console.log('[特效] 连击强化：连击数 +2');
+    // 🔥 连击强化 - 连击伤害 +50%
+    this.effects.set('combo_damage_plus_50', (card, state) => {
+      console.log('[特效] 连击强化：连击伤害 +50%');
       state.addCombo(2);
     });
 

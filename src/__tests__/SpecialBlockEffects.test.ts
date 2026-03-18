@@ -9,10 +9,10 @@ describe('特殊方块效果', () => {
   const specialBlockIds = [
     'bomb_block',
     'time_stop',
-    'heal',
-    'defend', // 有 shield 效果
-    'combo_boost',
-    'lightning_strike',
+    'heal_block',
+    'shield_block', // 有 shield 效果
+    'combo_block',
+    'lightning_block',
   ];
 
   describe('卡牌数据验证', () => {
@@ -53,23 +53,23 @@ describe('特殊方块效果', () => {
     });
 
     it('治疗应该有 heal_3hp 效果', () => {
-      const heal = CARD_DATABASE.getCard('heal');
+      const heal = CARD_DATABASE.getCard('heal_block');
       expect(heal).toBeDefined();
       expect(heal?.special).toBe('heal_3hp');
       expect(heal?.type).toBe(CardType.SKILL);
     });
 
-    it('连击强化应该有 combo_plus_2 效果', () => {
-      const comboBoost = CARD_DATABASE.getCard('combo_boost');
+    it('连击强化应该有 combo_damage_plus_50 效果', () => {
+      const comboBoost = CARD_DATABASE.getCard('combo_block');
       expect(comboBoost).toBeDefined();
-      expect(comboBoost?.special).toBe('combo_plus_2');
+      expect(comboBoost?.special).toBe('combo_damage_plus_50');
       expect(comboBoost?.type).toBe(CardType.SKILL);
     });
 
-    it('闪电打击应该有 chance_crit 效果', () => {
-      const lightningStrike = CARD_DATABASE.getCard('lightning_strike');
+    it('闪电打击应该有 lightning_chain 效果', () => {
+      const lightningStrike = CARD_DATABASE.getCard('lightning_block');
       expect(lightningStrike).toBeDefined();
-      expect(lightningStrike?.special).toBe('chance_crit');
+      expect(lightningStrike?.special).toBe('lightning_chain');
       expect(lightningStrike?.type).toBe(CardType.ATTACK);
     });
   });
@@ -94,13 +94,12 @@ describe('特殊方块效果', () => {
         'pause_enemy_10s',
         'heal_3hp',
         'shield_5',
-        'combo_plus_2',
+        'combo_damage_plus_50',
         'clear_all_garbage',
         'lucky_7th_double',
         'freeze_enemy_3s',
         'burn_10_5s',
         'lightning_chain',
-        'chance_crit',
       ];
 
       expectedEffects.forEach(effectId => {
@@ -148,7 +147,7 @@ describe('特殊方块效果', () => {
 
     it('治疗效果应该能恢复生命值', () => {
       let healedAmount = 0;
-      const mockCard = CARD_DATABASE.getCard('heal')!;
+      const mockCard = CARD_DATABASE.getCard('heal_block')!;
       
       SpecialEffectSystem.trigger('heal_3hp', mockCard, {
         playerHp: 50,
@@ -178,9 +177,9 @@ describe('特殊方块效果', () => {
 
     it('连击强化效果应该能增加连击数', () => {
       let comboAdded = 0;
-      const mockCard = CARD_DATABASE.getCard('combo_boost')!;
+      const mockCard = CARD_DATABASE.getCard('combo_block')!;
       
-      SpecialEffectSystem.trigger('combo_plus_2', mockCard, {
+      SpecialEffectSystem.trigger('combo_damage_plus_50', mockCard, {
         playerHp: 100,
         playerMaxHp: 100,
         enemyHp: 200,
