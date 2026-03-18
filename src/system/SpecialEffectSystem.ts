@@ -19,6 +19,8 @@ interface BattleStateContext {
   enemyMaxHp: number;
   combo: number;
   paused: boolean;
+  // v1.9.22 新增：用于 eliminate_3x3 等需要位置的效果
+  eliminatePosition?: { x: number; y: number };
   // 回调函数
   healPlayer: (amount: number) => void;
   damageEnemy: (amount: number) => void;
@@ -51,7 +53,9 @@ export class SpecialEffectSystem {
     // 💣 炸弹方块 - 消除 3x3 区域
     this.effects.set('eliminate_3x3', (card, state) => {
       console.log('[特效] 炸弹方块：消除 3x3 区域');
-      // 3x3 消除逻辑在 GameEngine 中通过 eliminate3x3 回调实现
+      // v1.9.22 修复：直接通过回调执行消除，位置由 GameEngine 通过 eliminatePosition 提供
+      const result = state.eliminate3x3(state.eliminatePosition?.x ?? 5, state.eliminatePosition?.y ?? 10);
+      console.log(`[特效] 炸弹方块：消除了 ${result} 个方块`);
     });
 
     // ⏰ 时间停止 - 暂停敌人攻击 10 秒

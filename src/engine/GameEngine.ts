@@ -455,6 +455,7 @@ export class GameEngine {
       // 🔧 v1.9.22 修复：使用 currentPiece 上的 card 数据，而不是 this.currentCard
       // v1.9.22 之前：this.currentCard 在 init() 时被 nextPiece 的 createPiece() 覆盖
       const pieceCard = this.currentPiece?.card;
+      const piecePosition = this.currentPiece?.position;
       if (pieceCard?.special && clearedLines > 0) {
         console.log('[GameEngine.lockPiece] 触发特殊效果:', {
           pieceType: this.currentPiece?.type,
@@ -462,8 +463,9 @@ export class GameEngine {
           cardName: pieceCard.name,
           special: pieceCard.special,
           clearedLines,
+          piecePosition,
         });
-        this.triggerSpecialEffect(pieceCard.special, clearedLines, pieceCard);
+        this.triggerSpecialEffect(pieceCard.special, clearedLines, pieceCard, piecePosition);
       } else {
         console.log('[GameEngine.lockPiece] 未触发特殊效果:', {
           pieceType: this.currentPiece?.type,
@@ -731,8 +733,9 @@ export class GameEngine {
    * @param effectId 效果 ID
    * @param linesCleared 消除行数
    * @param pieceCard 方块上的卡牌数据（可选）
+   * @param piecePosition 方块位置（用于 eliminate_3x3 等效果）
    */
-  private triggerSpecialEffect(effectId: string, linesCleared: number, pieceCard?: { id: string; name: string; special?: string }): void {
+  private triggerSpecialEffect(effectId: string, linesCleared: number, pieceCard?: { id: string; name: string; special?: string }, piecePosition?: { x: number; y: number }): void {
     // v1.9.22 修复：使用传入的 pieceCard，不再依赖 this.currentCard
     const card = pieceCard || this.currentPiece?.card;
     if (!card) {
@@ -745,12 +748,14 @@ export class GameEngine {
       cardId: card.id,
       cardName: card.name,
       linesCleared,
+      piecePosition,
     });
 
     // 初始化特殊效果系统
     SpecialEffectSystem.initialize();
 
     // 创建战斗状态上下文
+    // v1.9.22 新增：eliminatePosition 用于 eliminate_3x3 等需要位置的效果
     const stateContext = {
       playerHp: this.playerHp,
       playerMaxHp: this.playerMaxHp,
@@ -758,6 +763,7 @@ export class GameEngine {
       enemyMaxHp: this.enemyMaxHp,
       combo: this.combo,
       paused: this.enemyPaused,
+      eliminatePosition: piecePosition,
       
       // 回调函数
       healPlayer: (amount: number) => {
@@ -878,8 +884,8 @@ export class GameEngine {
       },
     };
 
-    // 触发特殊效果
-    triggerSpecialEffect(effectId, card, stateContext);
+    // 触发特殊效果（传递位置信息用于 eliminate_3x3 等效果）
+    triggerSpecialEffect(effectId, card, stateContext, piecePosition);
   }
 
   /**
