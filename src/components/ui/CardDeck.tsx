@@ -10,6 +10,7 @@ import { isDeckValidForUse, getDeckStatusText, DEFAULT_DECK_CONFIG, type DeckCar
 import type { DeckManager } from '../../engine/DeckManager';
 import type { Card as CardType } from '../../types/legacy/card';
 import { GAME_CONFIG } from '../../config/game-config';
+import { CARD_DATABASE } from '../../core/CardDatabase';
 import './CardDeck.css';
 
 interface CardDeckProps {
@@ -36,8 +37,8 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
   const [editConfig, setEditConfig] = useState<{ [pieceType: string]: number }>({});
   const [editDeckName, setEditDeckName] = useState('');
 
-  // 所有可用卡牌
-  const allCards = deckManager.getAllCards();
+  // 所有可用卡牌（使用 CardDatabase 的卡牌数据，确保 ID 与卡组存储一致）
+  const allCards = CARD_DATABASE.getAllCards();
 
   // 加载卡组列表
   useEffect(() => {
@@ -667,12 +668,13 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                   {allCards.map(card => {
                     const count = editConfig[card.id] ?? 1;
                     // v1.9.15 修复 P0-1: 添加类型转换验证
+                    // v2.0.1 修复: CardDatabase 卡牌使用 blockType 映射到 tetromino ID 用于颜色查找
                     const cardData: import('../../types/legacy/card').Card = {
-                      pieceType: card.id,
+                      pieceType: card.blockType,
                       name: card.name,
-                      description: card.desc || '',
-                      rarity: card.rarity,
-                      color: card.color || GAME_CONFIG.COLORS[card.id as keyof typeof GAME_CONFIG.COLORS] || '#ffffff',
+                      description: card.description || '',
+                      rarity: card.rarity as import('../../types/legacy/card').Rarity,
+                      color: card.color || GAME_CONFIG.COLORS[card.blockType as keyof typeof GAME_CONFIG.COLORS] || '#ffffff',
                     };
                     
                     return (
@@ -757,15 +759,16 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
         {/* 卡牌网格（收藏标签页） */}
         {activeTab === 'collection' && (
           <div className="card-deck-grid">
-            {filterCards(allCards).map(card => {
+            {filterCards(allCards as unknown as CardData[]).map(card => {
               // v1.9.14: 将 CardData 转换为 Card 类型
               // v1.9.15-fix2: 添加默认值防止 undefined
+              // v2.0.1 修复: CardDatabase 卡牌使用 blockType 映射到 tetromino ID
               const cardData: CardType = {
-                pieceType: card.id,
+                pieceType: (card as any).blockType || card.id,
                 name: card.name,
-                description: card.desc || '',
-                rarity: card.rarity,
-                color: card.color || GAME_CONFIG.COLORS[card.id as keyof typeof GAME_CONFIG.COLORS] || '#ffffff',
+                description: (card as any).description || (card as any).desc || '',
+                rarity: (card as any).rarity as import('../../types/legacy/card').Rarity,
+                color: card.color || GAME_CONFIG.COLORS[(card as any).blockType as keyof typeof GAME_CONFIG.COLORS] || '#ffffff',
               };
               return (
                 <Card
@@ -773,7 +776,7 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                   card={cardData}
                   size="medium"
                   clickable={true}
-                  onClick={() => setSelectedCard(card)}
+                  onClick={() => setSelectedCard(card as unknown as CardData)}
                 />
               );
             })}
