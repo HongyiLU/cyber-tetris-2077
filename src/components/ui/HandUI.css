@@ -1,0 +1,447 @@
+/* ==================== HandUI 手牌组件样式 ==================== */
+/* v2.0.0 Day 5 - 赛博朋克风格 */
+
+.hand-ui {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  position: relative;
+}
+
+/* ==================== 能量显示 ==================== */
+
+.energy-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 255, 0.1) 0%,
+    rgba(0, 255, 255, 0.05) 100%
+  );
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 8px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.energy-display::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 255, 0.02) 2px,
+    rgba(0, 255, 255, 0.02) 4px
+  );
+  pointer-events: none;
+}
+
+.energy-icon {
+  font-size: 24px;
+  animation: energy-pulse 2s ease-in-out infinite;
+}
+
+@keyframes energy-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px #00ffff);
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 15px #00ffff);
+    transform: scale(1.1);
+  }
+}
+
+.energy-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 1;
+}
+
+.energy-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.energy-value {
+  font-size: 18px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+.energy-current {
+  color: #00ffff;
+  text-shadow: 0 0 10px #00ffff;
+}
+
+.energy-separator {
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 2px;
+}
+
+.energy-max {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.energy-bar {
+  width: 80px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.energy-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffff, #00ff88);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+/* ==================== 手牌区域 ==================== */
+
+.hand-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  min-height: 120px;
+  padding: 8px;
+}
+
+.hand-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* ==================== 手牌卡片 ==================== */
+
+.hand-card {
+  position: relative;
+  width: 100px;
+  min-height: 140px;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* 稀有度边框 */
+.hand-card.rarity-common {
+  border: 2px solid #888;
+  box-shadow: 0 0 10px rgba(136, 136, 136, 0.3);
+}
+.hand-card.rarity-uncommon {
+  border: 2px solid #00cc00;
+  box-shadow: 0 0 15px rgba(0, 204, 0, 0.4);
+}
+.hand-card.rarity-rare {
+  border: 2px solid #0066cc;
+  box-shadow: 0 0 20px rgba(0, 102, 204, 0.5);
+}
+.hand-card.rarity-epic {
+  border: 2px solid #7e22ce;
+  box-shadow: 0 0 25px rgba(126, 34, 206, 0.6);
+}
+.hand-card.rarity-legendary {
+  border: 2px solid #cc6600;
+  box-shadow: 0 0 30px rgba(204, 102, 0, 0.7);
+  animation: legendary-glow 2s ease-in-out infinite;
+}
+
+@keyframes legendary-glow {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(204, 102, 0, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(204, 102, 0, 0.9);
+  }
+}
+
+/* 背景 */
+.hand-card.type-basic {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 40, 0.9) 0%,
+    rgba(20, 20, 30, 0.95) 100%
+  );
+}
+.hand-card.type-special {
+  background: linear-gradient(
+    135deg,
+    rgba(50, 30, 60, 0.9) 0%,
+    rgba(40, 20, 50, 0.95) 100%
+  );
+}
+
+/* 悬停效果 */
+.hand-card:not(.disabled):not(.disabled-turn):hover {
+  transform: translateY(-8px) scale(1.05);
+  z-index: 10;
+}
+
+.hand-card:not(.disabled):not(.disabled-turn):active {
+  transform: translateY(-4px) scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* 禁用状态 */
+.hand-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hand-card.disabled-turn {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 能量角标 */
+.card-cost-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffcc00, #ff9900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(255, 153, 0, 0.6);
+  z-index: 2;
+}
+
+.cost-value {
+  font-size: 12px;
+  font-weight: bold;
+  color: #000;
+  font-family: 'Courier New', monospace;
+}
+
+/* 卡牌名称 */
+.card-name {
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  margin-top: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+/* 卡牌视觉预览 */
+.card-visual {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.card-block-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  box-shadow: 0 0 15px currentColor;
+  opacity: 0.9;
+}
+
+/* 卡牌效果图标 */
+.card-effects {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.card-effect {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.card-effect.damage {
+  background: rgba(255, 50, 50, 0.3);
+  color: #ff6666;
+  border: 1px solid rgba(255, 50, 50, 0.5);
+}
+
+.card-effect.block {
+  background: rgba(50, 150, 255, 0.3);
+  color: #66aaff;
+  border: 1px solid rgba(50, 150, 255, 0.5);
+}
+
+.effect-icon {
+  font-size: 10px;
+}
+
+.effect-value {
+  font-weight: bold;
+}
+
+/* 禁用遮罩 */
+.card-disabled-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  z-index: 5;
+}
+
+.card-disabled-overlay.turn {
+  background: rgba(50, 0, 0, 0.7);
+}
+
+.disabled-reason {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  padding: 4px;
+  text-shadow: 0 0 5px #000;
+}
+
+/* ==================== 扫描线效果 ==================== */
+
+.hand-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 255, 0.02) 2px,
+    rgba(0, 255, 255, 0.02) 4px
+  );
+  pointer-events: none;
+  z-index: 0;
+  animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+/* ==================== 响应式布局 ==================== */
+
+@media (max-width: 768px) {
+  .hand-ui {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .hand-card {
+    width: 80px;
+    min-height: 110px;
+    padding: 6px;
+  }
+
+  .card-name {
+    font-size: 9px;
+    margin-top: 16px;
+  }
+
+  .card-block-preview {
+    width: 32px;
+    height: 32px;
+  }
+
+  .card-cost-badge {
+    width: 18px;
+    height: 18px;
+    top: 3px;
+    left: 3px;
+  }
+
+  .cost-value {
+    font-size: 10px;
+  }
+
+  .card-effects {
+    gap: 4px;
+  }
+
+  .card-effect {
+    font-size: 9px;
+    padding: 1px 3px;
+  }
+
+  .energy-display {
+    padding: 6px 12px;
+  }
+
+  .energy-icon {
+    font-size: 20px;
+  }
+
+  .energy-value {
+    font-size: 16px;
+  }
+
+  .energy-bar {
+    width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hand-card {
+    width: 70px;
+    min-height: 100px;
+    padding: 5px;
+  }
+
+  .card-block-preview {
+    width: 28px;
+    height: 28px;
+  }
+
+  .card-name {
+    font-size: 8px;
+    margin-top: 14px;
+  }
+}

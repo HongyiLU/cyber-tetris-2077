@@ -62,6 +62,9 @@ export class CombatManager {
   // 玩家防御值（临时）
   private playerBlock: number;
 
+  // 敌人防御值
+  private enemyBlock: number;
+
   // 敌人攻击力
   private enemyAttackPower: number;
 
@@ -83,6 +86,7 @@ export class CombatManager {
     this.totalEnergySpent = 0;
     this.turnsElapsed = 0;
     this.playerBlock = 0;
+    this.enemyBlock = 0;
     this.enemyAttackPower = 5; // 默认敌人攻击力
   }
 
@@ -121,6 +125,7 @@ export class CombatManager {
     this.enemyAttackPower = enemyAttack;
     this.playerHP = this.playerMaxHP;
     this.playerBlock = 0;
+    this.enemyBlock = 0;
 
     // 重置统计
     this.totalDamageDealt = 0;
@@ -439,6 +444,20 @@ export class CombatManager {
    */
   getPlayerBlock(): number {
     return this.playerBlock;
+  }
+
+  /**
+   * 获取敌人防御值
+   */
+  getEnemyBlock(): number {
+    return this.enemyBlock;
+  }
+
+  /**
+   * 设置敌人防御值
+   */
+  setEnemyBlock(block: number): void {
+    this.enemyBlock = Math.max(0, block);
   }
 
   /**

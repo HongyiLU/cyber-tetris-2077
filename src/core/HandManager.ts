@@ -1,7 +1,7 @@
 // ==================== HandManager - 手牌管理类 ====================
 // v2.0.0 Day 2 - 手牌管理核心类
 
-import type { CardData } from '../types';
+import type { Card } from '../types/card.v2';
 import { CardDatabase } from './CardDatabase';
 import type {
   HandConfig,
@@ -31,9 +31,9 @@ const DEFAULT_HAND_CONFIG: HandConfig = {
 export class HandManager {
   private static instance: HandManager;
 
-  private hand: CardData[];           // 当前手牌
-  private drawPile: CardData[];       // 抽牌堆
-  private discardPile: CardData[];    // 弃牌堆
+  private hand: Card[];           // 当前手牌
+  private drawPile: Card[];       // 抽牌堆
+  private discardPile: Card[];    // 弃牌堆
   private energy: number;              // 当前能量
   private maxEnergy: number;           // 最大能量
   private state: HandState;           // 手牌状态
@@ -104,7 +104,7 @@ export class HandManager {
 
     this.state = HandStateEnum.DRAWING;
     let reshuffled = false;
-    const drawnCards: CardData[] = [];
+    const drawnCards: Card[] = [];
 
     for (let i = 0; i < count; i++) {
       // 如果抽牌堆为空，尝试洗牌
@@ -200,7 +200,7 @@ export class HandManager {
 
     this.state = HandStateEnum.DISCARDING;
 
-    const discardedCards: CardData[] = [];
+    const discardedCards: Card[] = [];
     const actualCount = Math.min(count, this.hand.length);
 
     for (let i = 0; i < actualCount; i++) {
@@ -232,7 +232,7 @@ export class HandManager {
 
     this.state = HandStateEnum.DISCARDING;
 
-    const discardedCards: CardData[] = [];
+    const discardedCards: Card[] = [];
     const actualCount = Math.min(count, this.hand.length);
 
     for (let i = 0; i < actualCount; i++) {
@@ -303,7 +303,7 @@ export class HandManager {
   /**
    * 获取当前手牌
    */
-  getHand(): CardData[] {
+  getHand(): Card[] {
     return [...this.hand];
   }
 

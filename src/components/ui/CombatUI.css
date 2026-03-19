@@ -1,0 +1,588 @@
+/* ==================== CombatUI 战斗 UI 样式 ==================== */
+/* v2.0.0 Day 5 - 赛博朋克风格 */
+
+.combat-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 20, 30, 0.95) 0%,
+    rgba(10, 10, 20, 0.98) 100%
+  );
+  border-radius: 12px;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  min-height: 200px;
+}
+
+/* ==================== 顶部：回合指示器 ==================== */
+
+.combat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.turn-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.turn-indicator.player-turn {
+  background: linear-gradient(135deg, rgba(0, 255, 100, 0.2), rgba(0, 255, 150, 0.1));
+  border: 1px solid rgba(0, 255, 100, 0.5);
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 100, 0.5);
+  animation: pulse-green 1.5s ease-in-out infinite;
+}
+
+.turn-indicator.enemy-turn {
+  background: linear-gradient(135deg, rgba(255, 50, 50, 0.2), rgba(255, 100, 50, 0.1));
+  border: 1px solid rgba(255, 50, 50, 0.5);
+  color: #ff6666;
+  text-shadow: 0 0 10px rgba(255, 50, 50, 0.5);
+  animation: pulse-red 0.8s ease-in-out infinite;
+}
+
+.turn-indicator.victory-turn {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 180, 0, 0.2));
+  border: 1px solid rgba(255, 215, 0, 0.6);
+  color: #ffd700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+.turn-indicator.defeat-turn {
+  background: linear-gradient(135deg, rgba(100, 50, 50, 0.3), rgba(80, 40, 40, 0.2));
+  border: 1px solid rgba(150, 50, 50, 0.5);
+  color: #cc6666;
+  text-shadow: 0 0 10px rgba(150, 50, 50, 0.5);
+}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 100, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(0, 255, 100, 0.5); }
+}
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 50, 50, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(255, 50, 50, 0.6); }
+}
+
+.turn-indicator-icon {
+  font-size: 16px;
+}
+
+.turn-indicator-text {
+  font-size: 12px;
+}
+
+.turn-counter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.turn-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+}
+
+.turn-value {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+}
+
+/* ==================== 中间：角色面板 ==================== */
+
+.combat-middle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* 通用面板样式 */
+.player-panel,
+.enemy-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(20, 20, 30, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-panel {
+  border-color: rgba(0, 200, 255, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 50, 80, 0.4) 0%,
+    rgba(0, 30, 60, 0.6) 100%
+  );
+}
+
+.enemy-panel {
+  border-color: rgba(255, 100, 50, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(80, 30, 30, 0.4) 0%,
+    rgba(60, 20, 20, 0.6) 100%
+  );
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-icon,
+.enemy-icon {
+  font-size: 24px;
+}
+
+.character-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* HP 显示 */
+.hp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hp-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hp-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+}
+
+.hp-numbers {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+}
+
+.hp-current {
+  color: #fff;
+  font-weight: bold;
+}
+
+.hp-separator {
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 2px;
+}
+
+.hp-max {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.hp-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hp-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.hp-fill.player-hp {
+  background: linear-gradient(90deg, #00cc66, #00ff88);
+  box-shadow: 0 0 10px rgba(0, 255, 100, 0.4);
+}
+
+.hp-fill.enemy-hp {
+  background: linear-gradient(90deg, #cc3300, #ff6644);
+  box-shadow: 0 0 10px rgba(255, 100, 50, 0.4);
+}
+
+/* 防御值显示 */
+.block-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(50, 150, 255, 0.2);
+  border-radius: 6px;
+  border: 1px solid rgba(50, 150, 255, 0.4);
+  margin-top: 4px;
+}
+
+.block-icon {
+  font-size: 14px;
+}
+
+.block-value {
+  font-size: 14px;
+  font-weight: bold;
+  color: #66aaff;
+  font-family: 'Courier New', monospace;
+}
+
+/* VS 分隔符 */
+.vs-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.vs-line {
+  width: 2px;
+  height: 30px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+}
+
+.vs-text {
+  font-size: 12px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* ==================== 战斗状态消息 ==================== */
+
+.combat-status-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  animation: status-pulse 1s ease-in-out infinite;
+}
+
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.combat-status-message.enemy-acting {
+  background: rgba(255, 50, 50, 0.15);
+  border: 1px solid rgba(255, 50, 50, 0.4);
+  color: #ff8888;
+}
+
+.combat-status-message.victory-message {
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+  animation: victory-glow 1s ease-in-out infinite;
+}
+
+@keyframes victory-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+  50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.6); }
+}
+
+.combat-status-message.defeat-message {
+  background: rgba(100, 50, 50, 0.2);
+  border: 1px solid rgba(150, 50, 50, 0.4);
+  color: #cc8888;
+}
+
+.status-icon {
+  font-size: 18px;
+}
+
+.status-text {
+  font-weight: bold;
+}
+
+/* ==================== 底部：手牌区域 ==================== */
+
+.combat-hand-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 结束回合按钮 */
+.end-turn-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 2px solid #ff6600;
+  border-radius: 8px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 100, 0, 0.2) 0%,
+    rgba(255, 60, 0, 0.1) 100%
+  );
+  color: #ffaa44;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 15px rgba(255, 100, 0, 0.3);
+}
+
+.end-turn-btn:hover:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 100, 0, 0.4) 0%,
+    rgba(255, 60, 0, 0.2) 100%
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(255, 100, 0, 0.5);
+}
+
+.end-turn-btn:active:not(:disabled) {
+  transform: translateY(0);
+  transition: transform 0.1s ease;
+}
+
+.end-turn-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: rgba(255, 100, 0, 0.3);
+  box-shadow: none;
+}
+
+.btn-icon {
+  font-size: 18px;
+}
+
+.btn-text {
+  font-size: 12px;
+}
+
+/* ==================== 战斗结束遮罩 ==================== */
+
+.combat-end-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  z-index: 20;
+  animation: overlay-fadein 0.5s ease;
+}
+
+@keyframes overlay-fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.combat-end-overlay.victory {
+  background: rgba(255, 215, 0, 0.15);
+  backdrop-filter: blur(4px);
+}
+
+.combat-end-overlay.defeat {
+  background: rgba(100, 20, 20, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.end-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: end-icon-bounce 0.5s ease;
+}
+
+@keyframes end-icon-bounce {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.end-icon {
+  font-size: 64px;
+  filter: drop-shadow(0 0 20px currentColor);
+}
+
+.victory .end-icon {
+  color: #ffd700;
+  filter: drop-shadow(0 0 30px #ffd700);
+}
+
+.defeat .end-icon {
+  color: #cc6666;
+  filter: drop-shadow(0 0 30px #aa4444);
+}
+
+.end-text {
+  font-size: 32px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+}
+
+.victory .end-text {
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+}
+
+.defeat .end-text {
+  color: #cc6666;
+  text-shadow: 0 0 20px rgba(150, 50, 50, 0.8);
+}
+
+/* ==================== 响应式布局 ==================== */
+
+@media (max-width: 768px) {
+  .combat-ui {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .combat-middle {
+    gap: 8px;
+  }
+
+  .player-panel,
+  .enemy-panel {
+    padding: 8px;
+  }
+
+  .player-icon,
+  .enemy-icon {
+    font-size: 20px;
+  }
+
+  .character-name {
+    font-size: 12px;
+  }
+
+  .hp-numbers {
+    font-size: 12px;
+  }
+
+  .hp-bar {
+    height: 10px;
+  }
+
+  .vs-text {
+    font-size: 10px;
+  }
+
+  .turn-indicator {
+    padding: 4px 12px;
+    font-size: 12px;
+  }
+
+  .turn-indicator-text {
+    font-size: 10px;
+  }
+
+  .end-turn-btn {
+    padding: 10px 20px;
+  }
+
+  .btn-text {
+    font-size: 11px;
+  }
+
+  .combat-status-message {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .end-icon {
+    font-size: 48px;
+  }
+
+  .end-text {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .combat-ui {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .combat-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .combat-middle {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .vs-divider {
+    flex-direction: row;
+    padding: 4px 0;
+  }
+
+  .vs-line {
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+  }
+
+  .player-panel,
+  .enemy-panel {
+    width: 100%;
+  }
+
+  .end-icon {
+    font-size: 36px;
+  }
+
+  .end-text {
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+}

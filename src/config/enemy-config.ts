@@ -98,6 +98,7 @@ export function getEnemiesByRarity(rarity: string): EnemyType[] {
 export const ENEMY_CONFIGS: Record<string, EnemyConfig> = {
   slime: {
     name: '史莱姆',
+    emoji: '🦠',
     maxHP: 20,
     attack: 3,
     defense: 0,
@@ -114,6 +115,7 @@ export const ENEMY_CONFIGS: Record<string, EnemyConfig> = {
   },
   goblin: {
     name: '哥布林',
+    emoji: '👺',
     maxHP: 35,
     attack: 5,
     defense: 2,
@@ -137,6 +139,7 @@ export const ENEMY_CONFIGS: Record<string, EnemyConfig> = {
   },
   skeleton: {
     name: '骷髅战士',
+    emoji: '💀',
     maxHP: 50,
     attack: 7,
     defense: 3,
@@ -160,6 +163,7 @@ export const ENEMY_CONFIGS: Record<string, EnemyConfig> = {
   },
   demon: {
     name: '恶魔',
+    emoji: '😈',
     maxHP: 80,
     attack: 12,
     defense: 5,

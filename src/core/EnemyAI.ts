@@ -49,7 +49,9 @@ export interface EnemySkill {
  * 敌人配置
  */
 export interface EnemyConfig {
+  id?: string;            // 敌人 ID
   name: string;           // 敌人名称
+  emoji?: string;         // 表情符号
   maxHP: number;          // 最大血量
   attack: number;         // 基础攻击力
   defense: number;         // 防御力
