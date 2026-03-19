@@ -4,7 +4,7 @@ import { GAME_CONFIG } from '../config/game-config';
 import type { Deck, DeckConfig, DeckValidationResult, PresetDeck, DeckCard, DrawResult } from '../types/deck';
 import { DEFAULT_DECK_CONFIG } from '../types/deck';
 import type { CardData } from '../types';
-import { CARD_DATABASE } from './core/CardDatabase';
+import { CARD_DATABASE } from '../core/CardDatabase';
 
 /**
  * localStorage 操作结果
