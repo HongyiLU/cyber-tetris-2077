@@ -4,6 +4,7 @@ import { GAME_CONFIG } from '../config/game-config';
 import type { Deck, DeckConfig, DeckValidationResult, PresetDeck, DeckCard, DrawResult } from '../types/deck';
 import { DEFAULT_DECK_CONFIG } from '../types/deck';
 import type { CardData } from '../types';
+import { CARD_DATABASE } from './core/CardDatabase';
 
 /**
  * localStorage 操作结果
@@ -532,11 +533,14 @@ export class DeckManager {
       errors.push('卡组中包含重复的卡牌');
     }
 
-    // 检查所有卡牌是否有效
-    const validCardIds = GAME_CONFIG.CARDS.map(card => card.id);
+    // 检查所有卡牌是否有效（同时支持 GAME_CONFIG.CARDS 和 CARD_DATABASE 的卡牌 ID）
+    const validCardIds = new Set([
+      ...GAME_CONFIG.CARDS.map(card => card.id),
+      ...CARD_DATABASE.getAllCards().map(card => card.id)
+    ]);
     for (const card of deck.cards) {
       const cardId = typeof card === 'string' ? card : card.cardId;
-      if (!validCardIds.includes(cardId)) {
+      if (!validCardIds.has(cardId)) {
         errors.push(`无效的卡牌 ID: ${cardId}`);
       }
     }
