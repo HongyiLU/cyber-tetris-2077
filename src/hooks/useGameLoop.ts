@@ -11,6 +11,8 @@ interface UseGameLoopOptions {
   gameEngine: GameEngine;
   paused?: boolean;
   onGameStateChange?: () => void;
+  /** P0-2 Fix: 跳过 GameEnd 检查（卡牌战斗模式下由 BattleScene 独立处理） */
+  skipGameEndCheck?: boolean;
 }
 
 /**

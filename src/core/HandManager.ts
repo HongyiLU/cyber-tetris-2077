@@ -298,6 +298,28 @@ export class HandManager {
     };
   }
 
+  // ==================== v2.0.0 Day 8: 事件驱动能量/抽牌 ====================
+
+  /**
+   * 增加能量（由方块消除等事件触发）
+   * v2.0.0 Day 8: 用于卡牌战斗模式的能量获取
+   * @param amount 能量增量
+   */
+  gainEnergy(amount: number): void {
+    if (amount < 0) return;
+    this.energy = Math.min(this.energy + amount, this.maxEnergy + 10); // 允许临时超出上限
+  }
+
+  /**
+   * 抽额外卡牌（由方块消除等事件触发）
+   * v2.0.0 Day 8: 用于卡牌战斗模式的额外抽牌
+   * @param count 抽牌数量
+   */
+  drawCards(count: number): void {
+    if (count <= 0) return;
+    this.draw(count);
+  }
+
   // ==================== Getter 方法 ====================
 
   /**

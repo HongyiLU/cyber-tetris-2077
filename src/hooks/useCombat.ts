@@ -83,6 +83,10 @@ export interface UseCombatReturn {
   endTurn: () => void;
   resetCombat: () => void;
 
+  // v2.0.0 Day 8: 事件驱动的能量和抽牌
+  gainEnergy: (amount: number) => void;
+  drawCards: (count: number) => void;
+
   // 音效触发 (v2.0.0 Day 6)
   playSound: {
     cardPlay: () => void;
@@ -549,6 +553,16 @@ export function useCombat(config?: UseCombatConfig): UseCombatReturn {
     playCard,
     endTurn,
     resetCombat,
+
+    // v2.0.0 Day 8: 事件驱动的能量和抽牌
+    gainEnergy: (amount: number) => {
+      handManagerRef.current?.gainEnergy(amount);
+      syncState();
+    },
+    drawCards: (count: number) => {
+      handManagerRef.current?.drawCards(count);
+      syncState();
+    },
 
     // 音效触发
     playSound,

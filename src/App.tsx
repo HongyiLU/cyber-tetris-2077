@@ -9,7 +9,8 @@ import { LeaderboardSystem } from './systems/LeaderboardSystem';
 import { AudioManager } from './systems/AudioManagerSynth';
 import { SoundId } from './systems/AudioManagerSynth';
 import { GameCanvas, GameInfo } from './components/game';
-import { CardDeck, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification, ParticleCanvas, GameStartCountdown, GameEndModal } from './components/ui';
+import { CardDeck, ResponsiveLayout, BattleUI, EnemySelect, DamageNumber, ComboCounter, EquipmentSelect, AchievementPanel, LeaderboardPanel, AchievementNotification, ParticleCanvas, GameStartCountdown, GameEndModal, DeckSelectScene } from './components/ui';
+import { BattleScene } from './scenes/BattleScene';
 import { ParticleEffect } from './system/ParticleEffect';
 import { useGameLoop, useKeyboardControl } from './hooks';
 import { GAME_CONFIG } from './config/game-config';
@@ -78,9 +79,20 @@ const App: React.FC = () => {
   // P0-003: 游戏开始时防误触保护（已移除虚拟按键，保留触摸控制）
   const [controlsDisabled, setControlsDisabled] = useState(false);
 
+  // ===== v2.0.0 Day 8: 卡牌战斗模式状态 =====
+  const [cardBattleMode, setCardBattleMode] = useState(false);       // 是否在卡牌战斗模式
+  const [cardBattlePhase, setCardBattlePhase] = useState<'deck-select' | 'countdown' | 'battle'>('deck-select');  // 卡牌战斗阶段
+  const [selectedCardBattleDeck, setSelectedCardBattleDeck] = useState<string | null>(null);  // 选中的卡组
+  const [selectedCardBattleEnemy, setSelectedCardBattleEnemy] = useState<string>('slime');    // 选中的敌人
+
   // 设置游戏结束回调
+  // P0-2 Fix: 卡牌战斗模式下由 BattleScene 独立处理 gameEnd，不依赖 GameEngine 的 onGameEnd
   useEffect(() => {
     gameEngine.setOnGameEnd((result: GameEndResult) => {
+      // 卡牌战斗模式下不处理 App 层的 gameEnd
+      if (cardBattleMode && cardBattlePhase === 'battle') {
+        return;
+      }
       // 停止 BGM
       if (audioManager.isBGMPlaying()) {
         audioManager.stopBGM();
@@ -89,21 +101,25 @@ const App: React.FC = () => {
       setGameEndResult(result);
       setGameEndVisible(true);
     });
-  }, [gameEngine, audioManager]);
+  }, [gameEngine, audioManager, cardBattleMode, cardBattlePhase]);
 
   // 使用游戏循环 Hook
+  // P0-2 Fix: 卡牌战斗模式下跳过 GameEnd 检查，由 BattleScene 独立处理
   useGameLoop({
     gameStarted,
     gameState,
     gameEngine,
     paused: gameState?.paused ?? false,
+    skipGameEndCheck: cardBattleMode && cardBattlePhase === 'battle',
     onGameStateChange: () => {
       const state = gameEngine.getGameState();
       setGameState(state);
       // battleState 直接从 state.battleState 读取，无需单独状态
       
-      // 检查游戏结束/胜利
-      gameEngine.checkGameEnd();
+      // P0-2 Fix: 卡牌战斗模式下由 BattleScene 独立处理 gameEnd
+      if (!(cardBattleMode && cardBattlePhase === 'battle')) {
+        gameEngine.checkGameEnd();
+      }
     },
   });
 
@@ -214,6 +230,80 @@ const App: React.FC = () => {
     }, 500);
   }, [gameEngine, selectedEnemy, audioManager]);
 
+  // ===== v2.0.0 Day 8: 卡牌战斗模式处理器 =====
+
+  /**
+   * 开启卡牌战斗模式
+   * 显示卡组选择界面
+   */
+  const startCardBattle = useCallback(() => {
+    setCardBattleMode(true);
+    setCardBattlePhase('deck-select');
+  }, []);
+
+  /**
+   * 卡组选择完成，选择敌人并进入倒计时
+   */
+  const handleDeckAndEnemySelect = useCallback((deckId: string, enemyId: string) => {
+    setSelectedCardBattleDeck(deckId);
+    setSelectedCardBattleEnemy(enemyId);
+    setCardBattlePhase('countdown');
+    
+    // 设置卡组到 GameEngine
+    const deck = deckManager.getDeck(deckId);
+    gameEngine.setDeck(deck);
+  }, [deckManager, gameEngine]);
+
+  /**
+   * 卡牌战斗倒计时完成，开始战斗
+   */
+  const handleCardBattleCountdownComplete = useCallback(() => {
+    setCardBattlePhase('battle');
+    
+    // 初始化战斗
+    gameEngine.initBattle(selectedCardBattleEnemy);
+    gameEngine.init();
+    setGameState(gameEngine.getGameState());
+    setGameEndVisible(false);
+    setGameEndResult(null);
+    
+    // 开始播放 BGM
+    setTimeout(() => {
+      audioManager.playBGM();
+      console.log('[App] 卡牌战斗 BGM 开始播放');
+    }, 500);
+  }, [gameEngine, selectedCardBattleEnemy, audioManager]);
+
+  /**
+   * 卡牌战斗结束
+   */
+  const handleCardBattleEnd = useCallback((result: GameEndResult) => {
+    console.log('[App] 卡牌战斗结束:', result);
+    audioManager.stopBGM();
+    setGameEndResult(result);
+    setGameEndVisible(true);
+  }, [audioManager]);
+
+  /**
+   * 返回主菜单（从卡牌战斗模式）
+   */
+  const handleBackToMenuFromCardBattle = useCallback(() => {
+    setCardBattleMode(false);
+    setCardBattlePhase('deck-select');
+    setSelectedCardBattleDeck(null);
+    // 重置游戏引擎
+    gameEngine.init();
+    setGameState(gameEngine.getGameState());
+  }, [gameEngine]);
+
+  /**
+   * 返回按钮（卡牌战斗选择阶段）
+   */
+  const handleBackFromDeckSelect = useCallback(() => {
+    setCardBattleMode(false);
+    setCardBattlePhase('deck-select');
+  }, []);
+
   // 移动端控制回调（触摸手势）
   const handleMoveLeft = useCallback(() => {
     gameEngine.movePiece(-1, 0);
@@ -315,7 +405,7 @@ const App: React.FC = () => {
         onPause={handlePause}
       />}
       gameInfo={<GameInfo gameState={gameState} />}
-      showGameArea={gameStarted}
+      showGameArea={gameStarted || (cardBattleMode && cardBattlePhase === 'battle')}
     >
       <h1 style={{
         fontSize: 'clamp(24px, 8vw, 48px)',
@@ -394,6 +484,35 @@ const App: React.FC = () => {
             }}
           >
             开始游戏
+          </button>
+
+          {/* v2.0.0 Day 8: 卡牌战斗入口 */}
+          <button
+            onClick={startCardBattle}
+            style={{
+              padding: 'clamp(12px, 3vw, 15px) clamp(30px, 8vw, 40px)',
+              fontSize: 'clamp(18px, 5vw, 24px)',
+              background: 'rgba(155, 89, 182, 0.1)',
+              border: '2px solid #9b59b6',
+              borderRadius: '8px',
+              color: '#9b59b6',
+              cursor: 'pointer',
+              fontFamily: 'Orbitron, monospace',
+              boxShadow: '0 0 20px rgba(155, 89, 182, 0.3)',
+              transition: 'all 0.3s',
+              width: '100%',
+              maxWidth: '300px',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(155, 89, 182, 0.2)';
+              e.currentTarget.style.boxShadow = '0 0 40px rgba(155, 89, 182, 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(155, 89, 182, 0.1)';
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(155, 89, 182, 0.3)';
+            }}
+          >
+            🃏 卡牌战斗
           </button>
           
           <div style={{
@@ -1062,6 +1181,42 @@ const App: React.FC = () => {
         onNextLevel={handleNextLevel}
         onBackToTitle={handleBackToTitle}
       />
+
+      {/* ===== v2.0.0 Day 8: 卡牌战斗场景 ===== */}
+      {cardBattleMode && cardBattlePhase === 'deck-select' && (
+        <DeckSelectScene
+          deckManager={deckManager}
+          onSelect={handleDeckAndEnemySelect}
+          onBack={handleBackFromDeckSelect}
+          initialEnemyId={selectedCardBattleEnemy}
+        />
+      )}
+
+      {/* 卡牌战斗倒计时 */}
+      {cardBattleMode && cardBattlePhase === 'countdown' && (
+        <GameStartCountdown
+          visible={true}
+          duration={3}
+          onComplete={handleCardBattleCountdownComplete}
+          onCancel={() => {
+            setCardBattleMode(false);
+            setCardBattlePhase('deck-select');
+          }}
+        />
+      )}
+
+      {/* 卡牌战斗场景 */}
+      {cardBattleMode && cardBattlePhase === 'battle' && (
+        <BattleScene
+          enemyId={selectedCardBattleEnemy}
+          deckId={selectedCardBattleDeck || ''}
+          gameEngine={gameEngine}
+          gameState={gameState}
+          audioManager={audioManager}
+          onBattleEnd={handleCardBattleEnd}
+          onBackToMenu={handleBackToMenuFromCardBattle}
+        />
+      )}
     </ResponsiveLayout>
   );
 };

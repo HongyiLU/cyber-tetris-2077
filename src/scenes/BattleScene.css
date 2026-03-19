@@ -1,0 +1,247 @@
+/* ==================== BattleScene CSS ==================== */
+/* v2.0.0 Day 8 - 深度集成 */
+
+.battle-scene {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 50%, #0a1a2a 100%);
+  overflow: hidden;
+}
+
+/* 顶部：敌人显示 */
+.battle-top {
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 68, 68, 0.2);
+  flex-shrink: 0;
+}
+
+/* 中间：游戏画布区域 */
+.battle-middle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.game-canvas-wrapper {
+  flex-shrink: 0;
+}
+
+.game-info-wrapper {
+  flex-shrink: 0;
+  max-width: 200px;
+}
+
+/* 底部：战斗 UI */
+.battle-bottom {
+  flex-shrink: 0;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+/* 战斗结束遮罩 */
+.battle-end-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: overlay-fade-in 0.3s ease-out;
+}
+
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.battle-end-overlay.victory {
+  background: rgba(0, 50, 0, 0.9);
+}
+
+.battle-end-overlay.defeat {
+  background: rgba(50, 0, 0, 0.9);
+}
+
+.end-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 60px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  animation: content-pop 0.4s ease-out;
+}
+
+@keyframes content-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.end-icon {
+  font-size: 80px;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+}
+
+.end-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 36px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.battle-end-overlay.victory .end-title {
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.battle-end-overlay.defeat .end-title {
+  color: #ff4444;
+  text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+}
+
+.end-subtitle {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.end-stats {
+  display: flex;
+  gap: 30px;
+  margin: 10px 0;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-item .stat-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.stat-item .stat-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.end-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.end-btn {
+  padding: 12px 30px;
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.end-btn.primary {
+  background: rgba(0, 255, 255, 0.2);
+  border: 2px solid #00ffff;
+  color: #00ffff;
+}
+
+.end-btn.primary:hover {
+  background: rgba(0, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+}
+
+.end-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.end-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* 返回主菜单按钮（悬浮） */
+.back-to-menu-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.back-to-menu-btn:hover {
+  background: rgba(255, 68, 68, 0.3);
+  border-color: rgba(255, 68, 68, 0.5);
+  color: #ff6b6b;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .battle-middle {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .game-info-wrapper {
+    max-width: 100%;
+  }
+  
+  .end-overlay-content {
+    padding: 30px 40px;
+    margin: 20px;
+  }
+  
+  .end-icon {
+    font-size: 60px;
+  }
+  
+  .end-title {
+    font-size: 28px;
+  }
+}

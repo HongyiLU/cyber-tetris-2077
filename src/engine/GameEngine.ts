@@ -84,6 +84,9 @@ export class GameEngine {
   // 游戏结束回调
   private onGameEnd?: (result: GameEndResult) => void;
 
+  // v2.0.0 Day 8: 方块消除回调（用于卡牌战斗模式的能量/抽牌）
+  private onLinesCleared?: (lines: number) => void;
+
   constructor(
     cols: number = GAME_CONFIG.GAME.COLS,
     rows: number = GAME_CONFIG.GAME.ROWS,
@@ -440,6 +443,11 @@ export class GameEngine {
       // 播放连击音效（连击数 > 1 时）
       if (this.combo > 1) {
         this.audioManager.playSound(SoundId.COMBO);
+      }
+
+      // v2.0.0 Day 8: 触发方块消除回调（用于卡牌战斗模式的能量/抽牌）
+      if (this.onLinesCleared) {
+        this.onLinesCleared(clearedLines);
       }
     }
 
@@ -969,6 +977,15 @@ export class GameEngine {
    */
   public setOnGameEnd(callback: (result: GameEndResult) => void): void {
     this.onGameEnd = callback;
+  }
+
+  // v2.0.0 Day 8: 设置方块消除回调
+  /**
+   * 设置方块消除回调（用于卡牌战斗模式的能量/抽牌）
+   * @param callback 消除行数回调函数
+   */
+  public setOnLinesCleared(callback: (lines: number) => void): void {
+    this.onLinesCleared = callback;
   }
   
   /**

@@ -29,3 +29,5 @@ export type { DamageType } from './DamageNumber';
 export { default as GameStartCountdown } from './GameStartCountdown';
 export { default as GameEndModal } from './GameEndModal';
 export { default as BlockVisual } from './BlockVisual';
+export { default as EnemyDisplay } from './EnemyDisplay';
+export { default as DeckSelectScene } from './DeckSelectScene';
