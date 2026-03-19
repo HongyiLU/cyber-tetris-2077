@@ -260,6 +260,15 @@ export class HandManager {
   }
 
   /**
+   * 退还能量（用于出牌失败时返还能量）
+   * @param amount 退还能量
+   */
+  refundEnergy(amount: number): void {
+    if (amount < 0) return;
+    this.energy = Math.min(this.energy + amount, this.maxEnergy);
+  }
+
+  /**
    * 消耗能量
    * @param amount 消耗能量
    * @returns 能量消耗结果
