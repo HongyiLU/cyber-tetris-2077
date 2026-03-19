@@ -17,18 +17,32 @@ export enum SoundId {
   MOVE = 'move',           // 方块移动
   ROTATE = 'rotate',       // 方块旋转
   HARD_DROP = 'harddrop',  // 硬降
-  
+
   // 消行（不同行数不同音调）
   CLEAR_1 = 'clear1',
   CLEAR_2 = 'clear2',
   CLEAR_3 = 'clear3',
   CLEAR_4 = 'clear4',
-  
+
   // 战斗与成就
   COMBO = 'combo',         // 连击
   ACHIEVEMENT = 'achievement', // 成就解锁
   GAME_OVER = 'gameover',  // 游戏结束
   VICTORY = 'victory',     // 胜利
+
+  // 战斗相关音效 (v2.0.0 Day 6)
+  CARD_PLAY = 'cardplay',        // 出牌
+  CARD_DRAW = 'carddraw',        // 抽牌
+  DAMAGE_PLAYER = 'damageplayer', // 玩家受伤
+  DAMAGE_ENEMY = 'damageenemy',  // 敌人受伤
+  HEAL = 'heal',                 // 治疗
+  BUFF = 'buff',                 // 增益
+  DEBUFF = 'debuff',             // 减益
+  VICTORY_BATTLE = 'victorybattle', // 战斗胜利
+  DEFEAT_BATTLE = 'defeatbattle',   // 战斗失败
+  ENEMY_ATTACK = 'enemyattack',  // 敌人攻击
+  BLOCK = 'block',               // 格挡
+  ENERGY = 'energy',             // 能量恢复
 }
 
 /**
@@ -46,6 +60,19 @@ export const AUDIO_PATHS: Record<SoundId, string> = {
   [SoundId.ACHIEVEMENT]: '/audio/achievement.wav',
   [SoundId.GAME_OVER]: '/audio/gameover.wav',
   [SoundId.VICTORY]: '/audio/victory.wav',
+  // 战斗相关音效 (v2.0.0 Day 6)
+  [SoundId.CARD_PLAY]: '/audio/cardplay.wav',
+  [SoundId.CARD_DRAW]: '/audio/carddraw.wav',
+  [SoundId.DAMAGE_PLAYER]: '/audio/damageplayer.wav',
+  [SoundId.DAMAGE_ENEMY]: '/audio/damageenemy.wav',
+  [SoundId.HEAL]: '/audio/heal.wav',
+  [SoundId.BUFF]: '/audio/buff.wav',
+  [SoundId.DEBUFF]: '/audio/debuff.wav',
+  [SoundId.VICTORY_BATTLE]: '/audio/victorybattle.wav',
+  [SoundId.DEFEAT_BATTLE]: '/audio/defeatbattle.wav',
+  [SoundId.ENEMY_ATTACK]: '/audio/enemyattack.wav',
+  [SoundId.BLOCK]: '/audio/block.wav',
+  [SoundId.ENERGY]: '/audio/energy.wav',
 };
 
 /**
@@ -63,6 +90,19 @@ export const AUDIO_CATEGORIES: Record<SoundId, AudioCategory> = {
   [SoundId.ACHIEVEMENT]: AudioCategory.EVENT,
   [SoundId.GAME_OVER]: AudioCategory.EVENT,
   [SoundId.VICTORY]: AudioCategory.EVENT,
+  // 战斗相关音效 (v2.0.0 Day 6)
+  [SoundId.CARD_PLAY]: AudioCategory.GAME,
+  [SoundId.CARD_DRAW]: AudioCategory.GAME,
+  [SoundId.DAMAGE_PLAYER]: AudioCategory.GAME,
+  [SoundId.DAMAGE_ENEMY]: AudioCategory.GAME,
+  [SoundId.HEAL]: AudioCategory.GAME,
+  [SoundId.BUFF]: AudioCategory.GAME,
+  [SoundId.DEBUFF]: AudioCategory.GAME,
+  [SoundId.VICTORY_BATTLE]: AudioCategory.EVENT,
+  [SoundId.DEFEAT_BATTLE]: AudioCategory.EVENT,
+  [SoundId.ENEMY_ATTACK]: AudioCategory.GAME,
+  [SoundId.BLOCK]: AudioCategory.GAME,
+  [SoundId.ENERGY]: AudioCategory.GAME,
 };
 
 /**
