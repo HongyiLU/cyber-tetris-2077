@@ -666,7 +666,7 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
               <div className="deck-edit-list">
                 <div className="deck-edit-cards-grid">
                   {allCards.map(card => {
-                    const count = editConfig[card.id] ?? 1;
+                    const count = editConfig[card.id] ?? 0;
                     // v1.9.15 修复 P0-1: 添加类型转换验证
                     // v2.0.1 修复: CardDatabase 卡牌使用 blockType 映射到 tetromino ID 用于颜色查找
                     const cardData: import('../../types/legacy/card').Card = {
