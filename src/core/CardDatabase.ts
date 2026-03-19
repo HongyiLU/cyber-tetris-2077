@@ -413,6 +413,17 @@ export class CardDatabase {
   getCardCount(): number {
     return this.cards.size;
   }
+
+  /**
+   * 根据 ID 列表获取卡牌
+   * @param ids 卡牌 ID 列表
+   * @returns 卡牌数组
+   */
+  getCardsByIds(ids: string[]): Card[] {
+    return ids
+      .map((id) => this.cards.get(id))
+      .filter((card): card is Card => card !== undefined);
+  }
 }
 
 // 导出单例实例
