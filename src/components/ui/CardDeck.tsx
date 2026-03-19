@@ -728,7 +728,7 @@ const CardDeck: React.FC<CardDeckProps> = ({ deckManager, onClose }) => {
                 </button>
                 
                 <button
-                  onClick={handleSaveDeckConfig}
+                  onClick={handleSaveEdit}
                   className="deck-edit-action-btn save"
                 >
                   💾 保存
