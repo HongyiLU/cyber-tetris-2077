@@ -157,3 +157,28 @@ export { LEADERBOARD_NAMES, LEADERBOARD_ICONS, DEFAULT_LEADERBOARD_CONFIG } from
 // 导出方块类型定义（v1.9.16）
 export type { BasicBlockId, SpecialBlockId } from './block-types';
 export { PieceType as BlockType } from './block-types';
+
+// 导出 v2.0.0 卡牌系统类型
+export type {
+  Card,
+  CardShape,
+  CardUpgradeEffect,
+  CardSpecialEffect,
+} from './card.v2';
+export {
+  CardRarity,
+  CARD_RARITY_WEIGHTS,
+  UPGRADE_MULTIPLIERS,
+  getUpgradeMultiplier,
+} from './card.v2';
+
+// 导出 v2.0.0 卡组构筑系统类型
+export type {
+  DeckBuilderState,
+  RewardOption,
+  DeckBuilderSaveData,
+} from './deck-builder';
+export {
+  GameStage,
+  createDefaultDeckBuilderState,
+} from './deck-builder';
