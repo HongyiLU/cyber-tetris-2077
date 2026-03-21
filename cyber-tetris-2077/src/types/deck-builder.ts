@@ -54,6 +54,8 @@ export interface DeckBuilderState {
  * 奖励选项接口
  */
 export interface RewardOption {
+  /** 唯一标识符（用于查找） */
+  id: string;
   /** 可选择的卡牌列表 */
   cards: Card[];
   /** 跳过奖励获得的金币数 */

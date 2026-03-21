@@ -1,0 +1,311 @@
+/**
+ * 手牌展示组件样式 v2.0.0
+ * 赛博朋克风格
+ */
+
+.hand-display {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(10, 10, 20, 0.95) 0%, rgba(20, 20, 40, 0.9) 100%);
+  border-top: 2px solid var(--color-primary, #00ffff);
+  position: relative;
+}
+
+/* 能量显示 */
+.hand-display__energy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+.hand-display__energy-label {
+  font-size: 14px;
+  font-weight: bold;
+  color: #00ffff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.hand-display__energy-bar {
+  display: flex;
+  gap: 8px;
+}
+
+.hand-display__energy-orb {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(50, 50, 80, 0.8);
+  border: 2px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  opacity: 0.4;
+}
+
+.hand-display__energy-orb--filled {
+  background: linear-gradient(135deg, #00ffff 0%, #0088ff 100%);
+  border-color: #00ffff;
+  opacity: 1;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.3);
+  animation: energy-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes energy-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* 手牌区域 */
+.hand-display__cards {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-height: 180px;
+  align-items: center;
+}
+
+.hand-display__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 16px;
+  font-style: italic;
+}
+
+/* 单张卡牌 */
+.hand-card {
+  width: 120px;
+  height: 170px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid var(--rarity-color, #8a8a8a);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.hand-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--rarity-color, #8a8a8a);
+}
+
+.hand-card--playable:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--rarity-color, #8a8a8a);
+  z-index: 10;
+}
+
+.hand-card--playable {
+  border-color: var(--rarity-color, #8a8a8a);
+  box-shadow: 0 0 10px rgba(var(--rarity-color, 0.3), 0.5);
+}
+
+.hand-card--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.hand-card--waiting {
+  animation: card-waiting 1s ease-in-out infinite;
+}
+
+@keyframes card-waiting {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* 能量消耗 */
+.hand-card__cost {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #ff6b00 0%, #ff9500 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 10px rgba(255, 150, 0, 0.5);
+}
+
+/* 卡牌名称 */
+.hand-card__name {
+  font-size: 11px;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 4px;
+  text-shadow: 0 0 5px var(--rarity-color, #8a8a8a);
+}
+
+/* 卡牌形状 */
+.hand-card__shape {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hand-card__shape-grid {
+  display: grid;
+  gap: 2px;
+  width: fit-content;
+}
+
+.hand-card__shape-cell {
+  width: 12px;
+  height: 12px;
+  background: rgba(50, 50, 80, 0.5);
+  border-radius: 2px;
+}
+
+.hand-card__shape-cell--filled {
+  background: var(--rarity-color, #00ffff);
+  box-shadow: 0 0 5px var(--rarity-color, #00ffff);
+}
+
+/* 卡牌描述 */
+.hand-card__description {
+  font-size: 9px;
+  color: #aaa;
+  text-align: center;
+  line-height: 1.2;
+  max-height: 28px;
+  overflow: hidden;
+}
+
+/* 稀有度标签 */
+.hand-card__rarity {
+  font-size: 8px;
+  color: var(--rarity-color, #8a8a8a);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* 升级标记 */
+.hand-card__upgrade {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffd700;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.8);
+}
+
+/* 数值统计 */
+.hand-card__stats {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+}
+
+.hand-card__stat {
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.hand-card__stat--damage {
+  color: #ff4444;
+}
+
+.hand-card__stat--block {
+  color: #4488ff;
+}
+
+.hand-card__stat--heal {
+  color: #44ff44;
+}
+
+/* 等待提示 */
+.hand-display__waiting {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  padding: 4px 12px;
+  border-radius: 4px;
+  color: #00ffff;
+  font-size: 12px;
+  animation: waiting-blink 1s ease-in-out infinite;
+}
+
+@keyframes waiting-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* 响应式布局 */
+@media (max-width: 640px) {
+  .hand-display {
+    padding: 8px;
+  }
+
+  .hand-card {
+    width: 90px;
+    height: 130px;
+  }
+
+  .hand-card__name {
+    font-size: 9px;
+  }
+
+  .hand-card__shape-cell {
+    width: 8px;
+    height: 8px;
+  }
+
+  .hand-card__description {
+    font-size: 8px;
+  }
+
+  .hand-display__energy-orb {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+}

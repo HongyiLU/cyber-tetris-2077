@@ -108,56 +108,6 @@ export interface CardData {
  */
 export type PieceSizeMultiplier = Record<number, number>;
 
-// 导出卡组系统类型
-export type { Deck, DeckConfig, DeckValidationResult, PresetDeck } from './deck';
-export { DEFAULT_DECK_CONFIG } from './deck';
-
-// 导出 DeckManager 类
-export { DeckManager } from '../engine/DeckManager';
-
-// 导出敌人系统类型
-export type { EnemyType, EnemyInstance } from './enemy';
-
-// 导出装备系统类型
-export type {
-  Equipment,
-  EquipmentRarity,
-  EquipmentType,
-  EquipmentEffect,
-  EquipmentEffectType,
-  EquipmentSlot,
-  EquipmentState,
-  AppliedEquipmentEffects,
-} from './equipment';
-export { RARITY_COLORS, RARITY_WEIGHTS } from './equipment';
-
-// 导出成就系统类型
-export type {
-  Achievement,
-  AchievementDifficulty,
-  AchievementCategory,
-  AchievementCondition,
-  AchievementConditionType,
-  AchievementReward,
-  AchievementProgress,
-  AchievementState,
-} from './achievement';
-export { DIFFICULTY_WEIGHTS, CATEGORY_NAMES } from './achievement';
-
-// 导出排行榜系统类型
-export type {
-  Leaderboard,
-  LeaderboardEntry,
-  LeaderboardType,
-  LeaderboardState,
-  LeaderboardConfig,
-} from './leaderboard';
-export { LEADERBOARD_NAMES, LEADERBOARD_ICONS, DEFAULT_LEADERBOARD_CONFIG } from './leaderboard';
-
-// 导出方块类型定义（v1.9.16）
-export type { BasicBlockId, SpecialBlockId } from './block-types';
-export { PieceType as BlockType } from './block-types';
-
 // 导出 v2.0.0 卡牌系统类型
 export type {
   Card,

@@ -1,0 +1,360 @@
+/**
+ * 奖励选择界面样式 v2.0.0
+ * 赛博朋克风格
+ */
+
+.reward-select {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reward-select__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.reward-select__container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 900px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: reward-appear 0.5s ease-out;
+}
+
+@keyframes reward-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 标题区域 */
+.reward-select__header {
+  text-align: center;
+}
+
+.reward-select__title {
+  font-size: 36px;
+  font-weight: bold;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 0 20px rgba(255, 200, 0, 0.8), 0 0 40px rgba(255, 200, 0, 0.4);
+  animation: title-glow 2s ease-in-out infinite;
+}
+
+@keyframes title-glow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(255, 200, 0, 0.8), 0 0 40px rgba(255, 200, 0, 0.4);
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(255, 200, 0, 1), 0 0 60px rgba(255, 200, 0, 0.6);
+  }
+}
+
+.reward-select__title-icon {
+  margin-right: 12px;
+  animation: icon-bounce 1s ease-in-out infinite;
+}
+
+@keyframes icon-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.reward-select__subtitle {
+  font-size: 18px;
+  color: #aaa;
+  margin: 8px 0 0;
+}
+
+.reward-select__stage {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 4px 16px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 20px;
+  color: #00ffff;
+  font-size: 14px;
+}
+
+/* 奖励选项 */
+.reward-select__options {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 单个奖励选项 */
+.reward-option {
+  width: 220px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid var(--rarity-color, #8a8a8a);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.reward-option:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px var(--rarity-color, #8a8a8a);
+}
+
+.reward-option::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--rarity-color, #8a8a8a), transparent);
+}
+
+/* 光效 */
+.reward-option__glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at center,
+    var(--rarity-color, #8a8a8a) 0%,
+    transparent 70%
+  );
+  opacity: 0.1;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.reward-option:hover .reward-option__glow {
+  opacity: 0.2;
+  animation: glow-rotate 3s linear infinite;
+}
+
+@keyframes glow-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 选项内容 */
+.reward-option__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 稀有度 */
+.reward-option__rarity {
+  font-size: 12px;
+  color: var(--rarity-color, #8a8a8a);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 4px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  border: 1px solid var(--rarity-color, #8a8a8a);
+}
+
+/* 名称 */
+.reward-option__name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  margin: 0;
+  text-align: center;
+  text-shadow: 0 0 10px var(--rarity-color, #8a8a8a);
+}
+
+/* 形状 */
+.reward-option__shape {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reward-option__shape-grid {
+  display: grid;
+  gap: 3px;
+}
+
+.reward-option__shape-cell {
+  width: 16px;
+  height: 16px;
+  background: rgba(50, 50, 80, 0.5);
+  border-radius: 3px;
+}
+
+.reward-option__shape-cell--filled {
+  background: var(--rarity-color, #00ffff);
+  box-shadow: 0 0 8px var(--rarity-color, #00ffff);
+}
+
+/* 描述 */
+.reward-option__description {
+  font-size: 13px;
+  color: #ccc;
+  text-align: center;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* 数值 */
+.reward-option__stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.reward-option__stat {
+  font-size: 12px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  color: #fff;
+}
+
+.reward-option__stat--damage {
+  color: #ff4444;
+}
+
+.reward-option__stat--block {
+  color: #4488ff;
+}
+
+.reward-option__stat--heal {
+  color: #44ff44;
+}
+
+/* 升级提示 */
+.reward-option__upgrade-hint {
+  font-size: 11px;
+  color: #ffd700;
+  opacity: 0.8;
+}
+
+/* 选择提示 */
+.reward-option__select-hint {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px;
+  background: linear-gradient(transparent, rgba(0, 255, 255, 0.2));
+  text-align: center;
+  font-size: 12px;
+  color: #00ffff;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.reward-option:hover .reward-option__select-hint {
+  opacity: 1;
+}
+
+/* 跳过按钮 */
+.reward-select__skip {
+  text-align: center;
+}
+
+.reward-select__skip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: rgba(50, 50, 80, 0.5);
+  border: 1px solid #555;
+  border-radius: 8px;
+  color: #aaa;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.reward-select__skip-btn:hover {
+  background: rgba(70, 70, 100, 0.6);
+  border-color: #00ffff;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.reward-select__skip-icon {
+  font-size: 20px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .reward-select__container {
+    padding: 16px;
+  }
+
+  .reward-select__title {
+    font-size: 24px;
+  }
+
+  .reward-option {
+    width: 160px;
+    padding: 16px;
+  }
+
+  .reward-option__name {
+    font-size: 14px;
+  }
+
+  .reward-option__shape-cell {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .reward-select__options {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .reward-option {
+    width: 100%;
+    max-width: 280px;
+  }
+}

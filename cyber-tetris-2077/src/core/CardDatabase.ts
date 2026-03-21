@@ -410,6 +410,7 @@ export class CardDatabase {
 
     for (let i = 0; i < Math.min(optionsCount, shuffled.length); i++) {
       options.push({
+        id: `reward_${Date.now()}_${i}`, // 唯一标识符
         cards: [this.cloneCard(shuffled[i])],
         skipBonus: REWARD_CONFIG.skipBonus,
       });
